@@ -55,7 +55,7 @@ The exercise consists of the following tasks:
 ### Configure a GitHub repo
 
 1. On the forked **Spoon-Knife** repo page, in the toolbar, select **Settings**.
-1. In the **General** section of the **Settings** tab, note that the default branch is set to \*_main_.
+1. In the **General** section of the **Settings** tab, note that the default branch is set to *main*.
 1. Navigate to the **Features** area of the **General** section and enable the **Issues** checkbox.
 1. In the left side navigational menu, in the **Code and automation** grouping, select the **Pages** entry.
 1. In the **GitHub Pages** pane, in the Branch section, change the **None** entry in the drop-down list to **main** and then select **Save**.
