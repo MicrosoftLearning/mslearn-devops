@@ -231,7 +231,7 @@ The exercise consists of the following tasks:
 1. Verify that the web browser displays the familiar page of the web site hosted by the Azure App Service web app you deployed in the previous lab.
 1. Switch over to the web browser window displaying the Azure portal.
 1. In the Azure portal, select the **Azure Cloud Shell** icon to the right of the search text box.
-1. In the Bash session within the Cloud Shell pane, run the following command to resolve the DNS name of the Traffic Manager profile you created in the previous exercise to one of two corresponding endpoints (replace the placeholder `<tm_profile>` with the DNS name of the Traffic Manager profile, but make sure to remove the leading `https:\\`):
+1. In the Bash session within the Cloud Shell pane, run the following command to resolve the DNS name of the Traffic Manager profile you created in the previous exercise to one of two corresponding endpoints (replace the placeholder `<tm_profile>` with the DNS name of the Traffic Manager profile, but make sure to remove the leading `https://`):
 
    ```cli
    nslookup <tm_profile>
