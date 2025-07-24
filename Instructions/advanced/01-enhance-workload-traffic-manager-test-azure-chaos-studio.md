@@ -110,7 +110,7 @@ The exercise consists of the following tasks:
 
 1. Select **Add**.
 
-1. Back on the **devopsfoundationstmprofile \| Endpoints\*\*** page, select **+ Add**.
+1. Back on the **devopsfoundationstmprofile | Endpoints** page, select **+ Add**.
 
    > **Note:** Next, you will add an endpoint representing the other Azure App Service web app deployed to the West Europe Azure region.
 
