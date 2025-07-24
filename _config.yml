@@ -7,12 +7,9 @@ header_pages:
 author: Microsoft Learning
 twitter_username: mslearning
 github_username: MicrosoftLearning
+title: DevOps and Platform Engineering
 plugins:
   - jekyll-sitemap
   - jekyll-mentions
   - jemoji
-markdown: kramdown
-kramdown:
-  syntax_highlighter_opts:
-    disable: true
-title: DevOps Exercises
+markdown: GFM
