@@ -125,7 +125,7 @@ The exercise consists of the following tasks:
    - Ensure that the **Health Checks** are enabled.
 
 1. Select **Add**.
-1. Back on the **devopsfoundationstmprofile \| Endpoints\*\*** page, verify that both endpoints are listed with the **Online** entry in the **Monitor status** column.
+1. Back on the **devopsfoundationstmprofile | Endpoints** page, verify that both endpoints are listed with the **Online** entry in the **Monitor status** column.
 
    > **Note:** You might need to wait a couple of minutes and select **Refresh** before the status entry is up-to-date.
 
