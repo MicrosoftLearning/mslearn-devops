@@ -137,10 +137,10 @@ The exercise consists of the following tasks:
 1. Switch over to the web browser window displaying the Azure portal.
 1. In the Azure portal, select the **Azure Cloud Shell** icon to the right of the search text box.
 1. If necessary, select **Bash** in the drop-down menu in the upper-left corner of the Cloud Shell pane.
-1. In the Bash session within the Cloud Shell pane, run the following command to resolve the DNS name of the Traffic Manager profile you created in the previous task to one of two corresponding endpoints (replace the placeholder `<tm_profile>` with the DNS name of the Traffic Manager profile, for example, `devopsfoundationstmprofile.trafficmanager.net`), but make sure to remove the leading `https:\\`:
+1. In the Bash session within the Cloud Shell pane, run the following command to resolve the DNS name of the Traffic Manager profile you created in the previous task to one of two corresponding endpoints (replace the placeholder `{tm_profile}` with the DNS name of the Traffic Manager profile, for example, `devopsfoundationstmprofile.trafficmanager.net`), but make sure to remove the leading `https:\\`:
 
    ```cli
-   nslookup <tm_profile>
+   nslookup {tm_profile}
    ```
 
 1. Rerun the same command a few times, waiting for a bit more than 5 seconds between each invocation (to eliminate the possibility of DNS caching) and note that the output in each case references the DNS name of the web app in the East US Azure region.
