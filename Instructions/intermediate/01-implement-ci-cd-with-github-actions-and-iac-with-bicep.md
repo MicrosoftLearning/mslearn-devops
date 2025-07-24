@@ -192,7 +192,7 @@ The exercise consists of the following tasks:
 1. In the **infra/webapp.bicep** pane, select the pencil icon to edit the workflow.
 1. In the **Edit** pane, replace line 2 with the following text:
 
-   ```yaml
+   ```bicep
    param sku string = 'S1' // The SKU of App Service Plan
    ```
 
