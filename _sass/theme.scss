@@ -223,13 +223,13 @@ h6 {
   flex-grow: 1;
 }
 
-nav.toc a.nav-link,
-nav.toc li.nav-item,
-nav.toc ul.nav {
-  outline: #000 solid 0 !important;
-  -moz-box-shadow: inset 0 0 0 0 #000 !important;
-  -webkit-box-shadow: inset 0 0 0 0 #000 !important;
-  box-shadow: inset 0 0 0 0 #000 !important;
+body nav.toc a.nav-link,
+body nav.toc li.nav-item,
+body nav.toc ul.nav {
+  outline: #000 solid 0;
+  -moz-box-shadow: inset 0 0 0 0 #000;
+  -webkit-box-shadow: inset 0 0 0 0 #000;
+  box-shadow: inset 0 0 0 0 #000;
 }
 
 .toc a:focus,
