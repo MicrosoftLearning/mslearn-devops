@@ -179,7 +179,7 @@ The exercise consists of the following tasks:
    - In the **Experiment details** section, in the **Name** text box, enter **`DevOps_Foundations_Labs_Experiment_01`**.
    - In the **Region** drop-down list, select the **West Europe** Azure region.
 
-   > **Note:** You could potentially choose any Azure region, but considering that you are testing failures to a resource in the West Europe region, any region other than East US seems more appropriate.
+   > **Note:** You could potentially choose any Azure region, but considering that you are testing failures to a resource in the East US region, any region other than East US seems less appropriate.
 
 1. On the **Basics** tab of the **Create an experiment** page, select **Next: Permissions >**.
 1. On the **Permissions** tab, accept the default option **System-assigned identity** and then select **Next: Experiment designer >**.
