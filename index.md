@@ -15,7 +15,7 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 ## Topic levels
 
-{% assign exercises = site.pages | where_exp:"page", "page.url contains '/instructions'" %}
+{% assign exercises = site.pages | where_exp:"page", "page.url contains '/Instructions'" %}
 {% assign grouped_exercises = exercises | group_by: "lab.topic" %}
 
 <ul>
