@@ -217,10 +217,10 @@ h6 {
     Helvetica, sans-serif;
 }
 
-nav.toc {
-  margin-top: 24px !important;
-  overflow-y: auto !important;
-  flex-grow: 1 !important;
+.container nav.toc {
+  margin-top: 24px;
+  overflow-y: auto;
+  flex-grow: 1;
 }
 
 nav.toc a.nav-link,
