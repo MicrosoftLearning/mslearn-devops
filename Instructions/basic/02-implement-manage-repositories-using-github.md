@@ -171,7 +171,7 @@ The exercise consists of the following tasks:
 
    > **Note:** If you don't have access to the GitHub Copilot for pull request feature, you can skip this step.
 
-   > **Note:** if you you choose to use the GitHub Copilot for pull request feature, you can skip the next step.
+   > **Note:** if you choose to use the GitHub Copilot for pull request feature, you can skip the next step.
 
 1. In the **Add a description** text box, enter **`Addressing #1`** and select **Create pull request**.
 
