@@ -1,6 +1,6 @@
 ---
 lab:
-  topic: Basic
+  topic: Advanced
   title: "Enhance workload resiliency by using Traffic Manager and test resiliency by using Azure Chaos Studio"
   description: "Learn how to enhance workload resiliency by using Traffic Manager and test resiliency by using Azure Chaos Studio."
 ---
@@ -27,7 +27,6 @@ This lab takes approximately **35** minutes to complete.
 To complete the lab, you need:
 
 - A GitHub user account. If you don't have one, you can [create a new account](https://github.com/join). If you need instructions on how to create a GitHub account, refer to the article [Creating an account on GitHub](https://docs.github.com/get-started/quickstart/creating-an-account-on-github).
-- Completed [Lab 03 - Implement CI/CD with GitHub Actions and IaC with Bicep](03-implement-ci-cd-with-github-actions-and-iac-with-bicep.md)
 
 ## Prepare the Azure subscription for the lab
 
