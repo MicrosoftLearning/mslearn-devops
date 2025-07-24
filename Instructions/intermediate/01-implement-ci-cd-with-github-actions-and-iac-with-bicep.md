@@ -90,7 +90,7 @@ The exercise consists of the following tasks:
 
    > **Note:** You will need to create the resource group before you run the workflow.
 
-1. Note that the workflow relies on a secret to authenticate to the target Azure subscription during the Set-up Azure CLI step, as evidenced by the statement `creds: ${{ secrets.AZURE_CREDENTIALS }}`.
+1. Note that the workflow relies on a secret to authenticate to the target Azure subscription during the Set up Azure CLI step, as evidenced by the statement `creds: ${{ secrets.AZURE_CREDENTIALS }}`.
 
    > **Note:** You will need to set up this secret before you run the workflow.
 
