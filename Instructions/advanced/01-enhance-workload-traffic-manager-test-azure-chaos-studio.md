@@ -91,7 +91,7 @@ The exercise consists of the following tasks:
 
 1. On the **devopsfoundationstmprofile \| Configuration** page, select **Save**.
 1. On the **devopsfoundationstmprofile** page, in the left navigation menu, in the **Settings** section, select **Endpoints**.
-1. On the **devopsfoundationstmprofile \| Endpoints\*\*** page, select **+ Add**.
+1. On the **devopsfoundationstmprofile | Endpoints** page, select **+ Add**.
 
    > **Note:** You will first add an endpoint representing the Azure App Service web app.
 
