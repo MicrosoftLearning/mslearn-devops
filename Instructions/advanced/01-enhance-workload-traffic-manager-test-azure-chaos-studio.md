@@ -74,6 +74,7 @@ The exercise consists of the following tasks:
    ```bash
    git clone https://github.com/<YOUR_GITHUB_USERNAME>/eShopOnWeb.git
    cd eShopOnWeb
+   ```
 
 1. Run the following commands to create the resource group and deploy the web app to East US:
 
