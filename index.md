@@ -17,20 +17,22 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 {% assign exercises = site.pages | where_exp:"page", "page.url contains '/Instructions'" %}
 {% assign grouped_exercises = exercises | group_by: "lab.topic" %}
-{% assign topic_order = "basic,intermediate,advanced,expert" | split: "," %}
+{% assign topic_order = "Basic,Intermediate,Advanced,Expert" | split: "," | map: "downcase" %}
+{% assign sorted_groups = "" | split: "" %}
+{% for topic in topic_order %}
+{% assign matching_group = grouped_exercises | where_exp: "group", "group.name | downcase == topic" | first %}
+{% if matching_group %}
+{% assign sorted_groups = sorted_groups | push: matching_group %}
+{% endif %}
+{% endfor %}
 
 <ul>
-{% for topic in topic_order %}
-  {% assign group = grouped_exercises | where: "name", topic | first %}
-  {% if group %}
-    <li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
-  {% endif %}
+{% for group in sorted_groups %}
+<li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
 {% endfor %}
 </ul>
 
-{% for topic in topic_order %}
-{% assign group = grouped_exercises | where: "name", topic | first %}
-{% if group %}
+{% for group in sorted_groups %}
 
 ## <a id="{{ group.name | slugify }}"></a>{{ group.name }}
 
@@ -41,6 +43,4 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 {% endfor %}
 <a href="#overview">Return to top</a>
-
-{% endif %}
 {% endfor %}
