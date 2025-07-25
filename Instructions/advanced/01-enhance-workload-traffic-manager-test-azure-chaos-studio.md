@@ -72,11 +72,8 @@ The exercise consists of the following tasks:
 1. From the **Bash** session in the **Cloud Shell** pane, run the following commands to clone your forked eShopOnWeb repository:
 
    ```bash
-   git clone https://github.com/YOUR_GITHUB_USERNAME/eShopOnWeb.git
+   git clone https://github.com/<YOUR_GITHUB_USERNAME>/eShopOnWeb.git
    cd eShopOnWeb
-   ```
-
-   > **Note:** Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username.
 
 1. Run the following commands to create the resource group and deploy the web app to East US:
 
