@@ -190,7 +190,7 @@ The exercise consists of the following tasks:
 1. In the **Add endpoint** pane, perform the following actions:
 
    - Ensure that **Azure endpoint** appears in the **Type** drop-down list.
-   - In the **Name** text box, enter **`DevOps Foundations web app - West Europe`**.
+   - In the **Name** text box, enter **`DevOps Foundations web app - West US`**.
    - Ensure that the **Enable Endpoint** checkbox is selected.
    - In the **Target resource type** drop-down list, select **App Service**.
    - In the **Target resource** drop-down list, in the **rg-eshoponweb-westus** section, select the name of the App Service web app you deployed to the West US Azure region.
