@@ -17,22 +17,27 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 {% assign exercises = site.pages | where_exp:"page", "page.url contains '/Instructions'" %}
 {% assign grouped_exercises = exercises | group_by: "lab.topic" %}
+{% assign topic_order = "basic,intermediate,advanced,expert" | split: "," %}
 
 <ul>
-{% for group in grouped_exercises %}
-<li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
+{% for topic in topic_order %}
+  {% assign group = grouped_exercises | where: "name", topic | first %}
+  {% if group %}
+    <li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
+  {% endif %}
 {% endfor %}
 </ul>
 
-{% for group in grouped_exercises %}
+{% for topic in topic_order %}
+{% assign group = grouped_exercises | where: "name", topic | first %}
+{% if group %} ## <a id="{{ group.name | slugify }}"></a>{{ group.name }}
 
-## <a id="{{ group.name | slugify }}"></a>{{ group.name }}
+    {% for activity in group.items %}
+      [{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }}) <br/> {{ activity.lab.description }}
 
-{% for activity in group.items %}
-[{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }}) <br/> {{ activity.lab.description }}
+      ---
+    {% endfor %}
+    <a href="#overview">Return to top</a>
 
----
-
-{% endfor %}
-<a href="#overview">Return to top</a>
+{% endif %}
 {% endfor %}

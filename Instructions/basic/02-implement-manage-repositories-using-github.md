@@ -29,7 +29,7 @@ In this exercise, you'll fork a Git repo and manage it by using GitHub.
 
 > **Important:** The GitHub Copilot for pull request feature usage is completely optional. To use this feature, you must be a member of an enterprise with a **Copilot Enterprise subscription**. You can skip the steps that involve the GitHub Copilot for pull request feature if you don't have access to it. If you want to know more about the GitHub Copilot for pull request feature, refer to [About Copilot pull request summaries](https://docs.github.com/en/enterprise-cloud@latest/copilot/github-copilot-enterprise/copilot-pull-request-summaries/about-copilot-pull-request-summaries).
 
-> **Note:** You created a new repo in the first lab of our course. In this lab, you will start by forking an existing repo. A fork is a repository that shares code and visibility settings with an existing upstream repository. This approach is frequently used when developing updates to open-source projects or in scenarios where write access to the upstream repository is not available. For more information, refer to [Working with forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks).
+> **Note:** In this lab, you will start by forking an existing repo. A fork is a repository that shares code and visibility settings with an existing upstream repository. This approach is frequently used when developing updates to open-source projects or in scenarios where write access to the upstream repository is not available. For more information, refer to [Working with forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks).
 
 The exercise consists of the following tasks:
 
@@ -55,7 +55,7 @@ The exercise consists of the following tasks:
 ### Configure a GitHub repo
 
 1. On the forked **Spoon-Knife** repo page, in the toolbar, select **Settings**.
-1. In the **General** section of the **Settings** tab, note that the default branch is set to *main*.
+1. In the **General** section of the **Settings** tab, note that the default branch is set to _main_.
 1. Navigate to the **Features** area of the **General** section and enable the **Issues** checkbox.
 1. In the left side navigational menu, in the **Code and automation** grouping, select the **Pages** entry.
 1. In the **GitHub Pages** pane, in the Branch section, change the **None** entry in the drop-down list to **main** and then select **Save**.
@@ -66,11 +66,11 @@ The exercise consists of the following tasks:
 
    > **Note:** You might need to wait a few minutes before the **Visit site** button and the page become available.
 
-   > **Note:** Perform the remaining steps of this task if you completed the first lab.
+   > **Note:** If you have previously created a GitHub project named **DevOps Core Intro Project**, you can optionally link it to this repository in the following steps. Otherwise, skip to the "Create an issue" section.
 
 1. Back on the forked **Spoon-Knife** repo page, in the toolbar, select **Projects**.
 1. On the **Welcome to the all-new projects** pane, select **Link a project**, and, in the drop-down menu, select **Link an existing project**.
-1. In the list of the existing projects, select **DevOps Core Intro Project**.
+1. In the list of the existing projects, select **DevOps Core Intro Project** (if available).
 
 ### Create an issue
 

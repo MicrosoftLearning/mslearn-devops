@@ -98,13 +98,13 @@ The exercise consists of the following tasks:
 
 ### Configure the target environment
 
-> **Note:** You will start by creating the resource groups. You will run the workflow twice in order to deploy two instances of the website in two different Azure regions.
+> **Note:** You will start by creating the resource groups. You will run the workflow twice in order to deploy two instances of the website in two different Azure regions (East US and West US in this example). You can adapt these to use regions closer to your location if preferred.
 
 1. Switch to the web browser tab displaying the Azure portal at `https://portal.azure.com`.
 1. In the Azure portal, in the search text box at the top of the page, enter **`Resource groups`** and select **Resource groups** in the list of results.
 1. On the **Resource groups** page, select **+ Create**.
-1. In the **Resource groups** text box, enter **`rg-eshoponweb-westeurope`**.
-1. In the **Region** drop-down list, select **(Europe) West Europe**.
+1. In the **Resource groups** text box, enter **`rg-eshoponweb-westus`**.
+1. In the **Region** drop-down list, select **(US) West US**.
 1. Select **Review + create** and then, on the **Review + create**, select **Create**.
 1. On the **Resource groups** page, select **+ Create**.
 1. In the **Resource groups** text box, enter **`rg-eshoponweb-eastus`**.
@@ -182,7 +182,7 @@ The exercise consists of the following tasks:
 1. In the **Edit** pane, replace line 8 with the following text:
 
    ```yaml
-   RESOURCE-GROUP: rg-eshoponweb-westeurope
+   RESOURCE-GROUP: rg-eshoponweb-westus
    ```
 
 1. In the **Edit** pane, replace the `YOUR-SUBS-ID` placeholder in line 11 with the value of the Azure subscription ID you recorded earlier in this exercise:
