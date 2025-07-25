@@ -110,7 +110,7 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-westus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-westus-$(uuidgen | cut -c1-8) \
+     --parameters webAppName=eshoponweb-westus-$(date +%s%N) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
