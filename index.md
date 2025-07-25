@@ -23,7 +23,7 @@ Some exercises may have additional, or different, requirements. Those will conta
 {% for topic in topic_order %}
   {% assign group = grouped_exercises | where: "name", topic | first %}
   {% if group %}
-    <li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
+<li><a href="#{{ group.name | slugify }}">{{ group.name }}</a></li>
   {% endif %}
 {% endfor %}
 </ul>
@@ -41,6 +41,5 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 {% endfor %}
 <a href="#overview">Return to top</a>
-
 {% endif %}
 {% endfor %}
