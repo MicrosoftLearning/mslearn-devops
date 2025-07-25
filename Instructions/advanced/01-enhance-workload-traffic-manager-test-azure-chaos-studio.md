@@ -71,13 +71,13 @@ The exercise consists of the following tasks:
 
 1. From the **Bash** session in the **Cloud Shell** pane, run the following commands to clone your forked eShopOnWeb repository:
 
-   > **Note:** Replace `<YOUR_GITHUB_USERNAME>` in the command below with your actual GitHub username. For example, if your GitHub username is `johnsmith`, the command would be:
+   > **Note:** Replace `{YOUR_GITHUB_USERNAME}` in the command below with your actual GitHub username. For example, if your GitHub username is `johnsmith`, the command would be:
    >
    > ```bash
    > git clone https://github.com/johnsmith/eShopOnWeb.git
    > ```
    ```bash
-   git clone https://github.com/<YOUR_GITHUB_USERNAME>/eShopOnWeb.git
+   git clone https://github.com/{YOUR_GITHUB_USERNAME}/eShopOnWeb.git
    cd eShopOnWeb
    ```
 
