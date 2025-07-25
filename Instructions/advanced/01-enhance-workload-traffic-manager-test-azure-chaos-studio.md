@@ -85,7 +85,7 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-eastus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-eastus-$(date +%s) \
+     --parameters webAppName=eshoponweb-eastus-$(uuidgen | cut -c1-8) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
