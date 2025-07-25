@@ -30,14 +30,17 @@ Some exercises may have additional, or different, requirements. Those will conta
 
 {% for topic in topic_order %}
 {% assign group = grouped_exercises | where: "name", topic | first %}
-{% if group %} ## <a id="{{ group.name | slugify }}"></a>{{ group.name }}
+{% if group %}
 
-    {% for activity in group.items %}
-      [{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }}) <br/> {{ activity.lab.description }}
+## <a id="{{ group.name | slugify }}"></a>{{ group.name }}
 
-      ---
-    {% endfor %}
-    <a href="#overview">Return to top</a>
+{% for activity in group.items %}
+[{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }}) <br/> {{ activity.lab.description }}
+
+---
+
+{% endfor %}
+<a href="#overview">Return to top</a>
 
 {% endif %}
 {% endfor %}
