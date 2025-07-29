@@ -259,7 +259,7 @@ In this task, you will use Azure Image Builder to create a custom image based on
          "properties": {
            "buildTimeoutInMinutes": 100,
            "vmProfile": {
-             "vmSize": "Standard_DS2_v2",
+             "vmSize": "Standard_D2s_v3",
              "osDiskSizeGB": 127
            },
            "source": {
@@ -452,6 +452,17 @@ To configure imaging for Microsoft Dev Box team customizations, project-level ca
 1. On the **devcenter-project-custom | Catalogs** page, select **+ Add**.
 1. In the **Add catalog** pane, in the **Name** text box, enter **`image-definitions-custom`**, in the **Catalog source** section, select **GitHub**, in the **Authentication type**, select **GitHub app**, leave the checkbox **Automatically sync this catalog** checkbox enabled, and then select **Sign in with GitHub**.
 1. If prompted, in the **Sign in with GitHub** window, enter your GitHub credentials and select **Sign in**.
+1. If you see a message stating "We could not find any GitHub repos associated with the account" with a link to **configure your repositories**, complete the following additional steps to set up the Microsoft DevCenter GitHub App:
+
+   1. Select the **configure your repositories** link. This will open a new browser tab or window directed to GitHub.
+   1. On the GitHub **Install Microsoft DevCenter** page, you will be prompted to install the app on your personal account.
+   1. In the **Install on your personal account** section, choose one of the following options:
+      - Select **All repositories** to grant access to all current and future repositories in your account.
+      - Select **Only select repositories** to choose specific repositories. If you choose this option, use the **Select repositories** dropdown to select the **contoso-co-eShop** repository (or any other repositories you want to make available to Azure DevCenter).
+   1. Review the permissions that will be granted under **with these permissions** section, which typically includes "Read access to code and metadata".
+   1. Select **Install** to complete the GitHub App installation.
+   1. You will be redirected back to the Azure portal. If the redirect doesn't happen automatically, close the GitHub tab and return to the Azure portal.
+   1. Back in the Azure portal, on the **Add catalog** page, select **Refresh** or refresh the page to reload the repository list.
 
    > **Note:** You need to fork the https://github.com/MicrosoftLearning/contoso-co-eShop repository to your GitHub account before you can complete this step.
 
