@@ -257,6 +257,8 @@ Now that you finished the exercise, you should delete the cloud resources you cr
 1. On the toolbar, select **Delete resource group**.
 1. Enter the resource group name and confirm that you want to delete it.
 
+> **CAUTION:** Deleting a resource group deletes all resources contained within it. If you chose an existing resource group for this exercise, any existing resources outside the scope of this exercise will also be deleted.
+
 You don't need to clean up your GitHub repo or project, as they will remain available for you to use as a reference and portfolio item.
 
 If you want to delete the repo, you can do so by following this documentation: [Deleting a repository](https://docs.github.com/repositories/creating-and-managing-repositories/deleting-a-repository).
