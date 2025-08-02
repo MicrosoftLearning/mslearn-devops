@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Intermediate
+  title: "Package Management with Azure Artifacts"
+  description: "Learn how to work with Azure Artifacts for package management, including creating and connecting to feeds, and publishing NuGet packages."
+---
+
 # Package Management with Azure Artifacts
 
 **Estimated time:** 35 minutes
@@ -12,7 +19,7 @@ You need:
 - **Azure DevOps organization:** Create one if you don't have one
 - **Visual Studio 2022 Community Edition** available from [Visual Studio Downloads page](https://visualstudio.microsoft.com/downloads/). Installation should include:
   - **ASP.NET and web development** workload
-  - **Azure development** workload  
+  - **Azure development** workload
   - **.NET Core cross-platform development** workload
 - **.NET Core SDK:** [Download and install the .NET Core SDK (2.1.400+)](https://go.microsoft.com/fwlink/?linkid=2103972)
 - **Azure Artifacts credential provider:** [Download and install the credential provider](https://go.microsoft.com/fwlink/?linkid=2099625)
@@ -22,6 +29,7 @@ You need:
 Azure Artifacts facilitate discovery, installation, and publishing NuGet, npm, and Maven packages in Azure DevOps. It's deeply integrated with other Azure DevOps features such as Build, making package management a seamless part of your existing workflows.
 
 Key benefits:
+
 - **Centralized package management** across your organization
 - **Integration with CI/CD pipelines** for automatic package publishing
 - **Support for multiple package types** (NuGet, npm, Maven, Python, Universal packages)
@@ -50,6 +58,7 @@ Next, you'll import the sample repository that contains the application code.
 6. Click **Import**
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **src** folder contains the .NET 8 website used in the lab scenarios
 
@@ -77,6 +86,7 @@ You'll configure Visual Studio to prepare for the lab.
 ## Working with Azure Artifacts
 
 You'll learn how to work with Azure Artifacts using the following steps:
+
 - Create and connect to a feed
 - Create and publish a NuGet package
 - Import a NuGet package
@@ -181,7 +191,7 @@ You'll now import the package you created into another project.
 2. In the **Solution Explorer**, right-click on the **eShopOnWeb.Shared** solution and select **Add > New Project**
 3. Select **Console App (.NET Core)** template and click **Next**
 4. Configure the project:
-   - Project name: **eShopOnWeb.Shared.Client**  
+   - Project name: **eShopOnWeb.Shared.Client**
    - Location: accept the default value
    - Solution: **Add to solution**
 5. Click **Create**

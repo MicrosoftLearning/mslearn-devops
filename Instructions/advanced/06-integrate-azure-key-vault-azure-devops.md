@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Integrate Azure Key Vault with Azure DevOps"
+  description: "Learn how to integrate Azure Key Vault with an Azure Pipeline to securely store and retrieve sensitive data such as passwords and keys."
+---
+
 # Integrate Azure Key Vault with Azure DevOps
 
 **Estimated time:** 40 minutes
@@ -41,6 +48,7 @@ Next, you'll import the sample repository that contains the application code.
    ![Screenshot of the import repository panel](media/import-repo.png)
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder contains setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates
@@ -77,6 +85,7 @@ You'll import an existing CI YAML pipeline definition that creates an Azure Cont
 > **Important**: If you see the message "This pipeline needs permission to access resources before this run can continue to Docker Compose to ACI", click on View, Permit and Permit again. This is needed to allow the pipeline to create the resource.
 
 The build definition consists of these tasks:
+
 - **AzureResourceManagerTemplateDeployment** uses **bicep** to deploy an Azure Container Registry
 - **PowerShell** task takes the bicep output (ACR login server) and creates pipeline variable
 - **DockerCompose** task builds and pushes the container images for eShopOnWeb to the Azure Container Registry
@@ -89,11 +98,11 @@ The build definition consists of these tasks:
 16. Once execution is finished, in the Azure Portal, open the previously defined Resource Group
 17. You should find an Azure Container Registry (ACR) with the created container images **eshoppublicapi** and **eshopwebmvc**
 
-   ![Screenshot of container images in ACR](media/azure-container-registry.png)
+![Screenshot of container images in ACR](media/azure-container-registry.png)
 
 18. Click on **Access Keys**, enable the **Admin user** if not done already, and copy the **password** value
 
-   ![Screenshot of the ACR password location](media/acr-password.png)
+![Screenshot of the ACR password location](media/acr-password.png)
 
 You'll use this password in the following task as a secret in Azure Key Vault.
 
@@ -105,15 +114,15 @@ You'll create an Azure Key Vault to store the ACR password as a secret.
 2. Select **Key vault** blade, click **Create > Key Vault**
 3. On the **Basics** tab of the **Create a key vault** blade, specify these settings and click **Next**:
 
-   | Setting | Value |
-   | --- | --- |
-   | Subscription | the name of the Azure subscription you are using in this lab |
-   | Resource group | the name of your resource group **AZ400-EWebShop-NAME** |
-   | Key vault name | any unique valid name, like **ewebshop-kv-NAME** (replace NAME) |
-   | Region | an Azure region close to the location of your lab environment |
-   | Pricing tier | **Standard** |
-   | Days to retain deleted vaults | **7** |
-   | Purge protection | **Disable purge protection** |
+   | Setting                       | Value                                                           |
+   | ----------------------------- | --------------------------------------------------------------- |
+   | Subscription                  | the name of the Azure subscription you are using in this lab    |
+   | Resource group                | the name of your resource group **AZ400-EWebShop-NAME**         |
+   | Key vault name                | any unique valid name, like **ewebshop-kv-NAME** (replace NAME) |
+   | Region                        | an Azure region close to the location of your lab environment   |
+   | Pricing tier                  | **Standard**                                                    |
+   | Days to retain deleted vaults | **7**                                                           |
+   | Purge protection              | **Disable purge protection**                                    |
 
 4. On the **Access configuration** tab, select **Vault access policy**
 5. In the **Access policies** section, click **+ Create** to setup a new policy
@@ -133,11 +142,11 @@ You'll create an Azure Key Vault to store the ACR password as a secret.
 13. On the **Secrets** blade, click **Generate/Import**
 14. On the **Create a secret** blade, specify these settings and click **Create**:
 
-   | Setting | Value |
-   | --- | --- |
-   | Upload options | **Manual** |
-   | Name | **acr-secret** |
-   | Secret value | ACR access password copied in previous task |
+| Setting        | Value                                       |
+| -------------- | ------------------------------------------- |
+| Upload options | **Manual**                                  |
+| Name           | **acr-secret**                              |
+| Secret value   | ACR access password copied in previous task |
 
 ## Create a Variable Group connected to Azure Key Vault
 
@@ -148,12 +157,12 @@ You'll create a Variable Group in Azure DevOps that will retrieve the ACR passwo
 3. Click **+ Variable Group**
 4. On the **New variable group** blade, specify these settings:
 
-   | Setting | Value |
-   | --- | --- |
-   | Variable Group Name | **eshopweb-vg** |
-   | Link secrets from an Azure Key Vault | **enable** |
-   | Azure subscription | **Available Azure service connection > Azure subs** |
-   | Key vault name | Your key vault name|
+   | Setting                              | Value                                               |
+   | ------------------------------------ | --------------------------------------------------- |
+   | Variable Group Name                  | **eshopweb-vg**                                     |
+   | Link secrets from an Azure Key Vault | **enable**                                          |
+   | Azure subscription                   | **Available Azure service connection > Azure subs** |
+   | Key vault name                       | Your key vault name                                 |
 
 5. Under **Variables**, click **+ Add** and select the **acr-secret** secret
 6. Click **OK**
@@ -175,6 +184,7 @@ You'll import a CD pipeline, customize it, and run it to deploy the container im
 8. Click **Continue**
 
 9. In the YAML pipeline definition, customize:
+
    - **YOUR-SUBSCRIPTION-ID** with your Azure subscription id
    - **az400eshop-NAME** replace NAME to make it globally unique
    - **YOUR-ACR.azurecr.io** and **ACR-USERNAME** with your ACR login server (both need the ACR name, can be reviewed on the ACR > Access Keys)
@@ -186,6 +196,7 @@ You'll import a CD pipeline, customize it, and run it to deploy the container im
 > **Important**: If you see the message "This pipeline needs permission to access resources before this run can continue to Docker Compose to ACI", click on View, Permit and Permit again. This is needed to allow the pipeline to create the resource.
 
 The CD definition consists of these tasks:
+
 - **Resources**: prepared to automatically trigger based on CI pipeline completion. It also downloads the repository for the bicep file
 - **Variables (for Deploy stage)** connects to the variable group to consume the Azure Key Vault secret **acr-secret**
 - **AzureResourceManagerTemplateDeployment** deploys the Azure Container Instance (ACI) using bicep template and provides the ACR login parameters to allow ACI to download the previously created container image from Azure Container Registry (ACR)

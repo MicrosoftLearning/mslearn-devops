@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Enable Dynamic Configuration and Feature Flags"
+  description: "Learn how to use Azure App Configuration to manage application settings and feature flags centrally with dynamic feature toggling."
+---
+
 # Enable Dynamic Configuration and Feature Flags
 
 **Estimated time:** 45 minutes
@@ -19,6 +26,7 @@ You need:
 [Azure App Configuration](https://learn.microsoft.com/azure/azure-app-configuration/overview) provides a service to manage application settings and feature flags centrally. Modern programs, especially those running in a cloud, generally have many distributed components. Spreading configuration settings across these components can lead to hard-to-troubleshoot errors during application deployment. Use App Configuration to store all the settings for your application and secure their access in one place.
 
 Key benefits include:
+
 - **Centralized management** of application settings and feature flags
 - **Dynamic configuration** changes without application restart
 - **Feature flag management** for controlled feature rollouts
@@ -46,6 +54,7 @@ Next, you'll import the sample repository that contains the application code.
 5. Click **Import**
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **src** folder contains the .NET 8 website used in the lab scenarios
 
@@ -162,6 +171,7 @@ You'll modify the application to connect to Azure App Configuration.
 The sample application is already configured to use Azure App Configuration. The key integration points are:
 
 1. **Program.cs** - The application is configured to use App Configuration:
+
    ```csharp
    builder.Host.ConfigureAppConfiguration((hostingContext, config) =>
    {
@@ -177,7 +187,7 @@ The sample application is already configured to use Azure App Configuration. The
 2. **Views** - The application uses feature flags to conditionally show content:
    ```html
    <feature name="ShoppingCart">
-       <div>Shopping cart feature is enabled!</div>
+     <div>Shopping cart feature is enabled!</div>
    </feature>
    ```
 

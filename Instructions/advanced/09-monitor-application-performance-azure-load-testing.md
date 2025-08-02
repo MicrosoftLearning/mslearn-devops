@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Monitor Application Performance with Azure Load Testing"
+  description: "Learn how to use Azure Load Testing to simulate performance testing against live-running web applications with different load scenarios."
+---
+
 # Monitor Application Performance with Azure Load Testing
 
 **Estimated time:** 60 minutes
@@ -43,6 +50,7 @@ Next, you'll import the sample repository that contains the application code.
 4. Click **Import**
 
 The repository structure:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder container setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates
@@ -165,6 +173,7 @@ You'll configure CI/CD Pipelines as code with YAML in Azure DevOps.
 9. Click **Show Assistant** from the right hand side of the portal
 10. In the list of tasks, search for and select the **Azure App Service Deploy** task
 11. In the **Azure App Service deploy** pane, specify the following settings and click **Add**:
+
     - In the **Azure subscription** drop-down list, select your Azure subscription
     - Validate **App Service Type** points to Web App on Windows
     - In the **App Service name** dropdown list, select the name of the web app you deployed earlier (az400eshoponweb...)
@@ -233,6 +242,7 @@ You'll create different Azure Load Testing tests using different load configurat
 1. From the **eShopOnWebLoadTesting** Azure Load Testing Resource blade, navigate to **Tests** under **Tests**
 2. Click the **+ Create** menu option, and select **Create a URL-based test**
 3. Complete the following parameters and settings:
+
    - **Test URL**: Enter the URL from the Azure App Service you deployed (az400eshoponweb...azurewebsites.net), **including https://**
    - **Specify Load**: Virtual Users
    - **Number of Virtual Users**: 50
@@ -246,6 +256,7 @@ You'll create different Azure Load Testing tests using different load configurat
 
 1. From the top menu, click **Create**, **Create a URL-based test**
 2. Complete the following parameters and settings:
+
    - **Test URL**: Enter the URL from the Azure App Service (including https://)
    - **Specify Load**: Requests per Second (RPS)
    - **Requests per second (RPS)**: 100
@@ -264,6 +275,7 @@ With both tests complete, you'll validate the outcome of the Azure Load Testing 
 2. Select either of the test definitions to open a detailed view by **clicking** on one of the tests
 3. Select the **TestRun_mm/dd/yy-hh:hh** from the resulting list
 4. From the detailed **TestRun** page, identify the actual outcome of the simulation:
+
    - Load / Total Requests
    - Duration
    - Response Time (90th percentile response time)
@@ -307,6 +319,7 @@ To run a load test with Azure Load Testing in a CI/CD workflow, you need to add 
 3. Select the **ellipsis (...)** next to the test run, then select **Download input file**
 4. The browser downloads a zipped folder that contains the load test input files
 5. Use any zip tool to extract the input files. The folder contains:
+
    - _config.yaml_: the load test YAML configuration file
    - _quick_test.jmx_: the JMeter test script
 
@@ -332,6 +345,7 @@ To run a load test with Azure Load Testing in a CI/CD workflow, you need to add 
 4. In the YAML script, navigate to **line 56** and press ENTER/RETURN to add a new empty line (right before the Deploy Stage)
 5. At line 57, select the Tasks Assistant and search for **Azure Load Testing**
 6. Complete the graphical pane with the correct settings:
+
    - Azure Subscription: Select the subscription which runs your Azure Resources
    - Load Test File: '$(Build.SourcesDirectory)/tests/jmeter/config.yaml'
    - Load Test Resource Group: The Resource Group which holds your Azure Load Testing Resources
@@ -345,14 +359,14 @@ To run a load test with Azure Load Testing in a CI/CD workflow, you need to add 
 The YAML code should look like this:
 
 ```yml
-     - task: AzureLoadTest@1
-       inputs:
-         azureSubscription: 'AZURE DEMO SUBSCRIPTION'
-         loadTestConfigFile: '$(Build.SourcesDirectory)/tests/jmeter/config.yaml'
-         resourceGroup: 'az400m08l14-RG'
-         loadTestResource: 'eShopOnWebLoadTesting'
-         loadTestRunName: 'ado_run'
-         loadTestRunDescription: 'load testing from ADO'
+- task: AzureLoadTest@1
+  inputs:
+    azureSubscription: "AZURE DEMO SUBSCRIPTION"
+    loadTestConfigFile: "$(Build.SourcesDirectory)/tests/jmeter/config.yaml"
+    resourceGroup: "az400m08l14-RG"
+    loadTestResource: "eShopOnWebLoadTesting"
+    loadTestRunName: "ado_run"
+    loadTestRunDescription: "load testing from ADO"
 ```
 
 9. Below the inserted YAML snippet, add a new empty line

@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Configure Pipelines as Code with YAML"
+  description: "Learn how to define build and release pipelines using YAML, allowing access to pipeline features with markup files managed like source code."
+---
+
 # Configure Pipelines as Code with YAML
 
 **Estimated time:** 45 minutes
@@ -42,6 +49,7 @@ Next, you'll import the sample repository that contains the application code.
    ![Screenshot of the import repository panel](media/import-repo.png)
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder contains setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates
@@ -193,7 +201,7 @@ The added code should look like this:
 ### Review the deployed site
 
 1. Switch back to the Azure portal and navigate to your Azure web app
-2. On the Azure web app blade, click **Overview**  
+2. On the Azure web app blade, click **Overview**
 3. On the overview blade, click **Browse** to open your site in a new browser tab
 4. Verify that the deployed site loads as expected, showing the eShopOnWeb E-commerce website
 

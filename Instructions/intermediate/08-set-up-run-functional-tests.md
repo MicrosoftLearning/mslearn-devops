@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Intermediate
+  title: "Set up and run functional tests"
+  description: "Learn how to configure a CI pipeline for a .NET application that includes unit tests, integration tests, and functional tests."
+---
+
 # Set up and run functional tests
 
 **Estimated time:** 20 minutes
@@ -45,6 +52,7 @@ Next, you'll import the sample repository that contains the application code and
 6. Click **Import**
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder contains setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates
@@ -73,6 +81,7 @@ You'll add the YAML build definition that implements Continuous Integration.
 7. Click **Continue**
 
 The CI definition consists of these tasks:
+
 - **DotNet Restore:** Installs all project dependencies without storing them in source control
 - **DotNet Build:** Builds a project and all its dependencies
 - **DotNet Test:** .Net test driver used to execute unit tests
@@ -91,27 +100,27 @@ You'll add integration and functional tests to the CI Pipeline. Notice that Unit
 1. Edit the pipeline by pressing the **Edit** button
 2. Add the Integration Tests task after the Unit Tests task:
 
-    ```yaml
-    - task: DotNetCoreCLI@2
-      displayName: Integration Tests
-      inputs:
-        command: 'test'
-        projects: 'tests/IntegrationTests/*.csproj'
-    ```
+   ```yaml
+   - task: DotNetCoreCLI@2
+     displayName: Integration Tests
+     inputs:
+       command: "test"
+       projects: "tests/IntegrationTests/*.csproj"
+   ```
 
-    **Integration Tests** test how your code works with dependencies or infrastructure. Although it's good to encapsulate code that interacts with infrastructure like databases and file systems, you'll still have some of that code, and you'll want to test it. Additionally, you should verify that your code's layers interact as expected when your application's dependencies are fully resolved.
+   **Integration Tests** test how your code works with dependencies or infrastructure. Although it's good to encapsulate code that interacts with infrastructure like databases and file systems, you'll still have some of that code, and you'll want to test it. Additionally, you should verify that your code's layers interact as expected when your application's dependencies are fully resolved.
 
 3. Add the Functional tests task after the Integration Tests task:
 
-    ```yaml
-    - task: DotNetCoreCLI@2
-      displayName: Functional Tests
-      inputs:
-        command: 'test'
-        projects: 'tests/FunctionalTests/*.csproj'
-    ```
+   ```yaml
+   - task: DotNetCoreCLI@2
+     displayName: Functional Tests
+     inputs:
+       command: "test"
+       projects: "tests/FunctionalTests/*.csproj"
+   ```
 
-    **Functional Tests** are written from the user's perspective and verify the correctness of the system based on its requirements. Unlike integration tests that are written from the developer's perspective to verify that components work correctly together, functional tests validate the system's behavior from an end-user standpoint.
+   **Functional Tests** are written from the user's perspective and verify the correctness of the system based on its requirements. Unlike integration tests that are written from the developer's perspective to verify that components work correctly together, functional tests validate the system's behavior from an end-user standpoint.
 
 4. Click **Validate and Save**
 5. If validation is successful, click **Save** again to commit the changes directly to the main branch

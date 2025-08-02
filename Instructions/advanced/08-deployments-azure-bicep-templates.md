@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Deployments using Azure Bicep templates"
+  description: "Learn how to create an Azure Bicep template and modularize it using Azure Bicep Modules concept with Azure YAML pipelines."
+---
+
 # Deployments using Azure Bicep templates
 
 **Estimated time:** 45 minutes
@@ -21,6 +28,7 @@ You need:
 Azure Bicep is a domain-specific language (DSL) that uses declarative syntax to deploy Azure resources. It provides a more concise syntax compared to JSON templates while maintaining all the capabilities of Azure Resource Manager (ARM) templates.
 
 Key benefits of Bicep:
+
 - **Simplified syntax:** More readable and easier to write than JSON ARM templates
 - **Modular design:** Support for modules to create reusable components
 - **Strong typing:** IntelliSense support and compile-time validation
@@ -46,12 +54,13 @@ Next, you'll import the sample repository that contains the application code and
 2. Click **Repos > Files**
 3. Click **Import a Repository**
 4. Select **Import**
-5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`  
+5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
 6. Click **Import**
 
    ![Screenshot of the import repository panel](media/import-repo.png)
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder contains setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates used in lab scenarios
@@ -78,6 +87,7 @@ You'll use the Azure DevOps editor to examine an Azure Bicep template.
 3. Review the template to get a better understanding of its structure
 
 The template includes:
+
 - **Parameters** with types, default values and validation
 - **Variables** for computed values
 - **Resources** with these types:
@@ -173,6 +183,7 @@ You'll modify the `simple-windows-vm.bicep` template to reference the template m
    ```
 
 5. Review the following details in the main template:
+
    - A module in the main template is used to link to another template
    - The module has a symbolic name called `storageModule` used for configuring dependencies
    - You can only use **Incremental** deployment mode when using template modules

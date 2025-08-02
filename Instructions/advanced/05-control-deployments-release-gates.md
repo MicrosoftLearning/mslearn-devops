@@ -1,3 +1,10 @@
+---
+lab:
+  topic: Advanced
+  title: "Control Deployments using Release Gates"
+  description: "Learn how to configure deployment gates and use them to control the execution of Azure Pipelines with environment-specific deployment criteria."
+---
+
 # Control Deployments using Release Gates
 
 **Estimated time:** 75 minutes
@@ -25,6 +32,7 @@ Approvals and gates enable you to take control over the start and completion of 
 Gates can be added to an environment in the release definition from the pre-deployment conditions or the post-deployment conditions panel. Multiple gates can be added to ensure all inputs are successful for the release.
 
 There are 4 types of gates included by default:
+
 - **Invoke Azure Function:** Trigger execution of an Azure Function and ensure successful completion
 - **Query Azure Monitor alerts:** Observe configured Azure Monitor alert rules for active alerts
 - **Invoke REST API:** Make a call to a REST API and continue if it returns a successful response
@@ -56,6 +64,7 @@ Next, you'll import the sample repository that contains the application code.
    ![Screenshot of the import repository panel](media/import-repo.png)
 
 The repository is organized this way:
+
 - **.ado** folder contains Azure DevOps YAML pipelines
 - **.devcontainer** folder contains setup to develop using containers
 - **infra** folder contains Bicep & ARM infrastructure as code templates
@@ -133,11 +142,11 @@ You'll create two Azure web apps representing the DevTest and Production environ
 2. On the **Application Insights** blade, select **+ Create**
 3. On the **Basics** tab, specify these settings:
 
-   | Setting        | Value                                                    |
-   | -------------- | -------------------------------------------------------- |
-   | Resource group | **az400m03l08-RG**                                       |
-   | Name           | the name of the DevTest web app from the previous task   |
-   | Region         | the same Azure region where you deployed the web apps    |
+   | Setting        | Value                                                  |
+   | -------------- | ------------------------------------------------------ |
+   | Resource group | **az400m03l08-RG**                                     |
+   | Name           | the name of the DevTest web app from the previous task |
+   | Region         | the same Azure region where you deployed the web apps  |
 
 4. Click **Review + create** and then click **Create**
 5. Wait for the provisioning process to complete
