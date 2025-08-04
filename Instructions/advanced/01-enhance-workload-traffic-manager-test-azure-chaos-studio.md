@@ -17,7 +17,6 @@ You will learn how to:
 - Deploy Azure App Service web apps to two Azure regions
 - Enhance workload resiliency by using Traffic Manager
 - Test workload resiliency by using Azure Chaos Studio
-- Remove the resources used in the labs
 
 > **Note:** In this lab, you will deploy two instances of a .NET web app into two Azure regions (East US and West US) and then create a resilient configuration that implements the load balancing functionality of Azure Traffic Manager between the two web app instances. You will then use Azure Chaos Studio to trigger a failure of one of the apps to test the resiliency of the load balancing implementation. You can adapt the regions used to ones closer to your location if preferred.
 
@@ -72,10 +71,8 @@ The exercise consists of the following tasks:
 1. From the **Bash** session in the **Cloud Shell** pane, run the following commands to clone your forked eShopOnWeb repository:
 
    > **Note:** Replace `{YOUR_GITHUB_USERNAME}` in the command below with your actual GitHub username. For example, if your GitHub username is `johnsmith`, the command would be:
-   >
-   > ```bash
-   > git clone https://github.com/johnsmith/eShopOnWeb.git
-   > ```
+   > `git clone https://github.com/johnsmith/eShopOnWeb.git`
+
    ```bash
    git clone https://github.com/{YOUR_GITHUB_USERNAME}/eShopOnWeb.git
    cd eShopOnWeb
