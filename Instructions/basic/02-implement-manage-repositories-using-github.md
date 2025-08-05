@@ -69,13 +69,13 @@ The exercise consists of the following tasks:
    > **Note:** If you have previously created a GitHub project named **DevOps Core Intro Project**, you can optionally link it to this repository in the following steps. Otherwise, skip to the "Create an issue" section.
 
 1. Back on the forked **Spoon-Knife** repo page, in the toolbar, select **Projects**.
-1. On the **Welcome to the all-new projects** pane, select **Link a project**, and, in the drop-down menu, select **Link an existing project**.
+1. On the **Welcome to the all-new projects** pane, select **Link a project**.
 1. In the list of the existing projects, select **DevOps Core Intro Project** (if available).
 
 ### Create an issue
 
 1. On the forked **Spoon-Knife** page, select the **Issues** tab.
-1. On the **Welcome to issues!** page, select **New issue**.
+1. On the **Issues** page, select **New issue**.
 1. In the **Add a title** text box, enter **`index.html looks rather austere`**.
 1. In the **Add a description** text box, enter **`index.html file can use a modern touch`**.
 1. In the current pane, in the Assignees section, select **Add assignees…**, and, in the **Suggestions** section, select your GitHub user name.
@@ -85,12 +85,12 @@ The exercise consists of the following tasks:
 1. Open the new issue again.
 1. On the **index.html looks rather austere** pane, in the **Projects** section, set **Status** to **In Progress**.
 1. On the forked **Spoon-Knife** page, select the **Projects** tab.
-1. On the **Welcome to the all-new projects** page, select **DevOps Core Intro Project**.
+1. On the **Welcome to projects** page, select **DevOps Core Intro Project**.
 1. In the board view of the **DevOps Core Intro Project**, review the **In Progress** column and note that it includes the newly created issue.
 
 ### Create a branch
 
-1. Switch back to the **Code** tab.
+1. Navigate back to the forked **Spoon-Knife** page and select the **Code** tab.
 1. In the upper left corner of the page, select the **main** entry to display the **Switch branches/tags** drop-down list.
 1. In the **Find or create a branch...** text box, enter **`update index.html`** and then select **Create branch: update index.html from 'main'** entry to create a new branch.
 
