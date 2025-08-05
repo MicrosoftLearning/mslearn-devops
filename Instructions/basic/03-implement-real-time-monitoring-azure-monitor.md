@@ -35,7 +35,7 @@ In this exercise, you will create a sample web application in Azure App Service 
 
 1. Open the Azure portal.
 1. In the Search bar, type App Services and select it.
-1. Select + Create and select Web App.
+1. Select **+ Create** and select **Web App**.
 1. In the Basics tab:
    - Subscription: Select your Azure subscription.
    - Resource Group: Select Create new, enter **`monitoringlab-rg`**, and select OK.
@@ -43,13 +43,13 @@ In this exercise, you will create a sample web application in Azure App Service 
    - Publish: Select Code.
    - Runtime stack: Choose .NET 8 (LTS).
    - Region: Select a region close to you.
-1. Select Review + create, then select Create.
-1. Wait for deployment to complete, then select "Go to resource".
+1. Select **Review + create**, then select **Create**.
+1. Wait for deployment to complete, then select **Go to resource**.
 1. In the Overview tab, select the URL to verify the web app is running.
 
 ### Verify Application Insights
 
-1. In the Web App resource, in the left panel, expand the Monitoring section and select Application Insights.
+1. In the Web App resource, in the left panel, expand the Monitoring section and select **Application Insights**.
 1. Application Insights is already enabled for this web app. Select the link to open the Application Insights resource.
 1. In the Application Insights resource, select **Application Dashboard** to view the performance data the default dashboard provided.
 
@@ -60,15 +60,15 @@ In this exercise, you will create a sample web application in Azure App Service 
 ### Access Azure Monitor
 
 1. In the Azure portal, search for Monitor and select **Monitor**.
-1. Select Metrics in the left panel.
+1. Select **Metrics** in the left panel.
 1. In the Scope section, select the web app under the subscription and resource group where you deployed the web app.
-1. Select Apply and observe the metrics available for the web app.
+1. Select **Apply** and observe the metrics available for the web app.
 
 ### Add key metrics to the dashboard
 
 1. In the Scope section, select your Web App (monitoringlab-webapp).
-1. Under Metric, choose Response Time.
-1. Set the Aggregation to Average and select + Add metric.
+1. Under Metric, choose **Response Time**.
+1. Set the Aggregation to **Average** and select **+ Add metric**.
 1. Repeat the process for additional metrics:
    - CPU Time (Count)
    - Requests (Average)
@@ -88,25 +88,25 @@ In this exercise, you will create a sample web application in Azure App Service 
 
 ### Define alert conditions and actions
 
-1. In Azure Monitor, select Alerts.
-1. Select + Create and select Alert rule.
-1. Under Scope, select your Web App (monitoringlab-webapp) and select Apply.
-1. Under Condition, select in the Signal name field and select Response Time.
+1. In Azure Monitor, select **Alerts**.
+1. Select **+ Create** and select **Alert rule**.
+1. Under Scope, select your Web App (monitoringlab-webapp) and select **Apply**.
+1. Under Condition, select the Signal name field and select **Response Time**.
 1. Configure the alert rule:
    - Threshold type: Dynamic
    - Aggregation type: Average
    - Value is: Greater or Less than
    - Threshold Sensitivity: High
    - When to evaluate: Check every 1 minutes and look back at 5 minutes.
-1. Under Actions, select Use quick actions.
+1. Under Actions, select **Use quick actions**.
 1. Enter:
    - Action group name: WebAppMonitoringAlerts
    - Display name: WebAlert
    - Email: Enter your email address.
-1. Select Save.
-1. Select Next: Details.
-1. Enter a Name `WebAppResponseTimeAlert` and select a Severity level Verbose.
-1. Select Review + create and then Create.
+1. Select **Save**.
+1. Select **Next: Details**.
+1. Enter a Name `WebAppResponseTimeAlert` and select Severity level **Verbose**.
+1. Select **Review + create** and then **Create**.
 
    > **Note:** Your alert rule is now created and will trigger an email notification when the response time exceeds the threshold. You can force the alert to trigger by sending a large number of requests to the web app. For example, you can use Azure Load testing or a tool like Apache JMeter.
 
