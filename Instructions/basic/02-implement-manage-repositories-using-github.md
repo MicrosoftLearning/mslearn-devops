@@ -183,7 +183,7 @@ The exercise consists of the following tasks:
 ### Close the issue
 
 1. In the toolbar of the GitHub page, select the **Issues** tab.
-1. Select the checkbox to the left of the first issue **index.html looks rather austere**, select **Mark as**, and in the drop-down list, select **Closed**.
+1. Select the checkbox to the left of the first issue **index.html looks rather austere**, select **Mark as**, and in the drop-down list, select **Completed**.
 1. Navigate back to the board view of the **DevOps Core Intro Project** and note that the issue appears now in the **Done** column.
 
 ### Validate the changes
