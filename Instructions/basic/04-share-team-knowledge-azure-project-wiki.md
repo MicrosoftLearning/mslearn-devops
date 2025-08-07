@@ -51,7 +51,7 @@ If you don't already have an Azure DevOps organization, follow these steps:
 1. In the drop-down box on the left, choose **Default Directory**, instead of **Microsoft Account**.
 1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and select **Continue**.
 1. Back at `https://aex.dev.azure.com` with **Default Directory** selected select the blue button **Create new organization**.
-1. Accept the _Terms of Service_ by clicking **Continue**.
+1. Accept the _Terms of Service_ by selecting **Continue**.
 1. If prompted (_"Almost done"_), leave the name for the Azure DevOps organization at default (it needs to be a globally unique name) and pick a hosting location close to you from the list.
 1. Once the newly created organization opens in **Azure DevOps**, select **Organization settings** in the bottom left corner.
 1. At the **Organization settings** screen select **Billing** (opening this screen takes a few seconds).
