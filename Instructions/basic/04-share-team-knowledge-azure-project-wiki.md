@@ -39,11 +39,64 @@ Key features:
 
 First, ensure you have the eShopOnWeb project ready for this lab.
 
-1. In your browser, open your Azure DevOps organization
-2. Open the **eShopOnWeb** project (create one if you don't have it)
-3. Navigate to **Repos > Files**
-4. Ensure you're on the **main** branch
-5. Review the content of the main branch
+### Set up Azure DevOps organization (if needed)
+
+If you don't already have an Azure DevOps organization, follow these steps:
+
+1. Use a private browser session to get a new **personal Microsoft Account (MSA)** at `https://account.microsoft.com` (skip if you already have one).
+1. Using the same browser session, sign up for a free Azure subscription at `https://azure.microsoft.com/free` (skip if you already have one).
+1. Open a browser and navigate to Azure portal at `https://portal.azure.com`, then search at the top of the Azure portal screen for **Azure DevOps**. In the resulting page, select **Azure DevOps organizations**.
+1. Next, select the link labelled **My Azure DevOps Organizations** or navigate directly to `https://aex.dev.azure.com`.
+1. On the **We need a few more details** page, select **Continue**.
+1. In the drop-down box on the left, choose **Default Directory**, instead of **Microsoft Account**.
+1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and select **Continue**.
+1. Back at `https://aex.dev.azure.com` with **Default Directory** selected select the blue button **Create new organization**.
+1. Accept the _Terms of Service_ by clicking **Continue**.
+1. If prompted (_"Almost done"_), leave the name for the Azure DevOps organization at default (it needs to be a globally unique name) and pick a hosting location close to you from the list.
+1. Once the newly created organization opens in **Azure DevOps**, select **Organization settings** in the bottom left corner.
+1. At the **Organization settings** screen select **Billing** (opening this screen takes a few seconds).
+1. Select **Setup billing** and on the right-hand side of the screen, select your **Azure Subscription** and then select **Save** to link the subscription with the organization.
+1. Once the screen shows the linked Azure Subscription ID at the top, change the number of **Paid parallel jobs** for **MS Hosted CI/CD** from 0 to **1**. Then select **SAVE** button at the bottom.
+
+   > **Note**: You may **wait a couple of minutes before using the CI/CD capabilities** so that the new settings are reflected in the backend. Otherwise, you will still see the message _"No hosted parallelism has been purchased or granted"_.
+
+1. In **Organization Settings**, go to section **Pipelines** and select **Settings**.
+1. Toggle the switch to **Off** for **Disable creation of classic build pipelines** and **Disable creation of classic release pipelines**.
+1. In **Organization Settings**, go to section **Security** and select **Policies**.
+1. Toggle the switch to **On** for **Allow public projects**.
+
+### Create and configure the Azure DevOps project (if needed)
+
+1. Open your browser and navigate to your Azure DevOps organization.
+1. Select the **New Project** option and use the following settings:
+   - name: **eShopOnWeb**
+   - visibility: **Private**
+   - Advanced: Version Control: **Git**
+   - Advanced: Work Item Process: **Scrum**
+1. Select **Create**.
+
+   ![Screenshot of the create new project panel.](media/create-project.png)
+
+### Import eShopOnWeb git repository (if needed)
+
+1. Open the previously created **eShopOnWeb** project.
+1. Select the **Repos > Files**, **Import a Repository** and then select **Import**.
+1. On the **Import a Git Repository** window, paste the following URL `https://github.com/MicrosoftLearning/eShopOnWeb.git` and select **Import**:
+
+   ![Screenshot of the import repository panel.](media/import-repo.png)
+
+1. The repository is organized the following way:
+
+   - **.ado** folder contains Azure DevOps YAML pipelines.
+   - **.devcontainer** folder container setup to develop using containers (either locally in VS Code or GitHub Codespaces).
+   - **.azure** folder contains Bicep & ARM infrastructure as code templates.
+   - **.github** folder container YAML GitHub workflow definitions.
+   - **src** folder contains the .NET 8 website used on the lab scenarios.
+
+1. Leave the web browser window open.
+1. Go to **Repos > Branches**.
+1. Hover on the **main** branch then select the ellipsis on the right of the column.
+1. Select **Set as default branch**.
 
 ### Download brand image for later use
 
