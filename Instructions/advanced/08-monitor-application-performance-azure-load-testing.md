@@ -185,7 +185,7 @@ You'll configure CI/CD Pipelines as code with YAML in Azure DevOps.
 The snippet of code added should look similar to this:
 
 ```yml
-- task: AzureRmWebAppDeployment@4
+- task: AzureRmWebAppDeployment@5
   inputs:
     ConnectionType: "AzureRM"
     azureSubscription: "SERVICE CONNECTION NAME"
@@ -198,7 +198,7 @@ The snippet of code added should look similar to this:
 13. Before saving the updates, give it a clear name. On top of the yaml-editor window, rename **azure-pipelines-#.yml** to **m08l14-pipeline.yml**
 14. Click **Save**, on the **Save** pane, click **Save** again to commit the change directly into the main branch
 15. Navigate to **Pipelines** and select **Pipelines** again. Select **All** to open all pipeline definitions
-16. Select the pipeline and confirm to run it by clicking **Run** and confirm by clicking **Run** once more
+16. Select the pipeline and confirm to run it by clicking **Run pipeline** and confirm by clicking **Run** once more
 17. Notice the 2 different Stages: **Build .Net Core Solution** and **Deploy to Azure Web App**
 18. Wait for the pipeline to complete successfully
 
@@ -343,7 +343,7 @@ To run a load test with Azure Load Testing in a CI/CD workflow, you need to add 
 2. Select your Azure DevOps organization, and then select **Install** to install the extension
 3. From the Azure DevOps Portal, navigate to **Pipelines** and select the pipeline created earlier. Click **Edit**
 4. In the YAML script, navigate to **line 56** and press ENTER/RETURN to add a new empty line (right before the Deploy Stage)
-5. At line 57, select the Tasks Assistant and search for **Azure Load Testing**
+5. At line 57, select the Tasks Assistant and search for **Azure Load Testing** (make sure you position the cursor at the indentation of the previous task level).
 6. Complete the graphical pane with the correct settings:
 
    - Azure Subscription: Select the subscription which runs your Azure Resources
