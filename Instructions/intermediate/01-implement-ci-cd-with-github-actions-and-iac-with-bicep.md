@@ -168,7 +168,7 @@ The exercise consists of the following tasks:
 
 ### Validate the IaC and CI/CD functionality
 
-1. Switch to the web browser window displaying the forked **eShopOnWeb** GitHub repo page and, if needed, on the **eShopOnWeb** page, click in the **Code** tab and, in the drop-down list confirm that the current branch is **main**.
+1. Switch to the web browser window displaying the forked **eShopOnWeb** GitHub repo page and, if needed, on the **eShopOnWeb** page, select the **Code** tab and, in the drop-down list confirm that the current branch is **main**.
 1. In the web browser window displaying the **main** branch of the forked **eShopOnWeb** GitHub repo page, navigate to the **.github/workflows** folder and select **eshoponweb-cicd.yml**.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select the pencil icon to edit the workflow.
 1. In the **Edit** pane, replace line 4 with the following text:
