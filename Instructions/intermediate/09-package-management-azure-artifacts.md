@@ -41,21 +41,21 @@ Key benefits:
 First, you'll create an Azure DevOps project for this lab.
 
 1. In your browser, open your Azure DevOps organization
-2. Click **New Project**
+2. Select **New Project**
 3. Give your project the name **eShopOnWeb**
 4. Leave other fields with defaults
-5. Click **Create**
+5. Select **Create**
 
 ## Import the eShopOnWeb Git Repository
 
 Next, you'll import the sample repository that contains the application code.
 
 1. In your Azure DevOps organization, open the **eShopOnWeb** project
-2. Click **Repos > Files**
-3. Click **Import a Repository**
+2. Select **Repos > Files**
+3. Select **Import a Repository**
 4. Select **Import**
 5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
-6. Click **Import**
+6. Select **Import**
 
 The repository is organized this way:
 
@@ -63,8 +63,8 @@ The repository is organized this way:
 - **src** folder contains the .NET 8 website used in the lab scenarios
 
 7. Go to **Repos > Branches**
-8. Hover on the **main** branch then click the ellipsis on the right
-9. Click **Set as default branch**
+8. Hover on the **main** branch then select the ellipsis on the right
+9. Select **Set as default branch**
 
 ## Configure the eShopOnWeb solution in Visual Studio
 
@@ -74,12 +74,12 @@ You'll configure Visual Studio to prepare for the lab.
 
 > **Note**: You can access the project page directly by navigating to the https://dev.azure.com/`<your-Azure-DevOps-account-name>`/eShopOnWeb URL, where the `<your-Azure-DevOps-account-name>` placeholder represents your Azure DevOps Organization name.
 
-2. In the vertical menu on the left side of the **eShopOnWeb** pane, click **Repos**
-3. On the **Files** pane, click **Clone**
+2. In the vertical menu on the left side of the **eShopOnWeb** pane, select **Repos**
+3. On the **Files** pane, select **Clone**
 4. Select the drop-down arrow next to **Clone in VS Code**, and in the dropdown menu, select **Visual Studio**
-5. If prompted whether to proceed, click **Open**
+5. If prompted whether to proceed, select **Open**
 6. If prompted, sign in with the user account you used to set up your Azure DevOps organization
-7. Within the Visual Studio interface, in the **Azure DevOps** pop-up window, accept the default local path (C:\eShopOnWeb) and click **Clone**
+7. Within the Visual Studio interface, in the **Azure DevOps** pop-up window, accept the default local path (C:\eShopOnWeb) and select **Clone**
 8. This will automatically import the project into Visual Studio
 9. Leave Visual Studio window open for use in your lab
 
@@ -97,25 +97,25 @@ You'll learn how to work with Azure Artifacts using the following steps:
 A feed is a collection of packages. You'll create a feed to store your NuGet packages.
 
 1. In the web browser window displaying your Azure DevOps project, in the vertical navigational pane, select the **Artifacts** icon
-2. With the **Artifacts** hub displayed, click **+ Create Feed** at the top of the pane
+2. With the **Artifacts** hub displayed, select **+ Create Feed** at the top of the pane
 
 > **Note**: This feed will be a collection of NuGet packages available to users within the organization and will sit alongside the public NuGet feed as a peer.
 
 3. On the **Create new feed** pane, in the **Name** textbox, type **eShopOnWebShared**
 4. In the **Visibility** section, select **People in my organization**
 5. In the **Upstream sources** section, select **Include packages from common public sources**
-6. Click **Create**
+6. Select **Create**
 
 > **Note**: Any user who wants to connect to this NuGet feed must configure their environment.
 
-7. Back on the **Artifacts** hub, click **Connect to Feed**
+7. Back on the **Artifacts** hub, select **Connect to Feed**
 8. On the **Connect to feed** pane, in the **NuGet** section, select **Visual Studio** and copy the **Source** URL
 9. Switch back to the **Visual Studio** window
-10. In the Visual Studio window, click **Tools** menu header and, in the dropdown menu, select **NuGet Package Manager** and, in the cascading menu, select **Package Manager Settings**
-11. In the **Options** dialog box, click **Package Sources** and click the plus sign to add a new package source
+10. In the Visual Studio window, select **Tools** menu header and, in the dropdown menu, select **NuGet Package Manager** and, in the cascading menu, select **Package Manager Settings**
+11. In the **Options** dialog box, select **Package Sources** and select the plus sign to add a new package source
 12. At the bottom of the dialog box, in the **Name** textbox, replace **Package source** with **eShopOnWebShared**
 13. In the **Source** textbox, paste the URL you copied from Azure DevOps
-14. Click **Update** and then **OK**
+14. Select **Update** and then **OK**
 
 > **Note**: Visual Studio is now connected to the new feed.
 
@@ -123,25 +123,25 @@ A feed is a collection of packages. You'll create a feed to store your NuGet pac
 
 You'll create a custom NuGet package and publish it to the feed.
 
-1. In the Visual Studio window you used to configure the new package source, in the main menu, click **File**, in the dropdown menu, click **New** and then, in the cascading menu, click **Project**
-2. On the **Create a new project** pane of the **New Project** dialog box, in the list of project templates, locate the **Class Library** template, select the **Class Library (.NET Standard)** template, and click **Next**
-3. On the **Configure your new project** pane of the **New Project** dialog box, specify the following settings and click **Create**:
+1. In the Visual Studio window you used to configure the new package source, in the main menu, select **File**, in the dropdown menu, select **New** and then, in the cascading menu, select **Project**
+1. On the **Create a new project** pane of the **New Project** dialog box, in the list of project templates, locate the **Class Library** template, select the **Class Library (.NET Standard)** template, and select **Next**
+1. On the **Configure your new project** pane of the **New Project** dialog box, specify the following settings and select **Next**:
 
    - Project name: **eShopOnWeb.Shared**
    - Location: accept the default value
    - Solution: **Create new solution**
    - Solution name: **eShopOnWeb.Shared**
 
-4. Click **Create**
-5. In the Visual Studio interface, in the **Solution Explorer** pane, right-click **Class1.cs**, in the right-click menu, select **Delete**, and, when prompted for confirmation, click **OK**
-6. Press **Ctrl+Shift+B** or **right-click on the eShopOnWeb.Shared project** and select **Build** to build the project
+1. In the **Additional information** dialog box, select the framework **.NET 8.0 (Long Term Support)**, then select **Create**.
+1. In the Visual Studio interface, in the **Solution Explorer** pane, right-click **Class1.cs**, in the right-click menu, select **Delete**, and, when prompted for confirmation, select **OK**
+1. Press **Ctrl+Shift+B** or **right-click on the eShopOnWeb.Shared project** and select **Build** to build the project
 
 > **Note**: Next you'll use MSBuild to generate a NuGet package directly from the project. This approach is common for shared libraries to include all the metadata and dependencies in the package.
 
-7. Switch to the Azure DevOps web portal and navigate to the **Artifacts** section
-8. Click on the **eShopOnWebShared** feed
-9. Click **Connect to Feed** and select **NuGet.exe** under the **NuGet** section
-10. Copy the **Project setup** commands for later use
+1. Switch to the Azure DevOps web portal and navigate to the **Artifacts** section
+1. Select the **eShopOnWebShared** feed
+1. Select **Connect to Feed** and select **NuGet.exe** under the **NuGet** section
+1. Copy the **Project setup** commands for later use
 
 ### Publish the package using dotnet CLI
 
@@ -179,8 +179,8 @@ You'll use the .NET CLI to pack and publish your package.
    ```
 
 10. Switch back to the Azure DevOps web portal displaying the **Artifacts** tab
-11. Click **Refresh**
-12. In the list of packages, click the **eShopOnWeb.Shared** package
+11. Select **Refresh**
+12. In the list of packages, select the **eShopOnWeb.Shared** package
 13. On the **eShopOnWeb.Shared** pane, review its metadata
 
 ### Import a NuGet package
@@ -189,17 +189,17 @@ You'll now import the package you created into another project.
 
 1. Switch back to Visual Studio
 2. In the **Solution Explorer**, right-click on the **eShopOnWeb.Shared** solution and select **Add > New Project**
-3. Select **Console App (.NET Core)** template and click **Next**
+3. Select **Console App (.NET Core)** template and select **Next**
 4. Configure the project:
    - Project name: **eShopOnWeb.Shared.Client**
    - Location: accept the default value
    - Solution: **Add to solution**
-5. Click **Create**
+5. Select **Create**
 6. In the **Solution Explorer**, right-click on the **eShopOnWeb.Shared.Client** project and select **Manage NuGet Packages**
-7. In the **NuGet Package Manager** pane, click the **Browse** tab
+7. In the **NuGet Package Manager** pane, select the **Browse** tab
 8. In the **Package source** dropdown, select **eShopOnWebShared**
 9. In the search box, type **eShopOnWeb.Shared** and press Enter
-10. Select the **eShopOnWeb.Shared** package and click **Install**
+10. Select the **eShopOnWeb.Shared** package and select **Install**
 11. Accept any license agreements if prompted
 12. The package is now installed and can be used in your project
 
@@ -208,7 +208,7 @@ You'll now import the package you created into another project.
 You'll update the package by modifying the original project and publishing a new version.
 
 1. In the **Solution Explorer**, right-click on the **eShopOnWeb.Shared** project and select **Add > Class**
-2. Name the class **ProductHelper** and click **Add**
+2. Name the class **ProductHelper** and select **Add**
 3. Add some sample code to the class:
 
    ```csharp
@@ -253,9 +253,9 @@ You'll update the package by modifying the original project and publishing a new
 
 1. Switch back to Visual Studio
 2. In the **Solution Explorer**, right-click on the **eShopOnWeb.Shared.Client** project and select **Manage NuGet Packages**
-3. Click the **Updates** tab
+3. Select the **Updates** tab
 4. You should see that **eShopOnWeb.Shared** has an update available
-5. Select the package and click **Update**
+5. Select the package and select **Update**
 6. Accept any license agreements if prompted
 7. The package is now updated to the latest version
 
