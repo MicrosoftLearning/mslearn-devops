@@ -36,7 +36,7 @@ To complete the lab, you need:
 
 1. Start a web browser and navigate to the Microsoft Entra admin center at `https://entra.microsoft.com`.
 1. If prompted, sign in by using a Microsoft Entra account with Global Administrator permissions in your tenant.
-1. In the Microsoft Entra admin center, in the left navigation pane, expand **Identity** and select **Groups**.
+1. In the Microsoft Entra admin center, in the left navigation pane, expand **Entra ID** and select **Groups**.
 1. On the **Groups | All groups** page, select **+ New group**.
 1. On the **New Group** page, specify the following settings and select **Create**:
 
@@ -51,7 +51,7 @@ To complete the lab, you need:
    - **DevCenter_Dev_Leads** (Development team leads)
    - **DevCenter_Dev_Users** (Developers)
 
-1. In the Microsoft Entra admin center, in the left navigation pane, expand **Identity** and select **Users**.
+1. In the Microsoft Entra admin center, in the left navigation pane, expand **Entra ID** and select **Users**.
 1. On the **Users | All users** page, select **+ New user** and then **Create new user**.
 1. On the **New user** page, specify the following settings and select **Create**:
 
@@ -184,7 +184,7 @@ In this task, you will create a dev center project. A dev center project typical
 
 1. In the web browser displaying the Azure portal, on the **devcenter-basic** page, in the vertical navigation menu on the left side, expand the **Manage** section and select **Projects**.
 1. On the **devcenter-basic | Projects** page, select **+ Create**.
-1. On the **Basics** tab of the **Create a project** page, specify the following settings and then select **Next: Dev box management**:
+1. On the **Basics** tab of the **Create a project** page, specify the following settings and then select **Next: Dev box settings**:
 
    | Setting        | Value                                                        |
    | -------------- | ------------------------------------------------------------ |
@@ -194,7 +194,7 @@ In this task, you will create a dev center project. A dev center project typical
    | Name           | **devcenter-project-basic**                                  |
    | Description    | **Basic Dev Center Project**                                 |
 
-1. On the **Dev box management** tab of the **Create a project** page, specify the following settings and then select **Next: Catalogs**:
+1. On the **Dev box settings** tab of the **Create a project** page, specify the following settings and then select **Next: Catalogs**:
 
    | Setting                 | Value |
    | ----------------------- | ----- |
