@@ -34,13 +34,13 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
 1. Use a private browser session to get a new **personal Microsoft Account (MSA)** at `https://account.microsoft.com` (skip if you already have one).
 1. Using the same browser session, sign up for a free Azure subscription at `https://azure.microsoft.com/free` (skip if you already have one).
-1. Open a browser and navigate to Azure portal at `https://portal.azure.com`, then search at the top of the Azure portal screen for **Azure DevOps**. In the resulting page, click **Azure DevOps organizations**.
-1. Next, click on the link labelled **My Azure DevOps Organizations** or navigate directly to `https://aex.dev.azure.com`.
+1. Open a browser and navigate to Azure portal at `https://portal.azure.com`, then search at the top of the Azure portal screen for **Azure DevOps**. In the resulting page, select **Azure DevOps organizations**.
+1. Next, select the link labelled **My Azure DevOps Organizations** or navigate directly to `https://aex.dev.azure.com`.
 1. On the **We need a few more details** page, select **Continue**.
 1. In the drop-down box on the left, choose **Default Directory**, instead of **Microsoft Account**.
-1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and click **Continue**.
-1. Back at `https://aex.dev.azure.com` with **Default Directory** selected click the blue button **Create new organization**.
-1. Accept the _Terms of Service_ by clicking **Continue**.
+1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and select **Continue**.
+1. Back at `https://aex.dev.azure.com` with **Default Directory** selected select the blue button **Create new organization**.
+1. Accept the _Terms of Service_ by selecting **Continue**.
 1. If prompted (_"Almost done"_), leave the name for the Azure DevOps organization at default (it needs to be a globally unique name) and pick a hosting location close to you from the list.
 1. Once the newly created organization opens in **Azure DevOps**, select **Organization settings** in the bottom left corner.
 1. At the **Organization settings** screen select **Billing** (opening this screen takes a few seconds).
@@ -49,9 +49,9 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
    > **Note**: You may **wait a couple of minutes before using the CI/CD capabilities** so that the new settings are reflected in the backend. Otherwise, you will still see the message _"No hosted parallelism has been purchased or granted"_.
 
-1. In **Organization Settings**, go to section **Pipelines** and click **Settings**.
+1. In **Organization Settings**, go to section **Pipelines** and select **Settings**.
 1. Toggle the switch to **Off** for **Disable creation of classic build pipelines** and **Disable creation of classic release pipelines**.
-1. In **Organization Settings**, go to section **Security** and click **Policies**.
+1. In **Organization Settings**, go to section **Security** and select **Policies**.
 1. Toggle the switch to **On** for **Allow public projects**.
 
 ### Create and configure the Azure DevOps project (if needed)
@@ -80,8 +80,8 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
 1. Leave the web browser window open.
 1. Go to **Repos > Branches**.
-1. Hover on the **main** branch then click the ellipsis on the right of the column.
-1. Click on **Set as default branch**.
+1. Hover on the **main** branch then select the ellipsis on the right of the column.
+1. Select **Set as default branch**.
 
 ## Import and run the CI pipeline
 
@@ -90,11 +90,11 @@ In this section, you will configure the service connection with your Azure Subsc
 ### Import and run the CI pipeline
 
 1. Go to **Pipelines > Pipelines**
-1. Click on **New pipeline** button (or **Create Pipeline** if you don't have other pipelines previously created)
+1. Select **New pipeline** button (or **Create Pipeline** if you don't have other pipelines previously created)
 1. Select **Azure Repos Git (YAML)**
 1. Select the **eShopOnWeb** repository
 1. Select **Existing Azure Pipelines YAML file**
-1. Select the **main** branch and the **/.ado/eshoponweb-ci-docker.yml** file, then click on **Continue**
+1. Select the **main** branch and the **/.ado/eshoponweb-ci-docker.yml** file, then select **Continue**
 1. In the YAML pipeline definition, customize:
 
    - **YOUR-SUBSCRIPTION-ID** with your Azure subscription ID.
@@ -108,15 +108,15 @@ In this section, you will configure the service connection with your Azure Subsc
    - [**Docker**](https://learn.microsoft.com/azure/devops/pipelines/tasks/reference/docker-v0?view=azure-pipelines) **- Build**: Build the Docker image and create two tags (Latest and current BuildID)
    - **Docker - Push**: Push the images to Azure Container Registry
 
-1. Click on **Save and Run**.
+1. Select **Save and Run**.
 
-1. Open the pipeline execution. If you see a warning message "This pipeline needs permission to access a resource before this run can continue to Build", click on **View** and then **Permit** and **Permit** again. This will allow the pipeline to access the Azure subscription.
+1. Open the pipeline execution. If you see a warning message "This pipeline needs permission to access a resource before this run can continue to Build", select **View** and then **Permit** and **Permit** again. This will allow the pipeline to access the Azure subscription.
 
    > **Note**: The deployment may take a few minutes to complete.
 
-1. Your pipeline will take a name based on the project name. Let's **rename** it for identifying the pipeline better. Go to **Pipelines > Pipelines** and click on the recently created pipeline. Click on the ellipsis and **Rename/move** option. Name it **eshoponweb-ci-docker** and click on **Save**.
+1. Your pipeline will take a name based on the project name. Let's **rename** it for identifying the pipeline better. Go to **Pipelines > Pipelines** and select the recently created pipeline. Select the ellipsis and **Rename/move** option. Name it **eshoponweb-ci-docker** and select **Save**.
 
-1. Navigate to the [**Azure Portal**](https://portal.azure.com), search for the Azure Container Registry in the recently created Resource Group (it should be named **AZ400-RG1**). On the left-hand side click **Repositories** under **Services** and make sure that the repository **eshoponweb/web** was created. When you click the repository link, you should see two tags (one of them is **latest**), these are the pushed images. If you don't see this, check the status of your pipeline.
+1. Navigate to the [**Azure Portal**](https://portal.azure.com), search for the Azure Container Registry in the recently created Resource Group (it should be named **AZ400-RG1**). On the left-hand side select **Repositories** under **Services** and make sure that the repository **eshoponweb/web** was created. When you select the repository link, you should see two tags (one of them is **latest**), these are the pushed images. If you don't see this, check the status of your pipeline.
 
 ## Import and run the CD pipeline
 
@@ -127,11 +127,11 @@ In this section, you will configure the service connection with your Azure Subsc
 In this task, you will import and run the CD pipeline.
 
 1. Go to **Pipelines > Pipelines**
-1. Click on **New pipeline** button
+1. Select **New pipeline** button
 1. Select **Azure Repos Git (YAML)**
 1. Select the **eShopOnWeb** repository
 1. Select **Existing Azure Pipelines YAML File**
-1. Select the **main** branch and the **/.ado/eshoponweb-cd-webapp-docker.yml** file, then click on **Continue**
+1. Select the **main** branch and the **/.ado/eshoponweb-cd-webapp-docker.yml** file, then select **Continue**
 1. In the YAML pipeline definition, customize:
 
    - **YOUR-SUBSCRIPTION-ID** with your Azure subscription ID.
@@ -144,18 +144,18 @@ In this task, you will import and run the CD pipeline.
    - **AzureResourceManagerTemplateDeployment**: Deploys the Azure App Service using bicep template.
    - **AzureResourceManagerTemplateDeployment**: Add role assignment using Bicep
 
-1. Click on **Save and Run**.
+1. Select **Save and Run**.
 
-1. Open the pipeline execution. If you see a warning message "This pipeline needs permission to access a resource before this run can continue to Deploy", click on **View** and then **Permit** and **Permit** again. This will allow the pipeline to access the Azure subscription.
+1. Open the pipeline execution. If you see a warning message "This pipeline needs permission to access a resource before this run can continue to Deploy", select **View** and then **Permit** and **Permit** again. This will allow the pipeline to access the Azure subscription.
 
-   > **Important**: If you do not authorize the pipeline when configuring, you will encounter permission errors during execution. Common error messages include "This pipeline needs permission to access a resource" or "Pipeline run failed due to insufficient permissions". To resolve this, navigate to the pipeline run, click **View** next to the permission request, then click **Permit** to grant the necessary access to your Azure subscription and resources.
+   > **Important**: If you do not authorize the pipeline when configuring, you will encounter permission errors during execution. Common error messages include "This pipeline needs permission to access a resource" or "Pipeline run failed due to insufficient permissions". To resolve this, navigate to the pipeline run, select **View** next to the permission request, then select **Permit** to grant the necessary access to your Azure subscription and resources.
 
    > **Note**: The deployment may take a few minutes to complete.
 
    > [!IMPORTANT]
    > If you receive the error message "TF402455: Pushes to this branch are not permitted; you must use a pull request to update this branch.", you need to uncheck the "Require a minimum number of reviewers" Branch protection rule enabled in the previous labs.
 
-1. Your pipeline will take a name based on the project name. Let's **rename** it for identifying the pipeline better. Go to **Pipelines > Pipelines** and hover on the recently created pipeline. Click on the ellipsis and **Rename/move** option. Name it **eshoponweb-cd-webapp-docker** and click on **Save**.
+1. Your pipeline will take a name based on the project name. Let's **rename** it for identifying the pipeline better. Go to **Pipelines > Pipelines** and hover on the recently created pipeline. Select the ellipsis and **Rename/move** option. Name it **eshoponweb-cd-webapp-docker** and select **Save**.
 
    > **Note 1**: The use of the **/infra/webapp-docker.bicep** template creates an app service plan, a web app with system assigned managed identity enabled, and references the Docker image pushed previously: **${acr.properties.loginServer}/eshoponweb/web:latest**.
 
@@ -165,7 +165,7 @@ In this task, you will import and run the CD pipeline.
 
 1. In the Azure Portal, navigate to the recently created Resource Group, you should now see three resources (App Service, App Service Plan and Container Registry).
 
-1. Navigate to the App Service, then click **Browse**, this will take you to the website.
+1. Navigate to the App Service, then select **Browse**, this will take you to the website.
 
 1. Verify that the eShopOnWeb application is running successfully. Once confirmed, you have completed the lab successfully.
 
@@ -177,8 +177,8 @@ When you complete the lab, it's important to clean up your Azure resources to av
 
 1. In the Azure Portal at `https://portal.azure.com`, navigate to the **Resource groups** section.
 1. Find and select the **AZ400-RG1** resource group (or the name you used).
-1. On the resource group page, click **Delete resource group**.
-1. Type the resource group name to confirm deletion and click **Delete**.
+1. On the resource group page, select **Delete resource group**.
+1. Type the resource group name to confirm deletion and select **Delete**.
 1. Wait for the deletion process to complete.
 
 ### Clean up Azure DevOps resources
@@ -189,8 +189,8 @@ If you want to delete the project, you can do so by following these steps:
 
 1. In your browser navigate to the Azure DevOps portal at `https://aex.dev.azure.com`.
 1. Navigate to the **eShopOnWeb** project you created.
-1. On the project settings page, go to **Overview** and click **Delete** at the bottom of the page.
-1. Type the project name to confirm deletion and click **Delete**.
+1. On the project settings page, go to **Overview** and select **Delete** at the bottom of the page.
+1. Type the project name to confirm deletion and select **Delete**.
 
 > **CAUTION:** Deleting a project deletes all work items, repositories, builds, and other project artifacts. If you used an existing project for this exercise, any existing resources outside the scope of this exercise will also be deleted.
 
