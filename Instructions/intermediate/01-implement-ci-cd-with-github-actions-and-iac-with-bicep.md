@@ -98,13 +98,13 @@ The exercise consists of the following tasks:
 
 ### Configure the target environment
 
-> **Note:** You will start by creating the resource groups. You will run the workflow twice in order to deploy two instances of the website in two different Azure regions (East US and West US in this example). You can adapt these to use regions closer to your location if preferred.
+> **Note:** You will start by creating the resource groups. You will run the workflow twice in order to deploy two instances of the website in two different Azure regions (East US and West Europe in this example). You can adapt these to use regions closer to your location if preferred.
 
 1. Switch to the web browser tab displaying the Azure portal at `https://portal.azure.com`.
 1. In the Azure portal, in the search text box at the top of the page, enter **`Resource groups`** and select **Resource groups** in the list of results.
 1. On the **Resource groups** page, select **+ Create**.
-1. In the **Resource groups** text box, enter **`rg-eshoponweb-westus`**.
-1. In the **Region** drop-down list, select **(US) West US**.
+1. In the **Resource groups** text box, enter **`rg-eshoponweb-westeurope`**.
+1. In the **Region** drop-down list, select **(Europe) West Europe**.
 1. Select **Review + create** and then, on the **Review + create**, select **Create**.
 1. On the **Resource groups** page, select **+ Create**.
 1. In the **Resource groups** text box, enter **`rg-eshoponweb-eastus`**.
@@ -182,11 +182,11 @@ The exercise consists of the following tasks:
 1. In the **Edit** pane, replace line 8 with the following text:
 
    ```yaml
-   RESOURCE-GROUP: rg-eshoponweb-westus
+   RESOURCE-GROUP: rg-eshoponweb-westeurope
    ```
 
 1. In the **Edit** pane, replace the `YOUR-SUBS-ID` placeholder in line 11 with the value of the Azure subscription ID you recorded earlier in this exercise:
-1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 11 with the name of the **first** Azure App Service web app you generated earlier in this exercise.
+1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **first** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
 1. In the web browser window displaying the **main** branch of the forked **eShopOnWeb** GitHub repo page, navigate to the **infra** folder and select **webapp.bicep**.
 1. In the **infra/webapp.bicep** pane, select the pencil icon to edit the workflow.
@@ -225,8 +225,8 @@ The exercise consists of the following tasks:
    RESOURCE-GROUP: rg-eshoponweb-eastus
    ```
 
-1. In the **Edit** pane, replace the `location` variable in line 9 with the region nearest to your location.
-1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 11 with the name of the **second** Azure App Service web app you generated earlier in this exercise.
+1. In the **Edit** pane, replace the `location` variable in line 9 with `eastus` or the region nearest to your location.
+1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **second** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
 1. In the web browser window displaying the forked **eShopOnWeb** GitHub repo page, select **Actions**.
 1. In the **All workflows** section on the left side, select **eShopOnWeb Build and Test**.
@@ -246,7 +246,6 @@ The exercise consists of the following tasks:
 1. On the **App Services** page, in the list of App Services, select the **devops-webapp-westeurope-** app service you created earlier in this exercise.
 1. On the **devops-webapp-westeurope-** page, in the **Essentials** section, verify that the **Default domain** value is displayed and select it to open the web app in a new browser tab.
 1. In the new browser tab, verify that the web app is displayed and that it's functional. You can also verify the second web app in the **East US** region in the same way.
-   > **Note**: Leave the deployed Azure resources running. You will need them in the next lab.
 
 ## Clean up resources
 
