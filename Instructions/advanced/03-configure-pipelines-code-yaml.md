@@ -28,10 +28,10 @@ You need:
 First, you'll create an Azure DevOps project for this lab.
 
 1. In your browser, open your Azure DevOps organization
-2. Click **New Project**
+2. Select **New Project**
 3. Give your project the name **eShopOnWeb_MultiStageYAML**
 4. Leave other fields with defaults
-5. Click **Create**
+5. Select **Create**
 
    ![Screenshot of the create new project panel](media/create-project.png)
 
@@ -40,11 +40,11 @@ First, you'll create an Azure DevOps project for this lab.
 Next, you'll import the sample repository that contains the application code.
 
 1. In your Azure DevOps organization, open the **eShopOnWeb_MultiStageYAML** project
-2. Click **Repos > Files**
-3. Click **Import a Repository**
+2. Select **Repos > Files**
+3. Select **Import a Repository**
 4. Select **Import**
 5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
-6. Click **Import**
+6. Select **Import**
 
    ![Screenshot of the import repository panel](media/import-repo.png)
 
@@ -57,8 +57,8 @@ The repository is organized this way:
 - **src** folder contains the .NET 8 website used in the lab scenarios
 
 7. Go to **Repos > Branches**
-8. Hover on the **main** branch then click the ellipsis on the right
-9. Click **Set as default branch**
+8. Hover on the **main** branch then select the ellipsis on the right
+9. Select **Set as default branch**
 
 > **Note**: If the main branch is already the default branch, this option will be grayed out. Continue with the instructions.
 
@@ -68,10 +68,10 @@ You'll create an Azure web app to deploy your application to.
 
 1. From your lab computer, navigate to the [Azure Portal](https://portal.azure.com)
 2. Sign in with the user account that has the Owner role in your Azure subscription
-3. In the Azure portal toolbar, click the **Cloud Shell** icon (to the right of the search box)
+3. In the Azure portal toolbar, select the **Cloud Shell** icon (to the right of the search box)
 4. If prompted to select either **Bash** or **PowerShell**, select **Bash**
 
-> **Note**: If this is your first time starting Cloud Shell and you see the "Getting started" pop-up, select "No storage account required" and your subscription, then click "Apply".
+> **Note**: If this is your first time starting Cloud Shell and you see the "Getting started" pop-up, select "No storage account required" and your subscription, then select "Apply".
 
 5. From the Bash prompt, run these commands to create a resource group (replace `<region>` with your preferred Azure region like 'centralus', 'westeurope'):
 
@@ -108,15 +108,15 @@ Now you'll configure CI/CD pipelines using YAML definitions.
 ### Add a YAML build definition
 
 1. Navigate to the **Pipelines** section in Azure DevOps
-2. In the **Create your first Pipeline** window, click **Create pipeline**
-3. On the **Where is your code?** pane, click **Azure Repos Git (YAML)**
-4. On the **Select a repository** pane, click **eShopOnWeb_MultiStageYAML**
+2. In the **Create your first Pipeline** window, select **Create pipeline**
+3. On the **Where is your code?** pane, select **Azure Repos Git (YAML)**
+4. On the **Select a repository** pane, select **eShopOnWeb_MultiStageYAML**
 5. On the **Configure your pipeline** pane, scroll down and select **Existing Azure Pipelines YAML File**
 6. In the **Selecting an existing YAML File** blade, specify:
    - Branch: **main**
    - Path: **.ado/eshoponweb-ci.yml**
-7. Click **Continue** to save these settings
-8. From the **Review your Pipeline YAML** screen, click **Run** to start the Build Pipeline
+7. Select **Continue** to save these settings
+8. From the **Review your Pipeline YAML** screen, select **Run** to start the Build Pipeline
 9. Wait for the Build Pipeline to complete successfully
 
 > **Note**: Each task from the YAML file is available for review, including any warnings and errors.
@@ -125,8 +125,8 @@ Now you'll configure CI/CD pipelines using YAML definitions.
 
 Now you'll add continuous delivery to enable automatic deployment.
 
-1. On the pipeline run pane, click the ellipsis symbol (⋯) in the upper right corner
-2. In the dropdown menu, click **Edit pipeline**
+1. On the pipeline run pane, select the ellipsis symbol (⋯) in the upper right corner
+2. In the dropdown menu, select **Edit pipeline**
 3. Navigate to the end of the file (line 56) and press **Enter** to add a new empty line
 4. On line **57**, add this content to define the **Release** stage:
 
@@ -142,8 +142,8 @@ Now you'll add continuous delivery to enable automatic deployment.
 
 5. Set the cursor on a new line at the end of the YAML definition
 6. In the list of tasks on the right side, search for and select **Azure App Service Deploy**
-7. In the **Azure App Service deploy** pane, specify these settings and click **Add**:
-   - **Azure subscription**: Select your Azure subscription, click **Authorize**, and authenticate when prompted
+7. In the **Azure App Service deploy** pane, specify these settings and select **Add**:
+   - **Azure subscription**: Select your Azure subscription, select **Authorize**, and authenticate when prompted
    - **App Service name**: Select the web app you deployed earlier
    - **Package or folder**: Update to `$(Build.ArtifactStagingDirectory)/**/Web.zip`
    - Open **Application and Configuration Settings** and in **App settings** add: `-UseOnlyInMemoryDatabase true -ASPNETCORE_ENVIRONMENT Development`
@@ -172,7 +172,7 @@ The added code should look similar to this:
     - Download Type: **Specific Artifact**
     - Artifact Name: **Website**
     - Destination Directory: **$(Build.ArtifactStagingDirectory)**
-12. Click **Add**
+12. Select **Add**
 
 The added code should look like this:
 
@@ -186,23 +186,23 @@ The added code should look like this:
 ```
 
 13. If the YAML indentation is off, press **Tab** twice to indent it properly
-14. Click **Validate and save**, then click **Save** again to commit the change to the main branch
+14. Select **Validate and save**, then select **Save** again to commit the change to the main branch
 15. Navigate to **Pipelines** and select **Pipelines** again
-16. Open the **eShopOnWeb_MultiStageYAML** Pipeline and click **Run pipeline**
+16. Open the **eShopOnWeb_MultiStageYAML** Pipeline and select **Run pipeline**
 17. Confirm the **Run** from the appearing pane
 18. Notice the 2 different stages: **Build .Net Core Solution** and **Deploy to Azure Web App**
 19. Wait for the pipeline to complete the Build Stage successfully
 20. When the Deploy Stage wants to start, you'll see a **Permissions Needed** prompt
-21. Click **View**
-22. From the **Waiting for Review** pane, click **Permit**
-23. Validate the message and confirm by clicking **Permit**
+21. Select **View**
+22. From the **Waiting for Review** pane, select **Permit**
+23. Validate the message and confirm by selecting **Permit**
 24. Wait for the Deploy Stage to complete successfully
 
 ### Review the deployed site
 
 1. Switch back to the Azure portal and navigate to your Azure web app
-2. On the Azure web app blade, click **Overview**
-3. On the overview blade, click **Browse** to open your site in a new browser tab
+2. On the Azure web app blade, select **Overview**
+3. On the overview blade, select **Browse** to open your site in a new browser tab
 4. Verify that the deployed site loads as expected, showing the eShopOnWeb E-commerce website
 
 ## Configure Environment settings for approvals
@@ -213,19 +213,19 @@ YAML Pipelines don't have Release/Quality Gates like Classic Release Pipelines, 
 
 1. From your Azure DevOps Project **eShopOnWeb_MultiStageYAML**, navigate to **Pipelines**
 2. Under the Pipelines menu on the left, select **Environments**
-3. Click **Create Environment**
+3. Select **Create Environment**
 4. In the **New Environment** pane, add the name **approvals**
 5. Under **Resources**, select **None**
-6. Click **Create**
+6. Select **Create**
 7. Once the environment is created, select the **Approvals and Checks** tab
 8. From **Add your first check**, select **Approvals**
 9. Add your Azure DevOps User Account Name to the **approvers** field
-10. Click **Create**
+10. Select **Create**
 
 ### Update the YAML pipeline for approvals
 
 1. Navigate to **Repos**, browse to the **.ado** folder, and select the **eshoponweb-ci.yml** file
-2. Click the **Edit** button to switch to editing mode
+2. Select the **Edit** button to switch to editing mode
 3. Navigate to the start of the **Deploy job** (Line 60: `- job: Deploy`)
 4. Add a new empty line right below and add:
 
@@ -274,13 +274,13 @@ The resulting YAML should look like this:
                   AppSettings: "-UseOnlyInMemoryDatabase true -ASPNETCORE_ENVIRONMENT Development"
 ```
 
-8. Click **Commit** and **Commit** again to save the changes
+8. Select **Commit** and **Commit** again to save the changes
 9. Navigate to **Pipelines > Pipelines** and open the **EshopOnWeb_MultiStageYAML** Pipeline
-10. Click **Run Pipeline** to trigger a new run
+10. Select **Run Pipeline** to trigger a new run
 11. The Build Stage will complete as before
 12. For the Deploy Stage, you'll see **Waiting (1 check in progress)** and a message about needing approval
-13. Click the **Review** button
-14. From the **Waiting for review** pane, click **Approve**
+13. Select the **Review** button
+14. From the **Waiting for review** pane, select **Approve**
 15. This allows the Deploy Stage to proceed and successfully deploy to the Azure Web App
 
 > **Note**: While this example only used approvals, other checks such as Azure Monitor, REST API, etc., can be used in a similar way.
@@ -290,9 +290,9 @@ The resulting YAML should look like this:
 Remember to delete the resources created in the Azure portal to avoid unnecessary charges:
 
 1. In the Azure portal, navigate to the **az400m03l07-RG** resource group
-2. Click **Delete resource group**
+2. Select **Delete resource group**
 3. Type the resource group name to confirm deletion
-4. Click **Delete**
+4. Select **Delete**
 
 ## Summary
 
