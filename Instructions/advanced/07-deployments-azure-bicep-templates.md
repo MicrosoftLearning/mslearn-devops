@@ -39,10 +39,10 @@ Key benefits of Bicep:
 First, you'll create an Azure DevOps project for this lab.
 
 1. In your browser, open your Azure DevOps organization
-2. Click **New Project**
+2. Select **New Project**
 3. Give your project the name **eShopOnWeb**
 4. Leave other fields with defaults
-5. Click **Create**
+5. Select **Create**
 
    ![Screenshot of the create new project panel](media/create-project.png)
 
@@ -51,11 +51,11 @@ First, you'll create an Azure DevOps project for this lab.
 Next, you'll import the sample repository that contains the application code and infrastructure templates.
 
 1. In your Azure DevOps organization, open the **eShopOnWeb** project
-2. Click **Repos > Files**
-3. Click **Import a Repository**
+2. Select **Repos > Files**
+3. Select **Import a Repository**
 4. Select **Import**
 5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
-6. Click **Import**
+6. Select **Import**
 
    ![Screenshot of the import repository panel](media/import-repo.png)
 
@@ -68,8 +68,8 @@ The repository is organized this way:
 - **src** folder contains the .NET 8 website used in the lab scenarios
 
 7. Go to **Repos > Branches**
-8. Hover on the **main** branch then click the ellipsis on the right
-9. Click **Set as default branch**
+8. Hover on the **main** branch then select the ellipsis on the right
+9. Select **Set as default branch**
 
 ## Understand an Azure Bicep template and simplify it using a reusable module
 
@@ -103,7 +103,7 @@ Notice how simple the resource definitions are and the ability to implicitly ref
 
 You'll create a storage template module **storage.bicep** which will create a storage account only and will be imported by the main template.
 
-1. First, remove the storage resource from the main template. Click the **Edit** button:
+1. First, remove the storage resource from the main template. Select the **Edit** button:
 
    ![Screenshot of the pipeline edit button](media/edit.png)
 
@@ -126,9 +126,9 @@ You'll create a storage template module **storage.bicep** which will create a st
 
    ![Screenshot of the file commit button](media/commit.png)
 
-6. Next, hover your mouse over the `Infra` folder and click the ellipsis icon
+6. Next, hover your mouse over the `Infra` folder and select the ellipsis icon
 7. Select **New**, and **File**
-8. Enter **storage.bicep** for the name and click **Create**
+8. Enter **storage.bicep** for the name and select **Create**
 
    ![Screenshot of the new file menu](media/newfile.png)
 
@@ -157,7 +157,7 @@ You'll create a storage template module **storage.bicep** which will create a st
 
 You'll modify the `simple-windows-vm.bicep` template to reference the template module you created.
 
-1. Navigate back to the `simple-windows-vm.bicep` file and click **Edit**
+1. Navigate back to the `simple-windows-vm.bicep` file and select **Edit**
 2. Add the following code after the variables:
 
    ```bicep
@@ -199,23 +199,23 @@ You'll use an Azure DevOps YAML pipeline to deploy your template to your Azure e
 ### Deploy resources to Azure by YAML pipelines
 
 1. Navigate back to the **Pipelines** pane in the **Pipelines** hub
-2. In the **Create your first Pipeline** window, click **Create pipeline**
-3. On the **Where is your code?** pane, click **Azure Repos Git (YAML)**
-4. On the **Select a repository** pane, click **eShopOnWeb**
+2. In the **Create your first Pipeline** window, select **Create pipeline**
+3. On the **Where is your code?** pane, select **Azure Repos Git (YAML)**
+4. On the **Select a repository** pane, select **eShopOnWeb**
 5. On the **Configure your pipeline** pane, scroll down and select **Existing Azure Pipelines YAML File**
 6. In the **Selecting an existing YAML File** blade, specify:
    - Branch: **main**
    - Path: **.ado/eshoponweb-cd-windows-cm.yml**
-7. Click **Continue** to save these settings
+7. Select **Continue** to save these settings
 8. In the variables section:
    - Choose a name for your resource group
    - Set the desired location
    - Replace the value of the service connection with one of your existing service connections
-9. Click the **Save and run** button from the top right corner
+9. Select the **Save and run** button from the top right corner
 
    ![Screenshot of the save and run button](media/saveandrun.png)
 
-10. When the commit dialog appears, click **Save and run** again
+10. When the commit dialog appears, select **Save and run** again
 11. Wait for the deployment to finish and review the results
 
     ![Screenshot of the successful resource deployment to Azure using YAML pipelines](media/deploy.png)
@@ -227,9 +227,9 @@ You'll use an Azure DevOps YAML pipeline to deploy your template to your Azure e
 Remember to delete the resources created in the Azure portal to avoid unnecessary charges:
 
 1. In the Azure portal, navigate to the resource group you created
-2. Click **Delete resource group**
+2. Select **Delete resource group**
 3. Type the resource group name to confirm deletion
-4. Click **Delete**
+4. Select **Delete**
 
 ## Summary
 
