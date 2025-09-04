@@ -18,7 +18,7 @@ You will learn how to:
 - Implement self-hosted agents.
 - Configure agent pools for pipelines.
 
-This lab takes approximately **60** minutes to complete.
+This lab takes approximately **45** minutes to complete.
 
 ## Before you start
 
