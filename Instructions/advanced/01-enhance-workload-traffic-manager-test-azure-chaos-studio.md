@@ -78,7 +78,7 @@ The exercise consists of the following tasks:
    cd eShopOnWeb
    ```
 
-1. Run the following commands to create the resource group and deploy the web app to East US:
+1. Run the following commands to create the resource group and deploy the web app to East US, replacing `XXXX` with any combination of letters and numbers, as the webAppName must be globally unique:
 
    ```bash
    # Create resource group for East US
@@ -88,16 +88,16 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-eastus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-eastus-$(uuidgen)-$(date +%s) \
-                  sku=F1 \
-                  linuxFxVersion="DOTNETCORE|8.0"
+     --parameters webAppName=eshoponweb-eastus-XXXX sku=S1
    ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
 
+>**Note**: If you receive an `The content for this response was already consumed` error, you might not have sufficient quota in the specified location, so you need to create the resources in a different region.
+
 ### Deploy the web app to West US
 
-1. Run the following commands to deploy the web app to West US:
+1. Run the following commands to deploy the web app to West US, replacing `XXXX` with any combination of letters and numbers, as the webAppName must be globally unique:
 
    ```bash
    # Create resource group for West US
@@ -107,9 +107,7 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-westus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-westus-$(date +%s%N) \
-                  sku=F1 \
-                  linuxFxVersion="DOTNETCORE|8.0"
+     --parameters webAppName=eshoponweb-westus-XXXX sku=S1
    ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
@@ -248,7 +246,7 @@ The exercise consists of the following tasks:
 1. On the **Basics** tab of the **Create an experiment** page, perform the following actions:
 
    - Verify that your Azure subscription appears in the **Subscription** drop-down list.
-   - Select the **Create new** link below the **Resource Group** drop-down list, in the **Name** text box, enter **`rg-devops-foundations`**, and then select **OK**.
+   - Select **`rg-devops-foundations`** in the **Resource Group** drop-down list.
    - In the **Experiment details** section, in the **Name** text box, enter **`DevOps_Foundations_Labs_Experiment_01`**.
    - In the **Region** drop-down list, select the **West US** Azure region.
 
