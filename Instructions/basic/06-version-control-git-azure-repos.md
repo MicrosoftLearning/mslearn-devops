@@ -305,7 +305,7 @@ For simplicity we will work directly on the web browser repo editor (working dir
 
 ### Testing branch policy
 
-1. In the vertical navigational pane of the of the Azure DevOps portal, in the **Repos>Files**, make sure the **main** branch is selected (dropdown above shown content).
+1. In the vertical navigational pane of the Azure DevOps portal, in the **Repos>Files**, make sure the **main** branch is selected (dropdown above shown content).
 1. To make sure policies are working, try making a change and committing it on the **main** branch, navigate to the **/eShopOnWeb/src/Web/Program.cs** file and select it. This will automatically display its content in the details pane.
 1. On the first line add the following comment:
 
@@ -323,9 +323,9 @@ For simplicity we will work directly on the web browser repo editor (working dir
 
 You will use the Azure DevOps portal to create a Pull Request, using the **dev** branch to merge a change into the protected **main** branch. An Azure DevOps work item will be linked to the changes to be able to trace pending work with code activity.
 
-1. In the vertical navigational pane of the of the Azure DevOps portal, in the **Boards** section, select **Work Items**.
+1. In the vertical navigational pane of the Azure DevOps portal, in the **Boards** section, select **Work Items**.
 1. Select **+ New Work Item > Product Backlog Item**. In title field, write **Testing my first PR** and select **Save**.
-1. Now go back to the vertical navigational pane of the of the Azure DevOps portal, in the **Repos>Files**, make sure the **dev** branch is selected.
+1. Now go back to the vertical navigational pane of the Azure DevOps portal, in the **Repos>Files**, make sure the **dev** branch is selected.
 1. Navigate to the **/eShopOnWeb/src/Web/Program.cs** file and make the following change on the first line:
 
    ```csharp
@@ -361,7 +361,7 @@ You will use the Azure DevOps portal to create a Pull Request, using the **dev**
 
 The product team has decided that the current version of the site should be released as v1.1.0-beta.
 
-1. In the vertical navigational pane of the of the Azure DevOps portal, in the **Repos** section, select **Tags**.
+1. In the vertical navigational pane of the Azure DevOps portal, in the **Repos** section, select **Tags**.
 1. In the **Tags** pane, select **New tag**.
 1. In the **Create a tag** panel, in the **Name** text box, type **`v1.1.0-beta`**, in the **Based on** drop-down list leave the **main** entry selected, in the **Description** text box, type **`Beta release v1.1.0`** and select **Create**.
 
