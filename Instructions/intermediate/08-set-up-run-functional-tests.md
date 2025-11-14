@@ -35,21 +35,21 @@ For more information about testing types, see [Test ASP.NET Core MVC apps](https
 First, you'll create an Azure DevOps project for this lab.
 
 1. In your browser, open your Azure DevOps organization
-2. Click **New Project**
-3. Give your project the name **eShopOnWeb**
-4. Leave other fields with defaults
-5. Click **Create**
+1. Select **New Project**
+1. Give your project the name **eShopOnWeb**
+1. Leave other fields with defaults
+1. Select **Create**
 
 ## Import the eShopOnWeb Git Repository
 
 Next, you'll import the sample repository that contains the application code and test projects.
 
 1. In your Azure DevOps organization, open the **eShopOnWeb** project
-2. Click **Repos > Files**
-3. Click **Import a Repository**
-4. Select **Import**
-5. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
-6. Click **Import**
+1. Select **Repos > Files**
+1. Select **Import a Repository**
+1. Select **Import**
+1. In the **Import a Git Repository** window, paste this URL: `https://github.com/MicrosoftLearning/eShopOnWeb.git`
+1. Select **Import**
 
 The repository is organized this way:
 
@@ -60,9 +60,9 @@ The repository is organized this way:
 - **src** folder contains the .NET website used in the lab scenarios
 - **tests** folder contains the different test projects (Unit, Integration, Functional)
 
-7. Go to **Repos > Branches**
-8. Hover on the **main** branch then click the ellipsis on the right
-9. Click **Set as default branch**
+1. Go to **Repos > Branches**
+1. Hover on the **main** branch then select the ellipsis on the right
+1. Select **Set as default branch**
 
 ## Setup Tests in CI pipeline
 
@@ -73,12 +73,12 @@ You'll configure a CI pipeline that includes different types of tests.
 You'll add the YAML build definition that implements Continuous Integration.
 
 1. Go to **Pipelines > Pipelines**
-2. Click **New Pipeline** (or **Create Pipeline** if you don't have any pipelines)
-3. Select **Azure Repos Git (YAML)**
-4. Select the **eShopOnWeb** repository
-5. Select **Existing Azure Pipelines YAML File**
-6. Select the **main** branch and the **/.ado/eshoponweb-ci.yml** file
-7. Click **Continue**
+1. Select **New Pipeline** (or **Create Pipeline** if you don't have any pipelines)
+1. Select **Azure Repos Git (YAML)**
+1. Select the **eShopOnWeb** repository
+1. Select **Existing Azure Pipelines YAML File**
+1. Select the **main** branch and the **/.ado/eshoponweb-ci.yml** file
+1. Select **Continue**
 
 The CI definition consists of these tasks:
 
@@ -89,16 +89,16 @@ The CI definition consists of these tasks:
 - **Publish Artifact - Website:** Publishes the app artifact and makes it available as a pipeline artifact
 - **Publish Artifact - Bicep:** Publishes the infrastructure artifact and makes it available as a pipeline artifact
 
-8. Click the **Save** button (not **Save and run**) to save the pipeline definition
+1. Select the **Save** button (not **Save and run**) to save the pipeline definition
 
-You can find the **Save** button by clicking on the arrow to the right of the **Save and Run** button.
+You can find the **Save** button by selecting on the arrow to the right of the **Save and Run** button.
 
 ### Add tests to the CI pipeline
 
 You'll add integration and functional tests to the CI Pipeline. Notice that Unit Tests are already part of the pipeline.
 
 1. Edit the pipeline by pressing the **Edit** button
-2. Add the Integration Tests task after the Unit Tests task:
+1. Add the Integration Tests task after the Unit Tests task:
 
    ```yaml
    - task: DotNetCoreCLI@2
@@ -110,7 +110,7 @@ You'll add integration and functional tests to the CI Pipeline. Notice that Unit
 
    **Integration Tests** test how your code works with dependencies or infrastructure. Although it's good to encapsulate code that interacts with infrastructure like databases and file systems, you'll still have some of that code, and you'll want to test it. Additionally, you should verify that your code's layers interact as expected when your application's dependencies are fully resolved.
 
-3. Add the Functional tests task after the Integration Tests task:
+1. Add the Functional tests task after the Integration Tests task:
 
    ```yaml
    - task: DotNetCoreCLI@2
@@ -122,22 +122,22 @@ You'll add integration and functional tests to the CI Pipeline. Notice that Unit
 
    **Functional Tests** are written from the user's perspective and verify the correctness of the system based on its requirements. Unlike integration tests that are written from the developer's perspective to verify that components work correctly together, functional tests validate the system's behavior from an end-user standpoint.
 
-4. Click **Validate and Save**
-5. If validation is successful, click **Save** again to commit the changes directly to the main branch
+1. Select **Validate and Save**
+1. If validation is successful, select **Save** again to commit the changes directly to the main branch
 
 ### Check the tests summary
 
 Now you'll run the pipeline and examine the test results.
 
-1. Click **Run**
-2. From the **Run pipeline** tab, click **Run** again
-3. Wait for the pipeline to start and complete the Build Stage successfully
-4. Once completed, the **Tests** tab will appear as part of the pipeline run
-5. Click on it to check the summary
+1. Select **Run**
+1. From the **Run pipeline** tab, select **Run** again
+1. Wait for the pipeline to start and complete the Build Stage successfully
+1. Once completed, the **Tests** tab will appear as part of the pipeline run
+1. Select on it to check the summary
 
    ![Screenshot of the tests summary](media/AZ400_M05_L09_Tests_Summary.png)
 
-6. For more details, at the bottom of the page, the table shows a list of the different run tests
+1. For more details, at the bottom of the page, the table shows a list of the different run tests
 
    ![Screenshot of the tests table](media/AZ400_M05_L09_Tests_Table.png)
 

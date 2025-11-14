@@ -507,8 +507,8 @@ In this task, you will evaluate the customized dev box functionality by creating
 1. In the vertical navigation menu on the left side, select **Access control (IAM)**.
 1. On the **devcenter-project-custom | Access control (IAM)** page, select **+ Add** and, in the drop-down list, select **Add role assignment**.
 1. On the **Role** tab of the **Add role assignment** page, ensure that the **Job function roles** tab is selected, in the list of roles, select **DevCenter Dev Box Users** and select **Next**.
-1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and click **+ Select members**.
-1. In the **Select members** pane, search for and select **`DevCenter_Dev_Users`** and then click **Select**.
+1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and select **+ Select members**.
+1. In the **Select members** pane, search for and select **`DevCenter_Dev_Users`** and then select **Select**.
 1. Back on the **Members** tab of the **Add role assignment** page, select **Next**.
 1. On the **Review + assign** tab of the **Add role assignment** page, select **Review + assign**.
 1. Start a web browser incognito/in-private and navigate to the Microsoft Dev Box developer portal at `https://aka.ms/devbox-portal`.

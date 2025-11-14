@@ -36,7 +36,7 @@ To complete the lab, you need:
 
 1. Start a web browser and navigate to the Microsoft Entra admin center at `https://entra.microsoft.com`.
 1. If prompted, sign in by using a Microsoft Entra account with Global Administrator permissions in your tenant.
-1. In the Microsoft Entra admin center, in the left navigation pane, expand **Identity** and select **Groups**.
+1. In the Microsoft Entra admin center, in the left navigation pane, expand **Entra ID** and select **Groups**.
 1. On the **Groups | All groups** page, select **+ New group**.
 1. On the **New Group** page, specify the following settings and select **Create**:
 
@@ -51,7 +51,7 @@ To complete the lab, you need:
    - **DevCenter_Dev_Leads** (Development team leads)
    - **DevCenter_Dev_Users** (Developers)
 
-1. In the Microsoft Entra admin center, in the left navigation pane, expand **Identity** and select **Users**.
+1. In the Microsoft Entra admin center, in the left navigation pane, expand **Entra ID** and select **Users**.
 1. On the **Users | All users** page, select **+ New user** and then **Create new user**.
 1. On the **New user** page, specify the following settings and select **Create**:
 
@@ -184,7 +184,7 @@ In this task, you will create a dev center project. A dev center project typical
 
 1. In the web browser displaying the Azure portal, on the **devcenter-basic** page, in the vertical navigation menu on the left side, expand the **Manage** section and select **Projects**.
 1. On the **devcenter-basic | Projects** page, select **+ Create**.
-1. On the **Basics** tab of the **Create a project** page, specify the following settings and then select **Next: Dev box management**:
+1. On the **Basics** tab of the **Create a project** page, specify the following settings and then select **Next: Dev box settings**:
 
    | Setting        | Value                                                        |
    | -------------- | ------------------------------------------------------------ |
@@ -194,7 +194,7 @@ In this task, you will create a dev center project. A dev center project typical
    | Name           | **devcenter-project-basic**                                  |
    | Description    | **Basic Dev Center Project**                                 |
 
-1. On the **Dev box management** tab of the **Create a project** page, specify the following settings and then select **Next: Catalogs**:
+1. On the **Dev box settings** tab of the **Create a project** page, specify the following settings and then select **Next: Catalogs**:
 
    | Setting                 | Value |
    | ----------------------- | ----- |
@@ -256,8 +256,8 @@ Microsoft dev box relies on Azure role-based access control (Azure RBAC) to cont
 1. In the web browser displaying the Azure portal, navigate to the **devcenter-basic** page and, in the vertical navigation menu on the left side, select **Access control (IAM)**.
 1. On the **devcenter-basic | Access control (IAM)** page, select **+ Add** and, in the drop-down list, select **Add role assignment**.
 1. On the **Role** tab of the **Add role assignment** page, select the **Privileged administrator role** tab, in the list of roles, select **Owner** and finally select **Next**.
-1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and click **+ Select members**.
-1. In the **Select members** pane, search for and select **`DevCenter_Platform_Engineers`** and then click **Select**.
+1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and select **+ Select members**.
+1. In the **Select members** pane, search for and select **`DevCenter_Platform_Engineers`** and then select **Select**.
 1. Back on the **Members** tab of the **Add role assignment** page, select **Next**.
 1. On the **Conditions** tab of the **Add role assignment** page, in the **What user can do** section, select the option **Allow user to assign all roles (highly privileged)** and then select **Next**.
 1. On the **Review + assign** tab of the **Add role assignment** page, select **Review + assign**.
@@ -268,8 +268,8 @@ Microsoft dev box relies on Azure role-based access control (Azure RBAC) to cont
 1. On the **devcenter-project-basic** page, in the vertical navigation menu on the left side, select **Access control (IAM)**.
 1. On the **devcenter-project-basic | Access control (IAM)** page, select **+ Add** and, in the drop-down list, select **Add role assignment**.
 1. On the **Role** tab of the **Add role assignment** page, ensure that the **Job function roles** tab is selected, in the list of roles, select **DevCenter Project Admin** and select **Next**.
-1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and click **+ Select members**.
-1. In the **Select members** pane, search for and select **`DevCenter_Dev_Leads`** and then click **Select**.
+1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and select **+ Select members**.
+1. In the **Select members** pane, search for and select **`DevCenter_Dev_Leads`** and then select **Select**.
 1. Back on the **Members** tab of the **Add role assignment** page, select **Next**.
 1. On the **Review + assign** tab of the **Add role assignment** page, select **Review + assign**.
 
@@ -277,8 +277,8 @@ Microsoft dev box relies on Azure role-based access control (Azure RBAC) to cont
 
 1. Back on the **devcenter-project-basic | Access control (IAM)** page, select **+ Add** and, in the drop-down list, select **Add role assignment**.
 1. On the **Role** tab of the **Add role assignment** page, ensure that the **Job function roles** tab is selected, in the list of roles, select **DevCenter Dev Box Users** and select **Next**.
-1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and click **+ Select members**.
-1. In the **Select members** pane, search for and select **`DevCenter_Dev_Users`** and then click **Select**.
+1. On the **Members** tab of the **Add role assignment** page, ensure that the **User, group, or service principal** option is selected and select **+ Select members**.
+1. In the **Select members** pane, search for and select **`DevCenter_Dev_Users`** and then select **Select**.
 1. Back on the **Members** tab of the **Add role assignment** page, select **Next**.
 1. On the **Review + assign** tab of the **Add role assignment** page, select **Review + assign**.
 

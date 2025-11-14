@@ -154,7 +154,7 @@ The exercise consists of the following tasks:
 1. Switch back to the web browser displaying the Bash session within the Cloud Shell pane and run the following command to generate the name of the first App Service web app you'll be deploying:
 
    ```cli
-   echo devops-webapp-westeurope-$RANDOM$RANDOM
+   echo devops-webapp-westus-$RANDOM$RANDOM
    ```
 
 1. Copy the value returned by the command and record it. You'll use it later in this exercise.
@@ -168,7 +168,7 @@ The exercise consists of the following tasks:
 
 ### Validate the IaC and CI/CD functionality
 
-1. Switch to the web browser window displaying the forked **eShopOnWeb** GitHub repo page and, if needed, on the **eShopOnWeb** page, click in the **Code** tab and, in the drop-down list confirm that the current branch is **main**.
+1. Switch to the web browser window displaying the forked **eShopOnWeb** GitHub repo page and, if needed, on the **eShopOnWeb** page, select in the **Code** tab and, in the drop-down list confirm that the current branch is **main**.
 1. In the web browser window displaying the **main** branch of the forked **eShopOnWeb** GitHub repo page, navigate to the **.github/workflows** folder and select **eshoponweb-cicd.yml**.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select the pencil icon to edit the workflow.
 1. In the **Edit** pane, replace line 4 with the following text:
@@ -186,7 +186,7 @@ The exercise consists of the following tasks:
    ```
 
 1. In the **Edit** pane, replace the `YOUR-SUBS-ID` placeholder in line 11 with the value of the Azure subscription ID you recorded earlier in this exercise:
-1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 11 with the name of the **first** Azure App Service web app you generated earlier in this exercise.
+1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **first** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
 1. In the web browser window displaying the **main** branch of the forked **eShopOnWeb** GitHub repo page, navigate to the **infra** folder and select **webapp.bicep**.
 1. In the **infra/webapp.bicep** pane, select the pencil icon to edit the workflow.
@@ -226,7 +226,7 @@ The exercise consists of the following tasks:
    ```
 
 1. In the **Edit** pane, replace the `location` variable in line 9 with the region nearest to your location.
-1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 11 with the name of the **second** Azure App Service web app you generated earlier in this exercise.
+1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **second** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
 1. In the web browser window displaying the forked **eShopOnWeb** GitHub repo page, select **Actions**.
 1. In the **All workflows** section on the left side, select **eShopOnWeb Build and Test**.
@@ -243,10 +243,9 @@ The exercise consists of the following tasks:
    > **Note**: In case any of the steps fail, from the same page that displays the workflow progress, in the upper right corner, select **Re-run all jobs** and then, in the **Re-run all jobs** pane, select **Re-run jobs**.
 
 1. In the web browser window displaying the Azure portal, in the search text box at the top of the page, enter **`App Services`** and select **App Services** in the list of results.
-1. On the **App Services** page, in the list of App Services, select the **devops-webapp-westeurope-** app service you created earlier in this exercise.
-1. On the **devops-webapp-westeurope-** page, in the **Essentials** section, verify that the **Default domain** value is displayed and select it to open the web app in a new browser tab.
+1. On the **App Services** page, in the list of App Services, select the **devops-webapp-westus-** app service you created earlier in this exercise.
+1. On the **devops-webapp-westus-** page, in the **Essentials** section, verify that the **Default domain** value is displayed and select it to open the web app in a new browser tab.
 1. In the new browser tab, verify that the web app is displayed and that it's functional. You can also verify the second web app in the **East US** region in the same way.
-   > **Note**: Leave the deployed Azure resources running. You will need them in the next lab.
 
 ## Clean up resources
 

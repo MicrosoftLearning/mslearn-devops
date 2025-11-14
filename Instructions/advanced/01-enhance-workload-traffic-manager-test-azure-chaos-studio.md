@@ -88,12 +88,14 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-eastus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-eastus-$(uuidgen)-$(date +%s) \
+     --parameters webAppName=eshop-eastus-$(uuidgen) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
+
+> **Note**: If you receive an `The content for this response was already consumed` error, you might not have sufficient quota in the specified location, so you need to create the resources in a different region.
 
 ### Deploy the web app to West US
 
@@ -107,7 +109,7 @@ The exercise consists of the following tasks:
    az deployment group create \
      --resource-group rg-eshoponweb-westus \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshoponweb-westus-$(date +%s%N) \
+     --parameters webAppName=eshop-westus-$(uuidgen) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
@@ -142,7 +144,10 @@ The exercise consists of the following tasks:
    > **Note:** We choose the priority routing method to reflect the somewhat arbitrary assumption that all of requests should be handled by the Azure App Service web app in the East US.
 
    - Verify that your Azure subscription appears in the **Subscription** drop-down list
-   - Select the **Create new** link below the **Resource Group** drop-down list, in the **Name** text box, enter **`rg-devops-foundations`**, and then select **OK**.
+   - Select **`rg-devops-foundations`** in the **Resource Group** drop-down list.
+
+     > **Note:** If you don't have such a resource group, select **Create new**, enter **`rg-devops-foundations`** in the text box, and then select **OK**.
+
    - In the **Resource group location** drop-down list, select **East US** (or the same Azure region you chose when deploying the East US web app).
 
 1. Select **Create** to start the provisioning process.

@@ -81,7 +81,7 @@ The exercise consists of the following tasks:
 1. In the current pane, in the Assignees section, select **Add assignees…**, and, in the **Suggestions** section, select your GitHub user name.
 1. Select the gear icon next to the **Labels** entry and, in the drop-down list, select **enhancement**.
 1. Select the gear icon next to the **Projects** entry and, in the drop-down list, select **DevOps Core Intro Project**.
-1. Click **Create** to save the new issue.
+1. Select **Create** to save the new issue.
 1. Open the new issue again.
 1. On the **index.html looks rather austere** pane, in the **Projects** section, set **Status** to **In Progress**.
 1. On the forked **Spoon-Knife** page, select the **Projects** tab.
@@ -157,7 +157,7 @@ The exercise consists of the following tasks:
 
 1. In the **Add a title** text box, replace **Update index.html** with **Update index.html and styles.css**.
 
-1. (Optional) If you have access to the GitHub Copilot for pull request feature, in the **Add a description** text box, click the **Copilot action** button, and then select **Summary** (Generate a summary of the changes in the pull request).
+1. (Optional) If you have access to the GitHub Copilot for pull request feature, in the **Add a description** text box, select the **Copilot action** button, and then select **Summary** (Generate a summary of the changes in the pull request).
 
    1. GitHub Copilot for pull request feature will generate a summary of the changes in the pull request.
 

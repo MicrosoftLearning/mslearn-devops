@@ -18,7 +18,7 @@ You will learn how to:
 - Implement self-hosted agents.
 - Configure agent pools for pipelines.
 
-This lab takes approximately **30** minutes to complete.
+This lab takes approximately **45** minutes to complete.
 
 ## Before you start
 
@@ -36,13 +36,13 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
 1. Use a private browser session to get a new **personal Microsoft Account (MSA)** at `https://account.microsoft.com` (skip if you already have one).
 1. Using the same browser session, sign up for a free Azure subscription at `https://azure.microsoft.com/free` (skip if you already have one).
-1. Open a browser and navigate to Azure portal at `https://portal.azure.com`, then search at the top of the Azure portal screen for **Azure DevOps**. In the resulting page, click **Azure DevOps organizations**.
-1. Next, click on the link labelled **My Azure DevOps Organizations** or navigate directly to `https://aex.dev.azure.com`.
+1. Open a browser and navigate to Azure portal at `https://portal.azure.com`, then search at the top of the Azure portal screen for **Azure DevOps**. In the resulting page, select **Azure DevOps organizations**.
+1. Next, select on the link labelled **My Azure DevOps Organizations** or navigate directly to `https://aex.dev.azure.com`.
 1. On the **We need a few more details** page, select **Continue**.
 1. In the drop-down box on the left, choose **Default Directory**, instead of **Microsoft Account**.
-1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and click **Continue**.
-1. Back at `https://aex.dev.azure.com` with **Default Directory** selected click the blue button **Create new organization**.
-1. Accept the _Terms of Service_ by clicking **Continue**.
+1. If prompted (_"We need a few more details"_), provide your name, e-mail address, and location and select **Continue**.
+1. Back at `https://aex.dev.azure.com` with **Default Directory** selected select the blue button **Create new organization**.
+1. Accept the _Terms of Service_ by selecting **Continue**.
 1. If prompted (_"Almost done"_), leave the name for the Azure DevOps organization at default (it needs to be a globally unique name) and pick a hosting location close to you from the list.
 1. Once the newly created organization opens in **Azure DevOps**, select **Organization settings** in the bottom left corner.
 1. At the **Organization settings** screen select **Billing** (opening this screen takes a few seconds).
@@ -51,9 +51,9 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
    > **Note**: You may **wait a couple of minutes before using the CI/CD capabilities** so that the new settings are reflected in the backend. Otherwise, you will still see the message _"No hosted parallelism has been purchased or granted"_.
 
-1. In **Organization Settings**, go to section **Pipelines** and click **Settings**.
+1. In **Organization Settings**, go to section **Pipelines** and select **Settings**.
 1. Toggle the switch to **Off** for **Disable creation of classic build pipelines** and **Disable creation of classic release pipelines**.
-1. In **Organization Settings**, go to section **Security** and click **Policies**.
+1. In **Organization Settings**, go to section **Security** and select **Policies**.
 1. Toggle the switch to **On** for **Allow public projects**.
 
 ### Create and configure the Azure DevOps project (if needed)
@@ -82,8 +82,8 @@ If you don't already have an Azure DevOps organization, follow these steps:
 
 1. Leave the web browser window open.
 1. Go to **Repos > Branches**.
-1. Hover on the **main** branch then click the ellipsis on the right of the column.
-1. Click on **Set as default branch**.
+1. Hover on the **main** branch then select the ellipsis on the right of the column.
+1. Select on **Set as default branch**.
 
 ## Create agents and configure agent pools
 
@@ -112,7 +112,7 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
    | **Virtual machine name** text box       | Enter name of your preference, for example, **`eshoponweb-vm`**.                                                                                                     |
    | **Region** drop-down list               | You can choose your closest [azure](https://azure.microsoft.com/explore/global-infrastructure/geographies) region. For example, "eastus", "eastasia", "westus", etc. |
    | **Availability options** drop-down list | Select **No infrastructure redundancy required**.                                                                                                                    |
-   | **Security type** drop-down list        | Select with the **Trusted launch virtual machines** option.                                                                                                          |
+   | **Security type** drop-down list        | Select the **Trusted launch virtual machines** option.                                                                                                               |
    | **Image** drop-down list                | Select the **Windows Server 2022 Datacenter: Azure Edition - x64 Gen2** image.                                                                                       |
    | **Size** drop-down list                 | Select the cheapest **Standard** size for testing purposes.                                                                                                          |
    | **Username** text box                   | Enter the username of your preference                                                                                                                                |
@@ -120,7 +120,7 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
    | **Public inbound ports** section        | Select **Allow selected ports**.                                                                                                                                     |
    | **Select inbound ports** drop-down list | Select **RDP (3389)**.                                                                                                                                               |
 
-   > **Note**: If the **Windows Server 2022 Datacenter: Azure Edition - x64 Gen2** image is not available in the list of images suggested by the portal, click on the **See all images** link, then, on the marketplace page, select the **Select** combo box for the **Windows Server** product and choose the right image.
+   > **Note**: If the **Windows Server 2022 Datacenter: Azure Edition - x64 Gen2** image is not available in the list of images suggested by the portal, select on the **See all images** link, then, on the marketplace page, select the **Select** combo box for the **Windows Server** product and choose the right image.
 
 1. On the **Management** tab, in the **Identity** section, select the **Enable system assigned managed identity** checkbox and then select **Review + create**:
 
@@ -258,7 +258,7 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
 
    > [!IMPORTANT] If your agent fails to start, you may need to choose a different folder for the agent work directory. To do this, re-run the agent configuration script and choose a different folder.
 
-1. Check the agent status by switching to the web browser displaying the Azure DevOps portal, navigating to the agent pool and clicking on the **Agents** tab. You should see the new agent in the list.
+1. Check the agent status by switching to the web browser displaying the Azure DevOps portal, navigating to the agent pool and selecting on the **Agents** tab. You should see the new agent in the list.
 
    ![Screenshot showing the agent status.](media/agent-status.png)
 
@@ -294,14 +294,14 @@ In this section, you will create an application lifecycle build pipeline, using 
 
 In this task, you will create a YAML-based pipeline for the **eShopOnWeb** project.
 
-1. From the web browser displaying the Azure DevOps portal with the **eShopOnWeb** project open, in the vertical navigational pane on the left side, click **Pipelines**.
-1. Click the **Create Pipeline** button - if you don't have any other pipelines created yet or click **New pipeline** to create an additional new one.
+1. From the web browser displaying the Azure DevOps portal with the **eShopOnWeb** project open, in the vertical navigational pane on the left side, select **Pipelines**.
+1. Select the **Create Pipeline** button - if you don't have any other pipelines created yet or select **New pipeline** to create an additional new one.
 
-1. On the **Where is your code?** pane, click **Azure Repos Git**.
-1. On the **Select a repository** pane, click **eShopOnWeb**.
-1. On the **Configure your pipeline** pane, click **Existing Azure Pipelines YAML File**.
+1. On the **Where is your code?** pane, select **Azure Repos Git**.
+1. On the **Select a repository** pane, select **eShopOnWeb**.
+1. On the **Configure your pipeline** pane, select **Existing Azure Pipelines YAML File**.
 1. On the **Select an existing YAML file**, select **main** for the Branch, and **/.ado/eshoponweb-ci-pr.yml** for the Path.
-1. Click **Continue**.
+1. Select **Continue**.
 1. On the **Review your pipeline YAML** pane, review the sample pipeline. This is a rather straight-forward .NET application Build pipeline, which does the following:
 
    - A single Stage: Build
@@ -312,14 +312,14 @@ In this task, you will create a YAML-based pipeline for the **eShopOnWeb** proje
    - Dotnet Test
    - Dotnet Publish
 
-1. On the **Review your pipeline YAML** pane, click the down-facing caret symbol next to the **Run** button, click **Save**.
+1. On the **Review your pipeline YAML** pane, select the down-facing caret symbol next to the **Run** button, select **Save**.
 
    > **Note**: We are just creating the pipeline definition for now, without running it. You will first set up an Azure DevOps agent pool and run the pipeline in a later exercise.
 
 ### Update the YAML pipeline with the self-hosted agent pool
 
 1. In the Azure DevOps portal, navigate to the **eShopOnWeb** project, and select **Pipelines** from the left-side menu.
-1. Click on the **Edit** button for the pipeline you created in the previous task.
+1. Select on the **Edit** button for the pipeline you created in the previous task.
 1. On the **eShopOnWeb** edit pane, in the existing YAML-based pipeline, remove line 13 which says **vmImage: ubuntu-latest** designating the target agent pool the following content, designating the newly created self-hosted agent pool:
 
    ```yaml
@@ -332,14 +332,14 @@ In this task, you will create a YAML-based pipeline for the **eShopOnWeb** proje
 
    ![Screenshot showing the YAML pool syntax.](media/eshoponweb-ci-pr-agent-pool.png)
 
-1. On the **eShopOnWeb** edit pane, in the upper right corner of the pane, click **Validate and save**. Then click **Save**.
-1. On the **eShopOnWeb** edit pane, in the upper right corner of the pane, click **Run**.
+1. On the **eShopOnWeb** edit pane, in the upper right corner of the pane, select **Validate and save**. Then select **Save**.
+1. On the **eShopOnWeb** edit pane, in the upper right corner of the pane, select **Run**.
 
    > **Note**: The pipeline will run on the self-hosted agent pool you created in the previous exercise.
 
 1. Open the pipeline run and monitor the job until its successful completion.
 
-   > **Note**: If you receive a permissions prompt, click **Permit** to allow the pipeline to run.
+   > **Note**: If you receive a permissions prompt, select **Permit** to allow the pipeline to run.
 
 1. Once the pipeline run is complete, review the output and verify that the pipeline ran successfully.
 
@@ -351,8 +351,8 @@ When you complete the lab, it's important to clean up your Azure resources to av
 
 1. In the Azure Portal at `https://portal.azure.com`, navigate to the **Resource groups** section.
 1. Find and select the **rg-eshoponweb-agentpool** resource group.
-1. On the resource group page, click **Delete resource group**.
-1. Type the resource group name to confirm deletion and click **Delete**.
+1. On the resource group page, select **Delete resource group**.
+1. Type the resource group name to confirm deletion and select **Delete**.
 1. Wait for the deletion process to complete.
 
 ### Clean up Azure DevOps resources
@@ -364,6 +364,6 @@ If you want to remove the agent pool and clean up the project:
 1. In your Azure DevOps project, go to **Project Settings**.
 1. Navigate to **Pipelines > Agent pools**.
 1. Find the **eShopOnWebSelfPool** agent pool and delete it.
-1. If you want to delete the entire project, go to the project **Overview** page and click **Delete** at the bottom.
+1. If you want to delete the entire project, go to the project **Overview** page and select **Delete** at the bottom.
 
 > **CAUTION:** Deleting a project deletes all work items, repositories, builds, and other project artifacts. If you used an existing project for this exercise, any existing resources outside the scope of this exercise will also be deleted.

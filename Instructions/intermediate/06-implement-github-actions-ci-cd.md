@@ -44,11 +44,11 @@ The repository is organized the following way:
 
 In this task, you will create an empty public GitHub repository and import the existing [eShopOnWeb](https://github.com/MicrosoftLearning/eShopOnWeb) repository.
 
-1. From the lab computer, start a web browser, navigate to the [GitHub website](https://github.com/), sign in using your account and click on **New** to create new repository.
+1. From the lab computer, start a web browser, navigate to the [GitHub website](https://github.com/), sign in using your account and select on **New** to create new repository.
 
    ![Screenshot of the create new repository button.](media/github-new.png)
 
-1. On the **Create a new repository** page, click on **Import a repository** link (below the page title).
+1. On the **Create a new repository** page, select on **Import a repository** link (below the page title).
 
    > **Note**: you can also open the import website directly at <https://github.com/new/import>
 
@@ -61,9 +61,9 @@ In this task, you will create an empty public GitHub repository and import the e
    | Repository Name                    | eShopOnWeb                                        |
    | Privacy                            | **Public**                                        |
 
-1. Click on **Begin Import** and wait for your repository to be ready.
+1. Select on **Begin Import** and wait for your repository to be ready.
 
-1. On the repository page, go to **Settings**, click on **Actions > General** and choose the option **Allow all actions and reusable workflows**. Click on **Save**.
+1. On the repository page, go to **Settings**, select on **Actions > General** and choose the option **Allow all actions and reusable workflows**. Select on **Save**.
 
    ![Screenshot of the enable GitHub Actions option.](media/enable-actions.png)
 
@@ -76,12 +76,12 @@ In this section, you will create an Azure Service Principal to authorize GitHub 
 In this task, you will create the Azure Service Principal used by GitHub to deploy the desired resources. As an alternative, you could also use [OpenID connect in Azure](https://docs.github.com/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure), as a secretless authentication mechanism.
 
 1. On your lab computer, in a browser window, open the Azure Portal at `https://portal.azure.com`.
-1. In the portal, look for **Resource Groups** and click on it.
-1. Click on **+ Create** to create a new Resource Group for the exercise.
-1. On the **Create a resource group** tab, give the following name to your Resource Group: **rg-eshoponweb-NAME** (replace NAME for some unique alias). Click on **Review + Create > Create**.
+1. In the portal, look for **Resource Groups** and select on it.
+1. Select on **+ Create** to create a new Resource Group for the exercise.
+1. On the **Create a resource group** tab, give the following name to your Resource Group: **rg-eshoponweb-NAME** (replace NAME for some unique alias). Select on **Review + Create > Create**.
 1. In the Azure Portal, open the **Cloud Shell** (next to the search bar).
 
-   > **Note**: if the Azure portal asks you to create a storage, you can choose **No storage account required** options, select your subscription and click on **Apply** button
+   > **Note**: if the Azure portal asks you to create a storage, you can choose **No storage account required** options, select your subscription and select on **Apply** button
 
 1. Make sure the terminal is running in **Bash** mode and execute the following command, replacing **SUBSCRIPTION-ID** and **RESOURCE-GROUP** with your own identifiers (both can be found on the **Overview** page of the Resource Group):
 
@@ -112,12 +112,12 @@ In this task, you will create the Azure Service Principal used by GitHub to depl
    ```
 
 1. In a browser window, go back to your **eShopOnWeb** GitHub repository.
-1. On the repository page, go to **Settings**, click on **Secrets and variables > Actions**. Click on **New repository secret**
+1. On the repository page, go to **Settings**, select on **Secrets and variables > Actions**. Select on **New repository secret**
 
    - Name : **`AZURE_CREDENTIALS`**
    - Secret: **paste the previously copied JSON object** (GitHub is able to keep multiple secrets under same name, used by [azure/login](https://github.com/Azure/login) action )
 
-1. Click on **Add secret**. Now GitHub Actions will be able to reference the service principal, using the repository secret.
+1. Select on **Add secret**. Now GitHub Actions will be able to reference the service principal, using the repository secret.
 
 ### Modify and execute the GitHub workflow
 
@@ -133,22 +133,22 @@ In this task, you will modify the given GitHub workflow and execute it to deploy
    - Replace **NAME** in **WEBAPP-NAME** with some unique alias. It will be used to create a globally unique website using Azure App Service.
 1. Read the workflow carefully, comments are provided to help understand.
 
-1. Click on **Commit changes...** on top right and **Commit changes** leaving defaults (changing the main branch). The workflow will get automatically executed.
+1. Select on **Commit changes...** on top right and **Commit changes** leaving defaults (changing the main branch). The workflow will get automatically executed.
 
 ### Review GitHub Workflow execution
 
 In this task, you will review the GitHub workflow execution:
 
 1. In a browser window, go back to your **eShopOnWeb** GitHub repository.
-1. On the repository page, go to **Actions**, you will see the workflow setup before executing. Click on it.
+1. On the repository page, go to **Actions**, you will see the workflow setup before executing. Select on it.
 
    ![Screenshot of the GitHub workflow in progress.](media/gh-actions.png)
 
-1. Wait for the workflow to finish. From the **Summary** you can see the two workflow jobs, the status and Artifacts retained from the execution. You can click in each job to review logs.
+1. Wait for the workflow to finish. From the **Summary** you can see the two workflow jobs, the status and Artifacts retained from the execution. You can select in each job to review logs.
 
    ![Screenshot of the successful workflow.](media/gh-action-success.png)
 
-1. In a browser window, go back to the Azure Portal at `https://portal.azure.com`. Open the resource group created before. You will see that the GitHub Action, using a bicep template, has created an Azure App Service Plan + App Service. You can see the published website opening the App Service and clicking **Browse**.
+1. In a browser window, go back to the Azure Portal at `https://portal.azure.com`. Open the resource group created before. You will see that the GitHub Action, using a bicep template, has created an Azure App Service Plan + App Service. You can see the published website opening the App Service and selecting **Browse**.
 
    ![Screenshot of the browse WebApp.](media/browse-webapp.png)
 
@@ -159,19 +159,19 @@ In this task, you will use GitHub environments to ask for manual approval before
 1. On the repository page, go to **Code** and open the following file: **eShopOnWeb/.github/workflows/eshoponweb-cicd.yml**.
 1. In the **deploy** job section, you can find a reference to an **environment** called **Development**. GitHub used [environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) add protection rules (and secrets) for your targets.
 
-1. On the repository page, go to **Settings**, open **Environments** and click **New environment**.
-1. Give it **`Development`** name and click on **Configure Environment**.
+1. On the repository page, go to **Settings**, open **Environments** and select **New environment**.
+1. Give it **`Development`** name and select on **Configure Environment**.
 
-   > **Note**: If an environment called **Development** already exists in the **Environments** list, open its configuration by clicking on the environment name.
+   > **Note**: If an environment called **Development** already exists in the **Environments** list, open its configuration by selecting on the environment name.
 
-1. In the **Configure Development** tab, check the option **Required Reviewers** and your GitHub account as a reviewer. Click on **Save protection rules**.
-1. Now lets test the protection rule. On the repository page, go to **Actions**, click on **eShopOnWeb Build and Test** workflow and click on **Run workflow > Run workflow** to execute manually.
+1. In the **Configure Development** tab, check the option **Required Reviewers** and your GitHub account as a reviewer. Select on **Save protection rules**.
+1. Now lets test the protection rule. On the repository page, go to **Actions**, select on **eShopOnWeb Build and Test** workflow and select on **Run workflow > Run workflow** to execute manually.
 
    ![Screenshot of the manual trigger workflow.](media/gh-manual-run.png)
 
-1. Click on the started execution of the workflow and wait for **buildandtest** job to finish. You will see a review request when **deploy** job is reached.
+1. Select on the started execution of the workflow and wait for **buildandtest** job to finish. You will see a review request when **deploy** job is reached.
 
-1. Click on **Review deployments**, check **Development** and click on **Approve and deploy**.
+1. Select on **Review deployments**, check **Development** and select on **Approve and deploy**.
 
    ![Screenshot of the Actions approval.](media/gh-approve.png)
 
@@ -185,8 +185,8 @@ When you complete the lab, it's important to clean up your Azure resources to av
 
 1. In the Azure Portal at `https://portal.azure.com`, navigate to the **Resource groups** section.
 1. Find and select the **rg-eshoponweb-NAME** resource group you created.
-1. On the resource group page, click **Delete resource group**.
-1. Type the resource group name to confirm deletion and click **Delete**.
+1. On the resource group page, select **Delete resource group**.
+1. Type the resource group name to confirm deletion and select **Delete**.
 1. Wait for the deletion process to complete.
 
 ### Clean up GitHub resources (optional)
@@ -195,7 +195,7 @@ If you want to clean up your GitHub repository:
 
 1. Navigate to your **eShopOnWeb** repository on GitHub.
 1. Go to **Settings** and scroll down to the **Danger Zone**.
-1. Click **Delete this repository** and follow the prompts to confirm deletion.
+1. Select **Delete this repository** and follow the prompts to confirm deletion.
 
 > **CAUTION:** Deleting the repository will permanently remove all code, issues, pull requests, and other repository data.
 

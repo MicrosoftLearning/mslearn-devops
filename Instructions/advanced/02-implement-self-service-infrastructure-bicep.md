@@ -17,7 +17,7 @@ You will learn how to:
 - Enforce governance using tags and Azure policies
 - Implement automated scaling with Bicep
 
-This lab takes approximately **20** minutes to complete.
+This lab takes approximately **30** minutes to complete.
 
 ## Before you start
 
@@ -377,7 +377,7 @@ In a self-service infrastructure environment, it is essential to enforce governa
    ```bash
    cat > test-policy-compliant.bicep << EOF
    param location string = 'eastus'
-   param storageAccountName string = 'testcompliant\${uniqueString(resourceGroup().id)}'
+   param storageAccountName string = 'testcomp\${uniqueString(resourceGroup().id)}'
 
    resource testStorage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
      name: storageAccountName
