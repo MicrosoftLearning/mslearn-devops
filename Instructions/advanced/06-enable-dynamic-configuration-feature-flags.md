@@ -115,8 +115,8 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
    - **subscriptionid**: your Azure subscription id
    - **azureserviceconnection**: **'azure subs'**
    - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME**
-   - **csmFile**: **'$(Pipeline.Workspace)/**/infra/$(templateFile)'\*\*
-   - **packageForLinux**: **'$(Pipeline.Workspace)/**/Web.zip'\*\*
+   - **csmFile**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/\$(templateFile)'**
+   - **packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Web.zip'**
 1. Select **Save and Run**
 1. Open the pipeline and wait for it to execute successfully
 
