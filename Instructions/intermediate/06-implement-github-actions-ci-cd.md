@@ -127,10 +127,10 @@ In this task, you will modify the given GitHub workflow and execute it to deploy
 1. On the repository page, go to **Code** and open the following file: **eShopOnWeb/.github/workflows/eshoponweb-cicd.yml**. This workflow defines the CI/CD process for the given .NET 8 website code.
 1. Uncomment the **on** section (delete "#"). The workflow triggers with every push to the main branch and also offers manual triggering ("workflow_dispatch").
 1. In the **env** section, make the following changes:
-   - Replace **NAME** in **RESOURCE-GROUP** variable. It should be the same resource group created in previous steps.
+   - Replace **rg-eshoponweb-NAME** in **RESOURCE-GROUP** variable. It should be the same resource group created in previous steps.
    - (Optional) You can choose your closest [azure region](https://azure.microsoft.com/explore/global-infrastructure/geographies) for **LOCATION**. For example, "eastus", "eastasia", "westus", etc.
    - Replace **YOUR-SUBS-ID** in **SUBSCRIPTION-ID**.
-   - Replace **NAME** in **WEBAPP-NAME** with some unique alias. It will be used to create a globally unique website using Azure App Service.
+   - Replace **eshoponweb-webapp-NAME** in **WEBAPP-NAME** with some unique alias. It will be used to create a globally unique website using Azure App Service.
 1. Read the workflow carefully, comments are provided to help understand.
 
 1. Select on **Commit changes...** on top right and **Commit changes** leaving defaults (changing the main branch). The workflow will get automatically executed.
