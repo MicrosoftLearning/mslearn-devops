@@ -18,7 +18,14 @@ You will learn how to:
 - Enhance workload resiliency by using Traffic Manager
 - Test workload resiliency by using Azure Chaos Studio
 
-> **Note:** In this lab, you will deploy two instances of a .NET web app into two Azure regions (East US and West US) and then create a resilient configuration that implements the load balancing functionality of Azure Traffic Manager between the two web app instances. You will then use Azure Chaos Studio to trigger a failure of one of the apps to test the resiliency of the load balancing implementation. You can adapt the regions used to ones closer to your location if preferred.
+> **Note:** In this lab, you will deploy two instances of a .NET web app into two Azure regions of your choice and then create a resilient configuration that implements the load balancing functionality of Azure Traffic Manager between the two web app instances. You will then use Azure Chaos Studio to trigger a failure of one of the apps to test the resiliency of the load balancing implementation.
+
+> **Important:** Before starting this lab, choose two Azure regions for your deployments. Consider the following:
+> - Select regions that are geographically separated for better resiliency testing
+> - Verify that both regions support Azure App Service (Linux) and Azure Chaos Studio
+> - Note down your chosen regions as you'll use them throughout the lab
+>
+> Example region pairs: East US & West US, West Europe & North Europe, Australia East & Southeast Asia
 
 This lab takes approximately **60** minutes to complete.
 
@@ -46,13 +53,13 @@ To complete the lab, you need:
 
 ## Deploy Azure App Service web apps to two Azure regions
 
-In this exercise, you'll deploy two instances of the eShopOnWeb .NET web application to Azure App Service in two different Azure regions (East US and West US). You can adapt these instructions to use regions closer to your location if preferred.
+In this exercise, you'll deploy two instances of the eShopOnWeb .NET web application to Azure App Service in two different Azure regions of your choice.
 
 The exercise consists of the following tasks:
 
 - Fork the eShopOnWeb repository
-- Deploy the web app to East US
-- Deploy the web app to West US
+- Deploy the web app to the primary region
+- Deploy the web app to the secondary region
 
 ### Fork the eShopOnWeb repository
 
@@ -60,11 +67,40 @@ The exercise consists of the following tasks:
 1. On the **eShopOnWeb** repo page, select **Fork**.
 1. On the **Create a new fork** page, ensure that the **Owner** drop-down list entry displays your GitHub user name, accept the default entry **eShopOnWeb** in the **Repository name** text box, and confirm the **Copy the main branch only** checkbox is checked, and then select **Create fork**.
 
-### Deploy the web app to East US
+### Find Azure region names
+
+Before deploying resources, you need to identify the official Azure region names to use in the CLI commands. Azure region names in the portal (such as "East US") differ from the names used in CLI commands (such as "eastus").
 
 1. Switch back to the Azure portal tab.
 1. In the Azure portal, open the Azure Cloud Shell by selecting the Cloud Shell icon in the top navigation bar.
 1. If prompted to select either **Bash** or **PowerShell**, select **Bash**.
+
+   > **Note:** If this is the first time you are starting **Cloud Shell** and you are presented with the **You have no storage mounted** message, select the subscription you are using in this lab, and select **Create storage**.
+
+1. Run the following command to list all available Azure regions and their official names:
+
+   ```bash
+   az account list-locations --query "[].{DisplayName:displayName, Name:name}" --output table
+   ```
+
+1. Review the output and note the **Name** values for the two regions you want to use. Here are some common examples:
+
+   | Display Name | CLI Name |
+   |--------------|----------|
+   | East US | eastus |
+   | West US | westus |
+   | West Europe | westeurope |
+   | North Europe | northeurope |
+   | Australia East | australiaeast |
+   | Southeast Asia | southeastasia |
+   | UK South | uksouth |
+   | Central US | centralus |
+
+   > **Note:** Record the CLI names for your chosen primary and secondary regions. You will use these values in the deployment commands.
+
+### Deploy the web app to the primary region
+
+1. From the **Bash** session in the **Cloud Shell** pane, run the following commands to clone your forked eShopOnWeb repository:
 
    > **Note:** If this is the first time you are starting **Cloud Shell** and you are presented with the **You have no storage mounted** message, select the subscription you are using in this lab, and select **Create storage**.
 
@@ -78,17 +114,23 @@ The exercise consists of the following tasks:
    cd eShopOnWeb
    ```
 
-1. Run the following commands to create the resource group and deploy the web app to East US:
+1. Run the following commands to set your preferred regions and create the resource group and deploy the web app to the primary region:
+
+   > **Note:** Replace the `PRIMARY_REGION` and `PRIMARY_REGION_SUFFIX` values with your chosen primary region. For example, use `eastus` and `eastus`, or `westeurope` and `westeurope`. The suffix is used for naming resources and should be a short, lowercase identifier without spaces.
 
    ```bash
-   # Create resource group for East US
-   az group create --name rg-eshoponweb-eastus --location eastus
+   # Set your preferred primary region (e.g., eastus, westeurope, australiaeast)
+   PRIMARY_REGION="eastus"
+   PRIMARY_REGION_SUFFIX="eastus"
 
-   # Deploy the Bicep template for East US
+   # Create resource group for primary region
+   az group create --name rg-eshoponweb-$PRIMARY_REGION_SUFFIX --location $PRIMARY_REGION
+
+   # Deploy the Bicep template for primary region
    az deployment group create \
-     --resource-group rg-eshoponweb-eastus \
+     --resource-group rg-eshoponweb-$PRIMARY_REGION_SUFFIX \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshop-eastus-$(uuidgen) \
+     --parameters webAppName=eshop-$PRIMARY_REGION_SUFFIX-$(uuidgen) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
@@ -97,32 +139,38 @@ The exercise consists of the following tasks:
 
 > **Note**: If you receive an `The content for this response was already consumed` error, you might not have sufficient quota in the specified location, so you need to create the resources in a different region.
 
-### Deploy the web app to West US
+### Deploy the web app to the secondary region
 
-1. Run the following commands to deploy the web app to West US:
+1. Run the following commands to deploy the web app to the secondary region:
+
+   > **Note:** Replace the `SECONDARY_REGION` and `SECONDARY_REGION_SUFFIX` values with your chosen secondary region. For example, use `westus` and `westus`, or `northeurope` and `northeurope`. The suffix is used for naming resources and should be a short, lowercase identifier without spaces.
 
    ```bash
-   # Create resource group for West US
-   az group create --name rg-eshoponweb-westus --location westus
+   # Set your preferred secondary region (e.g., westus, northeurope, southeastasia)
+   SECONDARY_REGION="westus"
+   SECONDARY_REGION_SUFFIX="westus"
 
-   # Deploy the Bicep template for West US
+   # Create resource group for secondary region
+   az group create --name rg-eshoponweb-$SECONDARY_REGION_SUFFIX --location $SECONDARY_REGION
+
+   # Deploy the Bicep template for secondary region
    az deployment group create \
-     --resource-group rg-eshoponweb-westus \
+     --resource-group rg-eshoponweb-$SECONDARY_REGION_SUFFIX \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshop-westus-$(uuidgen) \
+     --parameters webAppName=eshop-$SECONDARY_REGION_SUFFIX-$(uuidgen) \
                   sku=F1 \
                   linuxFxVersion="DOTNETCORE|8.0"
    ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
 
-   > **Note:** Record the names of both web apps as you'll need them for the Traffic Manager configuration.
+   > **Note:** Record the names of both web apps and the resource group names as you'll need them for the Traffic Manager configuration.
 
 ## Enhance workload resiliency by using Traffic Manager
 
 In this exercise, you'll implement a resilient configuration that distributes requests between the two .NET web app instances in two different Azure regions by using Azure Traffic Manager.
 
-> **Note:** For the purpose of our lab, we will consider the deployment of .NET-based web app eShopOnWeb in the East US region as the primary instance. While in this case such consideration is purely arbitrary (and used for demonstration purposes only), there might be scenarios where it might be beneficial to prioritize one of the endpoints.
+> **Note:** For the purpose of our lab, we will consider the deployment of .NET-based web app eShopOnWeb in the primary region as the primary instance. While in this case such consideration is purely arbitrary (and used for demonstration purposes only), there might be scenarios where it might be beneficial to prioritize one of the endpoints.
 
 The exercise consists of the following tasks:
 
@@ -141,14 +189,14 @@ The exercise consists of the following tasks:
 
    - In the **Routing method** drop-down list, select **Priority**.
 
-   > **Note:** We choose the priority routing method to reflect the somewhat arbitrary assumption that all of requests should be handled by the Azure App Service web app in the East US.
+   > **Note:** We choose the priority routing method to reflect the somewhat arbitrary assumption that all of requests should be handled by the Azure App Service web app in the primary region.
 
    - Verify that your Azure subscription appears in the **Subscription** drop-down list
    - Select **`rg-devops-foundations`** in the **Resource Group** drop-down list.
 
      > **Note:** If you don't have such a resource group, select **Create new**, enter **`rg-devops-foundations`** in the text box, and then select **OK**.
 
-   - In the **Resource group location** drop-down list, select **East US** (or the same Azure region you chose when deploying the East US web app).
+   - In the **Resource group location** drop-down list, select the same Azure region you chose as your primary region.
 
 1. Select **Create** to start the provisioning process.
 
@@ -171,18 +219,18 @@ The exercise consists of the following tasks:
 1. On the **devopsfoundationstmprofile** page, in the left navigation menu, in the **Settings** section, select **Endpoints**.
 1. On the **devopsfoundationstmprofile | Endpoints** page, select **+ Add**.
 
-   > **Note:** You will first add an endpoint representing the Azure App Service web app.
+   > **Note:** You will first add an endpoint representing the Azure App Service web app in the primary region.
 
 1. In the **Add endpoint** pane, perform the following actions:
 
    - Ensure that **Azure endpoint** appears in the **Type** drop-down list.
-   - In the **Name** text box, enter **`DevOps Foundations web app - East US`**.
+   - In the **Name** text box, enter **`DevOps Foundations web app - Primary`**.
    - Ensure that the **Enable Endpoint** checkbox is selected.
    - In the **Target resource type** drop-down list, select **App Service**.
-   - In the **Target resource** drop-down list, in the **rg-eshoponweb-eastus** section, select the name of the App Service web app you deployed to the East US Azure region.
+   - In the **Target resource** drop-down list, in your primary region's resource group section, select the name of the App Service web app you deployed to your primary Azure region.
    - In the **Priority** text box, enter **1**.
 
-   > **Note:** A lower priority value designates a higher precedence. In this case, all requests will be sent to the web app instance in the East US region, as long as that instance remains available.
+   > **Note:** A lower priority value designates a higher precedence. In this case, all requests will be sent to the web app instance in the primary region, as long as that instance remains available.
 
    - Ensure that the **Health Checks** are enabled.
 
@@ -190,15 +238,15 @@ The exercise consists of the following tasks:
 
 1. Back on the **devopsfoundationstmprofile | Endpoints** page, select **+ Add**.
 
-   > **Note:** Next, you will add an endpoint representing the other Azure App Service web app deployed to the West Europe Azure region.
+   > **Note:** Next, you will add an endpoint representing the other Azure App Service web app deployed to the secondary Azure region.
 
 1. In the **Add endpoint** pane, perform the following actions:
 
    - Ensure that **Azure endpoint** appears in the **Type** drop-down list.
-   - In the **Name** text box, enter **`DevOps Foundations web app - West US`**.
+   - In the **Name** text box, enter **`DevOps Foundations web app - Secondary`**.
    - Ensure that the **Enable Endpoint** checkbox is selected.
    - In the **Target resource type** drop-down list, select **App Service**.
-   - In the **Target resource** drop-down list, in the **rg-eshoponweb-westus** section, select the name of the App Service web app you deployed to the West US Azure region.
+   - In the **Target resource** drop-down list, in your secondary region's resource group section, select the name of the App Service web app you deployed to your secondary Azure region.
    - In the **Priority** text box, enter **2**.
    - Ensure that the **Health Checks** are enabled.
 
@@ -221,7 +269,7 @@ The exercise consists of the following tasks:
    nslookup {tm_profile}
    ```
 
-1. Rerun the same command a few times, waiting for a bit more than 5 seconds between each invocation (to eliminate the possibility of DNS caching) and note that the output in each case references the DNS name of the web app in the East US Azure region.
+1. Rerun the same command a few times, waiting for a bit more than 5 seconds between each invocation (to eliminate the possibility of DNS caching) and note that the output in each case references the DNS name of the web app in your primary Azure region.
 
 ## Test workload resiliency by using Azure Chaos Studio
 
@@ -239,7 +287,7 @@ The exercise consists of the following tasks:
 
 1. In the web browser tab displaying the Azure portal, in the search text box at the top of the page, enter **`Chaos Studio`** and, in the list of results, select **Chaos Studio**.
 1. On the **Chaos Studio** page, select **Targets**.
-1. On the **Chaos Studio \| Targets** page, select the Azure App Service web app instance in the **rg-eshoponweb-eastus** resource group in the East US region you deployed earlier in this lab.
+1. On the **Chaos Studio \| Targets** page, select the Azure App Service web app instance in your primary region's resource group that you deployed earlier in this lab.
 1. In the toolbar, select the **Enable targets** drop-down list header and, in the drop-down list select **Enable service-direct targets (All resources)**.
 1. On the **Enable service direct targets** page, ensure that the correct App Service web app instance is listed, select **Review + Enable**, and then select **Enable**.
 
@@ -255,9 +303,9 @@ The exercise consists of the following tasks:
    - Verify that your Azure subscription appears in the **Subscription** drop-down list.
    - Select the **Create new** link below the **Resource Group** drop-down list, in the **Name** text box, enter **`rg-devops-foundations`**, and then select **OK**.
    - In the **Experiment details** section, in the **Name** text box, enter **`DevOps_Foundations_Labs_Experiment_01`**.
-   - In the **Region** drop-down list, select the **West US** Azure region.
+   - In the **Region** drop-down list, select a different Azure region than your primary region (for example, your secondary region or another available region).
 
-   > **Note:** You could potentially choose any Azure region, but considering that you are testing failures to a resource in the East US region, selecting a different region like West US is recommended.
+   > **Note:** You could potentially choose any Azure region, but considering that you are testing failures to a resource in your primary region, selecting a different region (such as your secondary region) is recommended.
 
 1. On the **Basics** tab of the **Create an experiment** page, select **Next: Permissions >**.
 1. On the **Permissions** tab, accept the default option **System-assigned identity** and then select **Next: Experiment designer >**.
@@ -278,7 +326,7 @@ The exercise consists of the following tasks:
    > **Note:** For the experiment to succeed, you need to also grant the newly created managed service account permissions sufficient to stop the Azure App Service web app. We will leverage for this purpose the built-in Azure Contributor role, but you could create a custom role if you want to follow the principle of least privilege.
 
 1. In the Azure portal, in the search text box at the top of the page, enter **`App Services`** and select **App Services** in the list of results.
-1. On the **App Services** page, select the Azure App Service web app in the East US region you deployed earlier in this lab.
+1. On the **App Services** page, select the Azure App Service web app in your primary region that you deployed earlier in this lab.
 1. On the web app page, in the vertical menu on the left side, select **Access control (IAM)**.
 1. On the web app's **Access control (IAM)** page, select **+ Add** and, in the drop-down list, select **Add role assignment**.
 1. On the **Role** tab of the **Add role assignment** page, select **Privileged administrator roles**, in the list of roles, select **Contributor**, and then select **Next**.
@@ -303,7 +351,7 @@ The exercise consists of the following tasks:
 
    > **Note:** You might need to select **Refresh** toolbar entry to update the status of the Web App.
 
-   > **Note:** Now let's verify whether Traffic Manager is successfully redirecting requests targeting its profile to the endpoint representing the App Service web app in the West US region.
+   > **Note:** Now let's verify whether Traffic Manager is successfully redirecting requests targeting its profile to the endpoint representing the App Service web app in the secondary region.
 
 1. Start a web browser and navigate to the DNS name associated with the Traffic Manager profile.
 1. Verify that the web browser displays the familiar page of the web site hosted by the Azure App Service web app you deployed earlier in this lab.
@@ -315,7 +363,7 @@ The exercise consists of the following tasks:
    nslookup <tm_profile>
    ```
 
-1. Rerun the same command a few times, waiting for a bit more than 5 seconds between each invocation (to eliminate the possibility of DNS caching) and verify that the output in each case references the DNS name of the web app in the West US Azure region.
+1. Rerun the same command a few times, waiting for a bit more than 5 seconds between each invocation (to eliminate the possibility of DNS caching) and verify that the output in each case references the DNS name of the web app in your secondary Azure region.
 
 > **Note:** While this example might seem a bit simplistic, the primary objective of the exercise was to illustrate the process of implementing Azure Chaos Studio-based testing and its primary components. You would use the equivalent approach if an Azure App Service web app was a part of more complex environment, where the impact of its failure might be much more challenging to predict.
 
@@ -327,7 +375,7 @@ Now that you finished the exercise, you should delete the cloud resources you cr
 1. Select the **rg-devops-foundations** resource group (containing the Traffic Manager profile).
 1. On the toolbar, select **Delete resource group**.
 1. Enter the resource group name and confirm that you want to delete it.
-1. Repeat the same process for the **rg-eshoponweb-eastus** and **rg-eshoponweb-westus** resource groups.
+1. Repeat the same process for your primary and secondary region resource groups (the names you used based on your chosen regions, for example, **rg-eshoponweb-eastus** and **rg-eshoponweb-westus**).
 
 > **CAUTION:** Deleting a resource group deletes all resources contained within it. If you chose an existing resource group for this exercise, any existing resources outside the scope of this exercise will also be deleted.
 
