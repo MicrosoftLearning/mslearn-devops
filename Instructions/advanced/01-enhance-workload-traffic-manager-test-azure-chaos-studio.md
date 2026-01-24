@@ -126,13 +126,15 @@ Before deploying resources, you need to identify the official Azure region names
    # Create resource group for primary region
    az group create --name rg-eshoponweb-$PRIMARY_REGION_SUFFIX --location $PRIMARY_REGION
 
+   # Generate unique suffix for webapp name
+   SUFFIX=$(openssl rand -hex 4)
+   
    # Deploy the Bicep template for primary region
    az deployment group create \
      --resource-group rg-eshoponweb-$PRIMARY_REGION_SUFFIX \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshop-$PRIMARY_REGION_SUFFIX-$(uuidgen) \
+     --parameters webAppName=eshop-$PRIMARY_REGION_SUFFIX-$SUFFIX \
                   sku=F1 \
-                  linuxFxVersion="DOTNETCORE|8.0"
    ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
@@ -157,10 +159,9 @@ Before deploying resources, you need to identify the official Azure region names
    az deployment group create \
      --resource-group rg-eshoponweb-$SECONDARY_REGION_SUFFIX \
      --template-file infra/webapp.bicep \
-     --parameters webAppName=eshop-$SECONDARY_REGION_SUFFIX-$(uuidgen) \
+     --parameters webAppName=eshop-$SECONDARY_REGION_SUFFIX-$SUFFIX \
                   sku=F1 \
-                  linuxFxVersion="DOTNETCORE|8.0"
-   ```
+  ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
 
