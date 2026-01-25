@@ -220,6 +220,8 @@ You'll configure a release pipeline with deployment gates.
 1. Select the **Deploy Azure App Service** task
 1. In the **Package or Folder** field, update the default value to: `$(System.DefaultWorkingDirectory)/**/Web.zip`
 1. Open **Application and Configuration Settings** and enter this in **App settings**: `-UseOnlyInMemoryDatabase true -ASPNETCORE_ENVIRONMENT Development`
+1. In the **Run On Agent** Agent settings, navigate to **Agent Selection** and specify the **Agent Pool** as **Hosted / Azure Pipelines** and **windows-latest** for **Agent Specification**
+1. Select **Save** and in the Save dialog box, select **OK**
 
 ### Configure Production stage
 
@@ -229,6 +231,7 @@ You'll configure a release pipeline with deployment gates.
 1. Select the **Deploy Azure App Service** task
 1. In the **Package or Folder** field, update the default value to: `$(System.DefaultWorkingDirectory)/**/Web.zip`
 1. Open **Application and Configuration Settings** and enter this in **App settings**: `-UseOnlyInMemoryDatabase true -ASPNETCORE_ENVIRONMENT Development`
+1. 1. In the **Run On Agent** Agent settings, navigate to **Agent Selection** and specify the **Agent Pool** as **Hosted / Azure Pipelines** and **windows-latest** for **Agent Specification** 
 1. Select **Save** and in the Save dialog box, select **OK**
 
 ### Test the release pipeline
