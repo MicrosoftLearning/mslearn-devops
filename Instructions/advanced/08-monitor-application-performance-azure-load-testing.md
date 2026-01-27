@@ -11,6 +11,8 @@ lab:
 
 You will learn how to use Azure Load Testing to simulate performance testing against a live-running web application with different load scenarios. Azure Load Testing is a fully managed load-testing service that enables you to generate high-scale load and abstracts the complexity and infrastructure needed to run your load test at scale.
 
+This lab takes approximately **35** minutes to complete.
+
 ## Before you start
 
 You need:

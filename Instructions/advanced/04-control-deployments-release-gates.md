@@ -11,6 +11,8 @@ lab:
 
 You will learn how to configure deployment gates and use them to control the execution of Azure Pipelines. You'll configure a release definition with two environments for an Azure Web App, deploying to the DevTest environment only when there are no blocking bugs, and marking the DevTest environment complete only when there are no active alerts in Application Insights.
 
+This lab takes approximately **75** minutes to complete.
+
 ## Before you start
 
 You need:

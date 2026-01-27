@@ -160,8 +160,9 @@ Before deploying resources, you need to identify the official Azure region names
      --resource-group rg-eshoponweb-$SECONDARY_REGION_SUFFIX \
      --template-file infra/webapp.bicep \
      --parameters webAppName=eshop-$SECONDARY_REGION_SUFFIX-$SUFFIX \
-                  sku=F1 \
-  ```
+     sku=F1 \
+
+   ```
 
 1. Wait for the deployment to complete. This might take a few minutes.
 

@@ -7,9 +7,9 @@ lab:
 
 # Package Management with Azure Artifacts
 
-**Estimated time:** 35 minutes
-
 You will learn how to work with Azure Artifacts for package management, including creating and connecting to a feed, creating and publishing a NuGet package, importing a NuGet package, and updating a NuGet package. Azure Artifacts facilitates discovery, installation, and publishing of NuGet, npm, and Maven packages in Azure DevOps.
+
+This lab takes approximately **35** minutes to complete.
 
 ## Before you start
 

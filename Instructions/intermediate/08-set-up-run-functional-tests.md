@@ -7,9 +7,9 @@ lab:
 
 # Set up and run functional tests
 
-**Estimated time:** 20 minutes
-
 You will learn how to configure a CI pipeline for a .NET application that includes unit tests, integration tests, and functional tests. You'll understand the different types of automated testing and how they fit into a continuous integration strategy.
+
+This lab takes approximately **20** minutes to complete.
 
 ## Before you start
 

@@ -11,6 +11,8 @@ lab:
 
 You will learn how to integrate Azure Key Vault with an Azure Pipeline to securely store and retrieve sensitive data such as passwords and keys. You'll create an Azure Key Vault, store an Azure Container Registry password as a secret, and configure a pipeline to retrieve and use that secret for container deployment.
 
+This lab takes approximately **40** minutes to complete.
+
 ## Before you start
 
 You need:
