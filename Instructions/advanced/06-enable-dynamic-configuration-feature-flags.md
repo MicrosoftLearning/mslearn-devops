@@ -11,6 +11,8 @@ lab:
 
 You will learn how to use Azure App Configuration to manage application settings and feature flags centrally. You'll explore how modern cloud applications can benefit from centralized configuration management and dynamic feature toggling without requiring application redeployment.
 
+This lab takes approximately **45** minutes to complete.
+
 ## Before you start
 
 You need:

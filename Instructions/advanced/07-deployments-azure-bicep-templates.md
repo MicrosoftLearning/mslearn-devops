@@ -11,6 +11,8 @@ lab:
 
 You will learn how to create an Azure Bicep template and modularize it using the Azure Bicep Modules concept. You'll modify the main deployment template to use the module and deploy all the resources to Azure using Azure YAML pipelines.
 
+This lab takes approximately **30** minutes to complete.
+
 ## Before you start
 
 You need:

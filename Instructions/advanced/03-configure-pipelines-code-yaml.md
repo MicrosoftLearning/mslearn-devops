@@ -11,6 +11,8 @@ lab:
 
 You will learn how to define build and release pipelines using YAML, allowing you to access the same pipeline features as those using the visual designer but with a markup file that can be managed like any other source file. This includes configuring CI/CD pipelines as code with YAML in Azure DevOps, adding continuous delivery stages, and implementing environment approvals.
 
+This lab takes approximately **45** minutes to complete.
+
 ## Before you start
 
 You need:

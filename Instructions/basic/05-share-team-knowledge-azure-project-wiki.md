@@ -11,6 +11,8 @@ lab:
 
 You will learn how to create and configure wikis in Azure DevOps, including managing markdown content and creating Mermaid diagrams. Azure DevOps wikis provide a centralized place for teams to share knowledge, document processes, and maintain project information.
 
+This lab takes approximately **45** minutes to complete.
+
 ## Before you start
 
 You need:
