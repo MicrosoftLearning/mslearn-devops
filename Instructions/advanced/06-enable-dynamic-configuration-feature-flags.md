@@ -122,7 +122,7 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
    - **csmFile**: **`\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)`**
 1. In the same YAML pipeline definition, update the **task: AzureRMWebAppDeployment@4** section,  
    **inputs** values:
-   - **`packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip`**
+   - **packageForLinux**: **`\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip`**
 1. Select **Save and Run**
 1. Open the pipeline and wait for it to execute successfully. Deployment should take about 3-5 min on average.
 
@@ -132,7 +132,7 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
 1. Navigate to the Azure Portal - App Services and select your deployed App Service. From the **Overview** tab, click on the URL in **Default domain** top open the link in your browser. 
 1. Confirm the EShopOnWeb web app is running as expected, and showing several product items.
 
-> **Note**: The first time you load the web app, it might take a minute or more (browser showing Loading... message in the browser tab). This is as expected, since the product database is getting seeded and loaded into memory on the first load.
+> **Note**: The first time you load the web app, or after a restart of the App Service, it will take a minute or more (browser showing Loading... message in the browser tab), before the site is fully loaded and ready. This is expected, since the product database is getting seeded and loaded into memory on the first load.
 
 ## Create Azure App Configuration service
 
@@ -160,7 +160,7 @@ You'll create a feature flag to control application features dynamically. In thi
    - **What will you be using your feature flag for**: Switch
    - **Enable feature flag**: toggle to enable
    - **Feature flag name**: SalesWeekend
-   - **Key**: _.appconfig.featureflag/_**SalesWeekend**
+   - **Key**: _.appconfig.featureflag/_**SalesWeekend** (Gets filled automatically)
    - **Label**: leave empty
    - **Description**: Enables the SalesWeekend promotion banner
 1. Confirm the creation with **Review + Create** and once more **Create**
