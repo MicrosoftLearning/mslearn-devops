@@ -110,15 +110,19 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
 1. Select **Existing Azure Pipelines YAML File**
 1. Select the **main** branch and the **/.ado/eshoponweb-cd-webapp-code.yml** file
 1. Select **Continue**
-1. In the YAML pipeline definition, set the variable section:
+1. In the YAML pipeline definition, update the **variable** section:
    - **resource-group**: the name of the resource group, for example **rg-az400-container-NAME** (replace NAME)
    - **location**: the name of the Azure region, for example **southcentralus**
    - **templateFile**: **'webapp.bicep'**
-   - **subscriptionid**: your Azure subscription id
+   - **subscriptionid**: your Azure subscription id (From Azure Portal / Subscriptions)
    - **azureserviceconnection**: **'azure subs'**
-   - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME**
-   - **csmFile**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)'**
-   - **packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip'**
+   - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME** (replace NAME)
+1. In the same YAML pipeline definition, update the **task: AzureResourceManagerTemplateDeployment@3** section,  
+   **inputs** values:
+   - **csmFile**: **`\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)`**
+1. In the same YAML pipeline definition, update the **task: AzureRMWebAppDeployment@4** section,  
+   **inputs** values:
+   - **`packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip`**
 1. Select **Save and Run**
 1. Open the pipeline and wait for it to execute successfully. Deployment should take about 3-5 min on average.
 
@@ -127,6 +131,8 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
 1. Rename the pipeline to **eshoponweb-cd-webapp-code** for better identification
 1. Navigate to the Azure Portal - App Services and select your deployed App Service. From the **Overview** tab, click on the URL in **Default domain** top open the link in your browser. 
 1. Confirm the EShopOnWeb web app is running as expected, and showing several product items.
+
+> **Note**: The first time you load the web app, it might take a minute or more (browser showing Loading... message in the browser tab). This is as expected, since the product database is getting seeded and loaded into memory on the first load.
 
 ## Create Azure App Configuration service
 
@@ -137,7 +143,7 @@ You'll create the Azure App Configuration service to centrally store the applica
 1. Specify the same location you used for the App Service deployment for the app configuration resource
 1. Enter a name for the configuration store (must be globally unique)
 1. Select the **Standard** pricing tier for this lab (required for feature flags)
-1. Click **Next:Access settings** and select **Enable Access Keys** under Authentication type
+1. Click **Next: Access settings** and select **Enable Access Keys** under Authentication type
 1. Select **Pass-through (Recommended)** as Authentication Method
 
 > **Note:** By enabling both the key-based Authentication type and Pass-through Authentication method, you as an admin get immediate access to configure actual App Configuration settings, as well as enabling Azure RBAC permissions for the Web App resource. Without enabling access keys, there is a potential waiting time of 15min before you as an admin can define App Configuration settings.
@@ -185,8 +191,10 @@ In this step, you'll define several App Service Environment Variables to connect
 1. Notice a few Variables are already defined; don't make any changes to the values or parameters
 1. Click **+ Add**, to create the following 2 new variables:
 
+> **Note**: use the "Show Values" option (the eye icon) to unhide the characters while typing
+
 - **Name**: AppConfigEndPoint
-- **Value**: The URL of the App Configuration resource (_https://%yourappconfigname%.azconfig.io)
+- **Value**: The URL of the App Configuration resource, including **https://** (_https://%yourappconfigname%.azconfig.io)
 - **Name**: UseAppConfig
 - **Value**: true
 
@@ -215,15 +223,18 @@ Using App Configuration, we will change this message, without needing to make ch
 1. In the left pane of the App Configuration service, select **Configuration Explorer**
 1. Select **Create**
 1. Select **Key-Value**
-   - **Key**: eShopWeb:Settings:NoResultsMessage
-   - **Value**: Sorry, we couldn't find what you're looking for. But hey, why not checking for a different item. We heard the T-Shirts are sway!
+   - **Key**: `eShopWeb:Settings:NoResultsMessage`
+   - **Value**: `Sorry, we couldn't find what you're looking for. But hey, why not checking for a different item. We heard the T-Shirts are sway!`
    - **Label**: leave empty
    - **Content Type**: leave empty
-1. Confirm the creation with **Review + Create** and once more **Create**
+1. Confirm the creation with **Apply** and once more **Create**
 
 1. From the **Web App Home Page**, notice the **Brand** and **Type** filter options. 
-1. In **Brand**, select **.NET**; in **Type**, select **USB Memory Stick**
+1. In **Brand**, select **.NET**; in **Type**, select **Mugs**. Which will show a few product items.
+1. Now, select **Brand** **.NET** and **Type** **USB Memory Stick**. 
 1. Notice the **new custom message** as defined in the App Configuration Explorer
+
+> **Note**: This works because the app code itself looks for a parameter _eShopWeb:Settings:NoResultsMessage_ and uses the value from App Config.
 
 ## Clean up resources
 
