@@ -113,12 +113,12 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
 1. In the YAML pipeline definition, set the variable section:
    - **resource-group**: the name of the resource group, for example **rg-az400-container-NAME** (replace NAME)
    - **location**: the name of the Azure region, for example **southcentralus**
-   - **templateFile**: **'infra/webapp.bicep'**
+   - **templateFile**: **'webapp.bicep'**
    - **subscriptionid**: your Azure subscription id
    - **azureserviceconnection**: **'azure subs'**
    - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME**
-   - **csmFile**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/\$(templateFile)'**
-   - **packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Web.zip'**
+   - **csmFile**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)'**
+   - **packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip'**
 1. Select **Save and Run**
 1. Open the pipeline and wait for it to execute successfully. Deployment should take about 3-5 min on average.
 
@@ -170,7 +170,7 @@ You'll create a feature flag to control application features dynamically. In thi
 1. Click **Add+** / Add Role Assignment
 1. In the _Search by role name, description, permission, or ID_, field, search for **App Configuration Data Reader**  and select it
 1. in the **Add Role Assignment** page / **Members** tab, **Assign Access To**, select **Managed Identity**
-1. click the**+ Select Members** link, which opens the **Select Managed Identities** blade
+1. click the **+ Select Members** link, which opens the **Select Managed Identities** blade
 1. Under **Managed Identity**, select **App Service (x)**, and select your **App Service Identity**
 1. Confirm by clicking **Select** 
 1. Confirm by clicking **Review + Assign** twice
@@ -186,7 +186,7 @@ In this step, you'll define several App Service Environment Variables to connect
 1. Click **+ Add**, to create the following 2 new variables:
 
 - **Name**: AppConfigEndPoint
-- **Value**: The URL of the App Configuration resource (_https://<appconfigname>.azconfig.io)
+- **Value**: The URL of the App Configuration resource (_https://%yourappconfigname%.azconfig.io)
 - **Name**: UseAppConfig
 - **Value**: true
 
@@ -207,7 +207,7 @@ In this step, you'll define several App Service Environment Variables to connect
 You'll create a dynamic configuration parameter to control application features dynamically. In this example, we show a "different message to the user" for empty search results, instead of what has been hard-coded in the application codebase. 
 
 1. From the **Web App Home Page**, notice the **Brand** and **Type** filter options. 
-1. In **Brand**, select **.NET**; in **Type**, select **USB Memory Stick**
+1. In **Brand**, select **.NET**; in **Type**, select **USB Memory Stick**, and press the arrow key to execute a search
 1. Notice the default response message "THERE ARE NO RESULTS THAT MATCH YOUR SEARCH"
 
 Using App Configuration, we will change this message, without needing to make changes to the application code.
@@ -215,7 +215,7 @@ Using App Configuration, we will change this message, without needing to make ch
 1. In the left pane of the App Configuration service, select **Configuration Explorer**
 1. Select **Create**
 1. Select **Key-Value**
-   - **Key**: EShopWeb:Settings:NoResultsMessage
+   - **Key**: eShopWeb:Settings:NoResultsMessage
    - **Value**: Sorry, we couldn't find what you're looking for. But hey, why not checking for a different item. We heard the T-Shirts are sway!
    - **Label**: leave empty
    - **Content Type**: leave empty
