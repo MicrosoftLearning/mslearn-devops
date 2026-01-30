@@ -110,165 +110,131 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
 1. Select **Existing Azure Pipelines YAML File**
 1. Select the **main** branch and the **/.ado/eshoponweb-cd-webapp-code.yml** file
 1. Select **Continue**
-1. In the YAML pipeline definition, set the variable section:
+1. In the YAML pipeline definition, update the **variable** section:
    - **resource-group**: the name of the resource group, for example **rg-az400-container-NAME** (replace NAME)
    - **location**: the name of the Azure region, for example **southcentralus**
-   - **templateFile**: **'infra/webapp.bicep'**
-   - **subscriptionid**: your Azure subscription id
+   - **templateFile**: **'webapp.bicep'**
+   - **subscriptionid**: your Azure subscription id (From Azure Portal / Subscriptions)
    - **azureserviceconnection**: **'azure subs'**
-   - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME**
-   - **csmFile**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/\$(templateFile)'**
-   - **packageForLinux**: **'\$(Pipeline.Workspace)/eshoponweb-ci/Web.zip'**
+   - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME** (replace NAME)
+1. In the same YAML pipeline definition, update the **task: AzureResourceManagerTemplateDeployment@3** section,  
+   **inputs** values:
+   - **csmFile**: **`\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)`**
+1. In the same YAML pipeline definition, update the **task: AzureRMWebAppDeployment@4** section,  
+   **inputs** values:
+   - **packageForLinux**: **`\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip`**
 1. Select **Save and Run**
-1. Open the pipeline and wait for it to execute successfully
+1. Open the pipeline and wait for it to execute successfully. Deployment should take about 3-5 min on average.
 
 > **Important**: If you see the message "This pipeline needs permission to access resources before this run can continue", select on View, Permit and Permit again.
 
 1. Rename the pipeline to **eshoponweb-cd-webapp-code** for better identification
+1. Navigate to the Azure Portal - App Services and select your deployed App Service. From the **Overview** tab, click on the URL in **Default domain** top open the link in your browser. 
+1. Confirm the EShopOnWeb web app is running as expected, and showing several product items.
+
+> **Note**: The first time you load the web app, or after a restart of the App Service, it will take a minute or more (browser showing Loading... message in the browser tab), before the site is fully loaded and ready. This is expected, since the product database is getting seeded and loaded into memory on the first load.
 
 ## Create Azure App Configuration service
 
 You'll create the Azure App Configuration service to centrally store the application configuration and feature flags.
 
 1. In the Azure portal, search for **App Configuration** and select **Create app configuration**
-1. Select or create a resource group
-1. Specify the location for the app configuration resource
+1. Select the same Resource Group you used for the App Service deployment earlier
+1. Specify the same location you used for the App Service deployment for the app configuration resource
 1. Enter a name for the configuration store (must be globally unique)
 1. Select the **Standard** pricing tier for this lab (required for feature flags)
-1. Select **Review + create** then **Create**
+1. Click **Next: Access settings** and select **Enable Access Keys** under Authentication type
+1. Select **Pass-through (Recommended)** as Authentication Method
+
+> **Note:** By enabling both the key-based Authentication type and Pass-through Authentication method, you as an admin get immediate access to configure actual App Configuration settings, as well as enabling Azure RBAC permissions for the Web App resource. Without enabling access keys, there is a potential waiting time of 15min before you as an admin can define App Configuration settings.
+
+1. Select **Review + create** followed by **Create** and wait for the resource deployment to complete.
 1. Once the resource is created, go to the resource
-
-## Set up configuration keys in App Configuration
-
-You'll add configuration keys that your application will consume.
-
-1. In the left pane of the App Configuration service, under **Operations**, select **Configuration explorer**
-1. Select **Create > Key-value** and add:
-   - **Key**: eShopOnWeb:Settings:ShowPipelineInfo
-   - **Value**: true
-   - **Label**: leave empty
-   - **Content type**: leave empty
-1. Select **Apply** and repeat the process to add these keys:
-   - **Key**: eShopOnWeb:Settings:ShowImageDevVersion, **Value**: false
-   - **Key**: eShopOnWeb:Settings:ShowImageProdVersion, **Value**: true
 
 ## Set up feature flags in App Configuration
 
-You'll create feature flags to control application features dynamically.
+You'll create a feature flag to control application features dynamically. In this example, we show a "SalesWeekend" banner on the home page. The Feature Flag toggle enables or disables this.
 
 1. In the left pane of the App Configuration service, select **Feature manager**
-1. Select **Create** and add **Feature flag**:
-   - **Enable feature flag**: checked
-   - **Feature flag name**: ShoppingCart
+1. Select **Create**:
+   - **What will you be using your feature flag for**: Switch
+   - **Enable feature flag**: toggle to enable
+   - **Feature flag name**: SalesWeekend
+   - **Key**: _.appconfig.featureflag/_**SalesWeekend** (Gets filled automatically)
    - **Label**: leave empty
-   - **Description**: Enable the shopping cart feature
-1. Select **Apply**
-1. Repeat to create another feature flag:
-   - **Feature flag name**: Pipeline
-   - **Description**: Enable the pipeline information display
+   - **Description**: Enables the SalesWeekend promotion banner
+1. Confirm the creation with **Review + Create** and once more **Create**
 
-## Configure the application to use App Configuration
+## Configure the Web Application to use App Configuration, using Managed Identity RBAC
 
-You'll modify the application to connect to Azure App Configuration.
+1. In the Azure Portal, App Services, go to the WebApp you deployed earlier
+1. From **Settings** / **Identity**, **System Assigned** tab, click the **Status** toggle to **On**
+1. Click **Save** to save the changes
+1. Confirm the popup message _enable system assigned managed identity_ with **Yes**
+1. Wait for the **Object (principal) ID** to get created
+1. Navigate to the **App Configuration** resource, **Access Control (IAM)** tab
+1. Click **Add+** / Add Role Assignment
+1. In the _Search by role name, description, permission, or ID_, field, search for **App Configuration Data Reader**  and select it
+1. in the **Add Role Assignment** page / **Members** tab, **Assign Access To**, select **Managed Identity**
+1. click the **+ Select Members** link, which opens the **Select Managed Identities** blade
+1. Under **Managed Identity**, select **App Service (x)**, and select your **App Service Identity**
+1. Confirm by clicking **Select** 
+1. Confirm by clicking **Review + Assign** twice
+1. You can **validate the RBAC permission**, by navigating back to the **Access Control (IAM)** tab of the **App Configuration** resource, select **Role Assignments** and search/filter on **App Configuration**. This will show the App Configuration Data Reader role, and your App Service Managed Identity
 
-### Add App Configuration connection string
+### Add App Configuration Environment Variables
 
-1. In the Azure portal, go to your App Configuration resource
-1. Select **Access settings** under **Settings** from the left menu
-1. Copy the **Primary** connection string
-1. Go to your Azure Web App resource (created by the CD pipeline)
-1. In the left menu, under **Settings**, select **Environment variables**
-1. Select the **Connection strings** tab and add:
-   - **Name**: AppConfig
-   - **Value**: [paste the App Configuration connection string]
-   - **Type**: Custom
-   - **Deployment slot setting**: leave unchecked
-1. Select **Apply**, then select **Apply** again
+In this step, you'll define several App Service Environment Variables to connect to Azure App Configuration.
 
-### Update application code
+1. In the Azure Portal, go to your deployed **App Services Web App**
+1. Navigate to **Settings / Environment Variables**
+1. Notice a few Variables are already defined; don't make any changes to the values or parameters
+1. Click **+ Add**, to create the following 2 new variables:
 
-The sample application is already configured to use Azure App Configuration. The key integration points are:
+> **Note**: use the "Show Values" option (the eye icon) to unhide the characters while typing
 
-1. **Program.cs** - The application is configured to use App Configuration:
+- **Name**: AppConfigEndPoint
+- **Value**: The URL of the App Configuration resource, including **https://** (_https://%yourappconfigname%.azconfig.io)
+- **Name**: UseAppConfig
+- **Value**: true
 
-   ```csharp
-   builder.Host.ConfigureAppConfiguration((hostingContext, config) =>
-   {
-       var settings = config.Build();
-       config.AddAzureAppConfiguration(options =>
-       {
-           options.Connect(settings.GetConnectionString("AppConfig"))
-                  .UseFeatureFlags();
-       });
-   });
-   ```
-
-1. **Views** - The application uses feature flags to conditionally show content:
-   ```html
-   <feature name="ShoppingCart">
-     <div>Shopping cart feature is enabled!</div>
-   </feature>
-   ```
-
-## Test dynamic configuration and feature flags
-
-You'll test the dynamic configuration capabilities by changing settings without redeploying the application.
-
-### Test configuration changes
-
-1. Navigate to your deployed web application URL
-1. Observe the current display of pipeline information
-1. Go back to App Configuration in the Azure portal
-1. In **Configuration explorer**, find the **eShopOnWeb:Settings:ShowPipelineInfo** key
-1. Change its value from **true** to **false**
-1. Select **Apply**
-1. Refresh your web application (may take up to 30 seconds to refresh)
-1. Notice that the pipeline information is no longer displayed
+1. Click **Apply**, **Apply** and **Confirm** to save the changes
 
 ### Test feature flag changes
 
-1. In your web application, observe whether the shopping cart feature is displayed
+1. In your web application, observe whether the ""SalesWeekend" banner (_All T-Shirts on sale this weekend_) feature is displayed
 1. Go back to App Configuration in the Azure portal
-1. In **Feature manager**, find the **ShoppingCart** feature flag
+1. In **Feature manager**, find the **SalesWeekend** feature flag
 1. Toggle its state (enable/disable)
 1. Select **Apply**
-1. Refresh your web application
-1. Notice that the shopping cart feature appears or disappears based on the flag state
+1. After about 10 seconds, refresh your web application
+1. Notice that the "SalesWeekend" banner appears or disappears based on the flag state
 
-## Advanced feature flag scenarios
+## Set up dynamic configuration parameters using Configuration Explorer in App Configuration
 
-Feature flags support more advanced scenarios:
+You'll create a dynamic configuration parameter to control application features dynamically. In this example, we show a "different message to the user" for empty search results, instead of what has been hard-coded in the application codebase. 
 
-### Conditional activation
+1. From the **Web App Home Page**, notice the **Brand** and **Type** filter options. 
+1. In **Brand**, select **.NET**; in **Type**, select **USB Memory Stick**, and press the arrow key to execute a search
+1. Notice the default response message "THERE ARE NO RESULTS THAT MATCH YOUR SEARCH"
 
-1. In the Azure portal, go to your App Configuration **Feature manager**
-1. Select on the **Pipeline** feature flag
-1. Select **Add filter**
-1. Select **Targeting filter**
-1. Configure percentage-based rollout:
-   - **Default percentage**: 50
-   - **Groups**: Leave empty for this demo
-1. Select **Apply**
+Using App Configuration, we will change this message, without needing to make changes to the application code.
 
-This configuration will show the feature to 50% of users randomly.
+1. In the left pane of the App Configuration service, select **Configuration Explorer**
+1. Select **Create**
+1. Select **Key-Value**
+   - **Key**: `eShopWeb:Settings:NoResultsMessage`
+   - **Value**: `Sorry, we couldn't find what you're looking for. But hey, why not checking for a different item. We heard the T-Shirts are sway!`
+   - **Label**: leave empty
+   - **Content Type**: leave empty
+1. Confirm the creation with **Apply** and once more **Create**
 
-### Time-based activation
+1. From the **Web App Home Page**, notice the **Brand** and **Type** filter options. 
+1. In **Brand**, select **.NET**; in **Type**, select **Mugs**. Which will show a few product items.
+1. Now, select **Brand** **.NET** and **Type** **USB Memory Stick**. 
+1. Notice the **new custom message** as defined in the App Configuration Explorer
 
-1. Create a new feature flag called **SpecialOffer**
-1. Add a **Time Window** filter
-1. Set a start and end time for when the feature should be active
-1. This allows you to automatically enable/disable features based on time
-
-## Monitor App Configuration usage
-
-You can monitor how your application uses App Configuration:
-
-1. In the Azure portal, go to your App Configuration resource
-1. Select **Monitoring** from the left menu
-1. Select **Metrics** to see:
-   - **Requests** - Number of configuration requests
-   - **Throttled requests** - Requests that were throttled
-   - **Storage utilization** - How much storage is being used
+> **Note**: This works because the app code itself looks for a parameter _eShopWeb:Settings:NoResultsMessage_ and uses the value from App Config.
 
 ## Clean up resources
 
@@ -288,6 +254,5 @@ In this lab, you learned how to:
 - **Manage feature flags** for controlled feature rollouts
 - **Configure applications** to consume centralized configuration
 - **Test configuration changes** without application redeployment
-- **Implement advanced feature flag scenarios** like percentage rollouts and time-based activation
 
 Azure App Configuration provides a powerful way to manage application settings and feature flags centrally, enabling dynamic configuration changes and controlled feature rollouts without requiring application redeployment. This leads to more flexible and maintainable cloud applications.
