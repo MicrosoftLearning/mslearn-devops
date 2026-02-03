@@ -86,12 +86,14 @@ Set up a dedicated feed for your organization's internal packages.
 1. Select **Create**
 1. After creation, select **Connect to Feed**
 1. Select **dotnet** under the NuGet section
-1. Copy the **Source URL** (you'll need this later). It will look like:
+1. Copy the **Artifacts URL** (value parameter in the displayed nuget.config xml snippet). It will look like:
    ```
    https://pkgs.dev.azure.com/<your-org>/Contoso.Microservices/_packaging/contoso-internal/nuget/v3/index.json
    ```
 
-> **Note**: By default, the "<DevOps Project> Build Service" User has **Artifact Feed Collaborator (Feed and Upstream Reader)** permissions. As we will run a Build Pipeline later on to not only use, but also publish packages, the permissions needs to be updated.
+1. Click the **Back** arrow to return to the main Artifacts feed page.
+
+> **Note**: By default, the "<DevOps Project> Build Service" User has **Artifact Feed Collaborator (Feed and Upstream Reader)** permissions. As we will run a Build Pipeline later on to not only _use_, but also _publish_ packages, the permissions need to be updated.
 
 1. From the **Artifacts** / **Feeds** page (The one that says _Connect to the feed to get started_), select **Feed Settings** (the little cog wheel) and navigate to the **Permissions** tab
 1. Select the **Contoso.MicroServices Build Service (ADO Organization)** User
@@ -116,6 +118,7 @@ Create a .NET 8 class library with realistic shared utilities.
    dotnet new sln --name Contoso.Shared
    dotnet new classlib --name Contoso.Shared.Core --framework net8.0
    dotnet sln add Contoso.Shared.Core
+   dotnet new gitignore
    ```
 
 1. Open the project in VS Code:
@@ -440,6 +443,7 @@ Now that the package is published through the pipeline, create a microservice th
 Create a `nuget.config` file so both local development and CI/CD pipelines can restore packages from your Azure Artifacts feed.
 
 1. Create `nuget.config` in the solution root (`C:\ContosoMicroservices`):
+(This xml can also be found in the Artifacts Feed / Connect to feed / Nuget / dotnet - Project Setup section)
 
    ```xml
    <?xml version="1.0" encoding="utf-8"?>
@@ -459,7 +463,6 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
 > **Important:** Before proceeding, verify that the pipeline from Task 4 completed successfully and the package exists in your feed:
 > 1. In Azure DevOps, navigate to **Artifacts** > **contoso-internal**
 > 2. Confirm you see `Contoso.Shared.Core` version `1.0.0` listed
-> 
 > If the package is not there, check the pipeline run in **Pipelines** for any errors.
 
 1. Install the Azure Artifacts credential provider if you haven't already (this enables authentication for local development):
@@ -563,10 +566,10 @@ public class OrderDto
 
    ```powershell
    cd c:\ContosoMicroServices\Contoso.OrderService
-   cd dotnet run
+   dotnet run
    ```
 
-1. Test the API using the Swagger UI (open the URL shown in the terminal):
+1. Test the API using the Swagger UI (open the **http://localhost:port>** URL shown in the terminal):
    - Navigate to `/api/orders/1` - should return a success response
    - Notice how the email is masked and description is truncated using the shared extensions
    - Navigate to `/api/orders/999` - should return a ORDER_NOT_FOUND error
@@ -658,6 +661,15 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
    dotnet restore
    dotnet build
    ```
+
+> **Note**: If you see an error message when running this step, saying "error NU1102: unable to find package" the solution is to clear the Nuget local cache and run dotnet restore again, using the below commands (More information on this error is documented **[here](https://learn.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders)**).
+
+  ```powershell
+   cd C:\ContosoMicroservices
+   dotnet nuget locals http-cache --clear
+   dotnet restore
+   ```
+
 
 1. Verify the updated package is working by running the Order Service:
    ```powershell
@@ -752,9 +764,11 @@ This pipeline demonstrates how the `NuGetAuthenticate` task enables the build ag
 1. Select **New Pipeline**
 1. Select **Azure Repos Git** > **Contoso.Microservices**
 1. Select **Existing Azure Pipelines YAML file**
-1. Choose `/azure-pipelines-orderservice.yml`
-1. Select **Run**
-
+1. Choose:
+   - Branch: **Main**
+   - Path: **`/azure-pipelines-orderservice.yml`**
+1. Select **Continue**
+1. Select **Run** to kick off the pipeline
 1. From the running pipeline, select the **Build Order Service** Stage to open the **Job Details**.
 1. Observe several steps happening in the pipeline:
    - Authenticates to Azure Artifacts using the same Azure Artifacts Credential Provider used locally
