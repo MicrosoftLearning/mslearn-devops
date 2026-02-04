@@ -115,6 +115,7 @@ Create a .NET 10 class library with realistic shared utilities.
 
 1. Create a new solution and class library:
    ```powershell
+   dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org
    dotnet new sln --name Contoso.Shared
    dotnet new classlib --name Contoso.Shared.Core --framework net10.0
    dotnet sln add Contoso.Shared.Core
@@ -478,14 +479,14 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
 1. Add the package reference to the Order Service. Open `Contoso.OrderService/Contoso.OrderService.csproj` in VS Code and add the following line to the existing `ItemGroup` tag:
 
    ```xml
-     <PackageReference Include="Contoso.Shared.Core" Version="1.0.0" />
+    <PackageReference Include="Contoso.Shared.Core" Version="1.0.0" />
    ```
 
 1. Next, in the same `Contoso.OrderService.csproj`, add a project reference to Contoso.Shared.Core, by adding the following new ItemGroup section below the PackageReference ItemGroup section:
 
     ```xml
-      <ItemGroup>
-      <ProjectReference Include="..\Contoso.Shared.Core\Contoso.Shared.Core.csproj" />
+    <ItemGroup>
+    <ProjectReference Include="..\Contoso.Shared.Core\Contoso.Shared.Core.csproj" />
     </ItemGroup>
     ```
 
@@ -577,7 +578,7 @@ public class OrderDto
    dotnet run
    ```
 
-1. Test the API using the Swagger UI (open the **http://localhost:port>** URL shown in the terminal):
+1. Test the API by opening the **http://localhost:port>** URL shown in the terminal):
    - Navigate to `/api/orders/1` - should return a success response
    - Notice how the email is masked and description is truncated using the shared extensions
    - Navigate to `/api/orders/999` - should return a ORDER_NOT_FOUND error
@@ -592,6 +593,8 @@ The updated method adds a `minMaskedChars` parameter to ensure short strings are
 
 1. In VS Code, open `Contoso.Shared.Core/Extensions/StringExtensions.cs`
 1. Update the `Mask` method:
+
+> **Note**: Make sure you don't change any of the other code snippets. Also make sure that the indentation of the code snippet is respected.
 
 ```csharp
 public static string Mask(this string value, int visibleChars = 4, char maskChar = '*', int minMaskedChars = 3)
@@ -671,6 +674,7 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
    dotnet restore
    dotnet build
    ```
+
 > **Note**: If you see an error message when running this step, saying "error NU1102: unable to find package" the solution is to clear the Nuget local cache and run dotnet restore again, using the below commands (More information on this error is documented **[here](https://learn.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders)**).
 
   ```powershell
@@ -764,9 +768,11 @@ This pipeline demonstrates how the `NuGetAuthenticate` task enables the build ag
 
 1. Commit and push all changes:
    ```powershell
+   cd C:\ContosoMicroServices
    git add .
    git commit -m "Add Order Service pipeline and update nuget.config"
    git push
+   
    ```
 
 1. In Azure DevOps, navigate to **Pipelines**
