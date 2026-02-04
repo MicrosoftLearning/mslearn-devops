@@ -18,14 +18,14 @@ Your manager has assigned you the following task:
 In this lab, you will:
 
 - Set up an Azure Artifacts feed for your organization's internal packages
-- Create a .NET 8 shared library with realistic utility code
+- Create a .NET 10 shared library with realistic utility code
 - Push your code to Azure Repos for version control
 - Implement semantic versioning and publish the package
 - Consume the package in a simulated microservice
 - Create CI/CD pipelines to automate package publishing and consumption
 - Update the package and manage version dependencies
 
-This lab takes approximately **60** minutes to complete.
+This lab takes approximately **40** minutes to complete.
 
 ## Before you start
 
@@ -34,7 +34,7 @@ You need:
 - **Microsoft Edge** or an [Azure DevOps supported browser](https://docs.microsoft.com/azure/devops/server/compatibility)
 - **Azure DevOps organization:** Create one if you don't have one
 - **Visual Studio Code** with the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-- **.NET 8 SDK:** [Download and install the .NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **.NET 10 SDK:** [Download and install the .NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Azure Artifacts credential provider:** [Download and install the credential provider](https://go.microsoft.com/fwlink/?linkid=2099625)
 
 ## Understanding Azure Artifacts in Enterprise Scenarios
@@ -103,7 +103,7 @@ Set up a dedicated feed for your organization's internal packages.
 
 ## Task 3: Create the Shared Library Project
 
-Create a .NET 8 class library with realistic shared utilities.
+Create a .NET 10 class library with realistic shared utilities.
 
 ### Initialize the Solution Structure
 
@@ -116,7 +116,7 @@ Create a .NET 8 class library with realistic shared utilities.
 1. Create a new solution and class library:
    ```powershell
    dotnet new sln --name Contoso.Shared
-   dotnet new classlib --name Contoso.Shared.Core --framework net8.0
+   dotnet new classlib --name Contoso.Shared.Core --framework net10.0
    dotnet sln add Contoso.Shared.Core
    dotnet new gitignore
    ```
@@ -134,7 +134,7 @@ Create a .NET 8 class library with realistic shared utilities.
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     
@@ -340,10 +340,10 @@ stages:
     displayName: 'Build Library'
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET 8 SDK'
+      displayName: 'Use .NET 10 SDK'
       inputs:
         packageType: 'sdk'
-        version: '8.x'
+        version: '10.x'
 
     - task: DotNetCoreCLI@2
       displayName: 'Restore packages'
@@ -434,7 +434,7 @@ Now that the package is published through the pipeline, create a microservice th
 1. In the terminal, navigate to the solution folder and create a new Web API project:
    ```powershell
    cd C:\ContosoMicroservices
-   dotnet new webapi --name Contoso.OrderService --framework net8.0 --use-controllers
+   dotnet new webapi --name Contoso.OrderService --framework net10.0 --use-controllers
    dotnet sln add Contoso.OrderService
    ```
 
@@ -480,6 +480,14 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
    ```xml
      <PackageReference Include="Contoso.Shared.Core" Version="1.0.0" />
    ```
+
+1. Next, in the same `Contoso.OrderService.csproj`, add a project reference to Contoso.Shared.Core, by adding the following new ItemGroup section below the PackageReference ItemGroup section:
+
+    ```xml
+      <ItemGroup>
+      <ProjectReference Include="..\Contoso.Shared.Core\Contoso.Shared.Core.csproj" />
+    </ItemGroup>
+    ```
 
 1. Restore and build the project:
    ```powershell
@@ -614,9 +622,11 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
 1. Open the `Contoso.Shared.Core/Contoso.Shared.Core.csproj` file
 1. Update the version and add release notes:
 
+> **Note**: Make sure you only overwrite the `<PropertyGroup>` section, keeping the `<Project>` tags in place.
+
 ```xml
 <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     
@@ -661,7 +671,6 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
    dotnet restore
    dotnet build
    ```
-
 > **Note**: If you see an error message when running this step, saying "error NU1102: unable to find package" the solution is to clear the Nuget local cache and run dotnet restore again, using the below commands (More information on this error is documented **[here](https://learn.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders)**).
 
   ```powershell
@@ -677,7 +686,7 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
    dotnet run
    ```
 
-1. Open the Swagger UI (URL shown in the terminal) and test the `/api/orders/1` endpoint. The response should still show the masked email, confirming the updated package works correctly with the new edge case handling.
+1. Open the api app (URL shown in the terminal) and test the `/api/orders/1` endpoint. The response should still show the masked email, confirming the updated package works correctly with the new edge case handling.
 
 1. Stop the running application (press `Ctrl+C` in the terminal)
 
@@ -713,10 +722,10 @@ stages:
     displayName: 'Build and Test'
     steps:
     - task: UseDotNet@2
-      displayName: 'Use .NET 8 SDK'
+      displayName: 'Use .NET 10 SDK'
       inputs:
         packageType: 'sdk'
-        version: '8.x'
+        version: '10.x'
 
     - task: NuGetAuthenticate@1
       displayName: 'Authenticate to Azure Artifacts'
