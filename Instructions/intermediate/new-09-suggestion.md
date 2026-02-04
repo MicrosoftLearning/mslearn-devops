@@ -87,8 +87,10 @@ Set up a dedicated feed for your organization's internal packages.
 1. After creation, select **Connect to Feed**
 1. Select **dotnet** under the NuGet section
 1. Copy the **Artifacts URL** (value parameter in the displayed nuget.config xml snippet). It will look like:
+
    ```
    https://pkgs.dev.azure.com/<your-org>/Contoso.Microservices/_packaging/contoso-internal/nuget/v3/index.json
+
    ```
 
 1. Click the **Back** arrow to return to the main Artifacts feed page.
@@ -111,6 +113,7 @@ Create a .NET 10 class library with realistic shared utilities.
    ```powershell
    mkdir C:\ContosoMicroservices
    cd C:\ContosoMicroservices
+
    ```
 
 1. Create a new solution and class library:
@@ -120,11 +123,13 @@ Create a .NET 10 class library with realistic shared utilities.
    dotnet new classlib --name Contoso.Shared.Core --framework net10.0
    dotnet sln add Contoso.Shared.Core
    dotnet new gitignore
+
    ```
 
 1. Open the project in VS Code:
    ```powershell
    code .
+
    ```
 
 ### Add Package Metadata
@@ -282,6 +287,7 @@ public static class StringExtensions
 1. In the terminal, build the solution:
    ```powershell
    dotnet build
+
    ```
 1. Verify there are no build errors
 
@@ -291,11 +297,13 @@ Now that the shared library is created, push it to Azure Repos for version contr
 
 1. In Azure DevOps, navigate to **Repos** in your `Contoso.Microservices` project
 1. Since the repo is empty, you'll see setup instructions. Copy the **Clone URL** (HTTPS), it looks like:
+
    ```
    https://dev.azure.com/<your-org>/Contoso.Microservices/_git/Contoso.Microservices
    ```
 
 1. In your terminal, initialize Git and push the code, updating the URL with **your DevOps organization name**:
+
    ```powershell
    cd C:\ContosoMicroservices
    git init
@@ -303,6 +311,7 @@ Now that the shared library is created, push it to Azure Repos for version contr
    git commit -m "Initial commit: Contoso.Shared.Core library"
    git remote add origin https://dev.azure.com/<your-org>/Contoso.Microservices/_git/Contoso.Microservices
    git push -u origin main
+
    ```
 
    > **Note:** You may be prompted to authenticate. Use your Azure DevOps credentials.
@@ -401,11 +410,13 @@ This pipeline triggers when changes are pushed to the `main` branch in the `Cont
 ### Commit and Push to Trigger the Pipeline
 
 1. Add the pipeline file and push:
+
    ```powershell
    cd C:\ContosoMicroservices
    git add azure-pipelines.yml
    git commit -m "Add CI pipeline for package publishing"
    git push
+
    ```
 
 ### Create the Pipeline in Azure DevOps
@@ -433,10 +444,13 @@ Now that the package is published through the pipeline, create a microservice th
 ### Create the Order Service Project
 
 1. In the terminal, navigate to the solution folder and create a new Web API project:
+
    ```powershell
    cd C:\ContosoMicroservices
+   dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org
    dotnet new webapi --name Contoso.OrderService --framework net10.0 --use-controllers
    dotnet sln add Contoso.OrderService
+
    ```
 
 ### Configure NuGet to Use Azure Artifacts
@@ -462,6 +476,7 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
 ### Install the Shared Package
 
 > **Important:** Before proceeding, verify that the pipeline from Task 4 completed successfully and the package exists in your feed:
+
 > 1. In Azure DevOps, navigate to **Artifacts** > **contoso-internal**
 > 2. Confirm you see `Contoso.Shared.Core` version `1.0.0` listed
 > If the package is not there, check the pipeline run in **Pipelines** for any errors.
@@ -472,8 +487,10 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
    - Extract the zip file to `%USERPROFILE%\.nuget\plugins` (create the folder if it doesn't exist)
    
    Alternatively, if the PowerShell command works in your environment:
+
    ```powershell
    iex "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }"
+
    ```
 
 1. Add the package reference to the Order Service. Open `Contoso.OrderService/Contoso.OrderService.csproj` in VS Code and add the following line to the existing `ItemGroup` tag:
@@ -491,10 +508,12 @@ Create a `nuget.config` file so both local development and CI/CD pipelines can r
     ```
 
 1. Restore and build the project:
+
    ```powershell
    cd C:\ContosoMicroservices
    dotnet restore --interactive
    dotnet build
+
    ```
 
    > **Note:** The first time you restore, you'll be prompted to authenticate with Azure DevOps in a browser window. Select your account and allow access. The credential provider caches your credentials for future use.
@@ -576,9 +595,11 @@ public class OrderDto
    ```powershell
    cd c:\ContosoMicroServices\Contoso.OrderService
    dotnet run
+
    ```
 
 1. Test the API by opening the **http://localhost:port>** URL shown in the terminal):
+
    - Navigate to `/api/orders/1` - should return a success response
    - Notice how the email is masked and description is truncated using the shared extensions
    - Navigate to `/api/orders/999` - should return a ORDER_NOT_FOUND error
@@ -649,11 +670,13 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
 ### Publish Through the Pipeline
 
 1. Commit and push the changes to trigger the pipeline:
+
    ```powershell
    cd C:\ContosoMicroservices
    git add .
    git commit -m "Fix: Handle edge cases in Mask extension (v1.0.1)"
    git push
+
    ```
 
 1. In Azure DevOps, navigate to **Pipelines** and watch the build run
@@ -664,15 +687,18 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
 ### Update the Order Service
 
 1. Update the package reference in the Order Service. Open `Contoso.OrderService/Contoso.OrderService.csproj` and change the version:
+
    ```xml
    <PackageReference Include="Contoso.Shared.Core" Version="1.0.1" />
    ```
 
 1. Restore and build:
+
    ```powershell
    cd C:\ContosoMicroservices
    dotnet restore
    dotnet build
+
    ```
 
 > **Note**: If you see an error message when running this step, saying "error NU1102: unable to find package" the solution is to clear the Nuget local cache and run dotnet restore again, using the below commands (More information on this error is documented **[here](https://learn.microsoft.com/en-us/nuget/consume-packages/managing-the-global-packages-and-cache-folders)**).
@@ -681,13 +707,16 @@ Following [Semantic Versioning](https://semver.org/), this is a patch release (b
    cd C:\ContosoMicroservices
    dotnet nuget locals http-cache --clear
    dotnet restore
+
    ```
 
 
 1. Verify the updated package is working by running the Order Service:
+
    ```powershell
    cd C:\ContosoMicroservices\Contoso.OrderService
    dotnet run
+
    ```
 
 1. Open the api app (URL shown in the terminal) and test the `/api/orders/1` endpoint. The response should still show the masked email, confirming the updated package works correctly with the new edge case handling.
@@ -767,12 +796,13 @@ This pipeline demonstrates how the `NuGetAuthenticate` task enables the build ag
 ### Create the Pipeline
 
 1. Commit and push all changes:
+
    ```powershell
    cd C:\ContosoMicroServices
    git add .
    git commit -m "Add Order Service pipeline and update nuget.config"
    git push
-   
+
    ```
 
 1. In Azure DevOps, navigate to **Pipelines**
