@@ -1,5 +1,12 @@
 ---
 lab:
+    title: 'Exercise Title'
+    description: 'Sentence describing the lab'
+    level: (100 to 500)
+    Duration: XX minutes
+---
+---
+lab:
     title: 'AI-assisted work item management in Azure Boards'
     description: 'This exercise provides a comprehensive experience of Azure Boards and GitHub Copilot integration. You'll import realistic work items, delegate tasks to Copilot's coding agent and use Copilot Chat for planning and analysis'
     level: 300
