@@ -37,7 +37,7 @@ This lab requires access to the following resources:
 1. Navigate to [github.com](https://github.com)
 2. If you don't have an account, select **Sign up** and complete registration
 3. If you have a GitHub account, **sign in** and verify you can access your profile
-4. **Fork** the **[AI-assisted-Boards](https://github.com/petender/AI-Assisted-Boards)** lab repo which contains the necessary files for this lab into your GitHub account.
+4. **Fork** the **[mslearn-devops](https://github.com/MicrosoftLearning/mslearn-devops.git))** lab repo which contains the necessary files for this lab into your GitHub account.
 
 ### Step 2: Enable or Validate GitHub Copilot Subscription
 
@@ -70,20 +70,20 @@ If you don't already have an Azure DevOps Project, follow these steps:
 
 1. Sign in to Azure DevOps
 2. Select **New Project**
-3. Name the project **AI-Assisted-Boards**
+3. Name the project **mslearn-devops**
 4. Set visibility to **Private**
 5. Choose **Agile** for work item process (Advanced)
 6. Select **Create**
 
 ### Step 5: Import Sample Work Items
 
-1. **Clone** the forked AI-Assisted-Boards repo from the pre-lab setup step 1 to your local machine. 
+1. **Clone** the forked MSLearn-devops repo from the pre-lab setup step 1 to your local machine. 
 1. Then execute the **Import-EShopWorkItems.ps1** PowerShell script, to populate Azure Boards with realistic work items (Epics, Features, User Stories, Bugs). 
 
 > **Note**: The script will prompt for your Azure DevOps credentials, as well as the organization and project to use for the import. It relies on the [Azure CLI extension for Azure DevOps](https://learn.microsoft.com/cli/azure/devops?view=azure-cli-latest), which will get installed if not already set up on your machine.
 
 ```powershell
-cd c:\AI-Assisted-Boards
+cd c:\mslearn-devops
 .\Import-EShopWorkItems.ps1
 
 ```
@@ -107,7 +107,7 @@ With GitHub Copilot coding agent, GitHub Copilot can work autonomously in the ba
 1. Complete the fields with your personal or organization address details
 1. Select **Complete Order and begin installation**
 1. In the **Install and Authorize Boards** step, choose **Only Select Repositories**
-1. Choose the **Forked AI-Assisted-Boards** repository
+1. Choose the **Forked mslearn-devops** repository
 1. Select **Install and Authorize**
 1. **Authenticate** using the GitHub Account credentials
 1. When redirected to **Azure DevOps**, **authenticate** with your Azure DevOps credentials
@@ -120,7 +120,7 @@ With GitHub Copilot coding agent, GitHub Copilot can work autonomously in the ba
 Before delegating work to Copilot's coding agent, use **GitHub Copilot Chat** to analyze your work items and prepare them for AI-assisted development. In the different prompts, we reference existing work items in Azure Boards, which are now accessible by GitHub Copilot.
 
 1. From **the browser**, open `https://github.com/copilot`
-1. In the **Copilot Chat** window, select **all repositories** and select **AI-Assisted-Boards**
+1. In the **Copilot Chat** window, select **all repositories** and select **mslearn-devops**
 1. **Copy** the following prompt into the chat window, allowing Copilot to **identify Copilot-ready work items** 
 
 ```
@@ -354,10 +354,10 @@ In this last exercise, you act as a senior developer, validating the suggestions
 
 ## Cleanup
 
-Now that you've finished the exercise, you should delete the resources you've created to avoid confusion.
+Now that you've finished the exercise, you might consider deleting the resources you've created to avoid confusion for future exercises.
 
-1. **Delete** the **AI-Assisted-Boards** repository from your GitHub account, by navigating to the **repo settings → Danger Zone → Delete this repository**
-1. **Delete** the **Azure DevOps Project**, by navigating to **Project settings → Delete project** and confirm by select **Delete**
+1. **Delete** the **forked mslearn-devops** repository from your GitHub account, by navigating to the **repo settings → Danger Zone → Delete this repository**
+1. **Delete** the **Azure DevOps Project mslearn-devops**, by navigating to **Project settings → Delete project** and confirm by select **Delete**
 
 ## Summary
 
