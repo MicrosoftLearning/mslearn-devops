@@ -1,7 +1,7 @@
 ---
 lab:
     title: 'AI-assisted work item management in Azure Boards'
-    description: 'This lab provides a comprehensive experience of Azure Boards and GitHub Copilot integration. You'll work with realistic work items from an e-commerce platform project (EShopOnWeb), delegate tasks to Copilot's coding agent, use Copilot Chat for planning and analysis'
+    description: 'This exercise provides a comprehensive experience of Azure Boards and GitHub Copilot integration. You'll import realistic work items, delegate tasks to Copilot's coding agent and use Copilot Chat for planning and analysis'
     level: 300
     Duration: 45 minutes
 ---
