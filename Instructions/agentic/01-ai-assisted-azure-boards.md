@@ -6,14 +6,6 @@ lab:
     Duration: 45 minutes
 ---
 
----
-lab:
-     title: ''
-     description: ', and experience the full feedback loop from work item creation to merged code'
-     level: 300
-     duration: 45 minutes
----
-
 # AI-assisted work item management in Azure Boards
 
 This lab provides a comprehensive experience of Azure Boards and GitHub Copilot integration. You'll work with realistic work items from an e-commerce platform project (EShopOnWeb), delegate tasks to Copilot's coding agent, use Copilot Chat for planning and analysis, and experience the full feedback loop from work item creation to merged code
