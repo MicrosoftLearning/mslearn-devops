@@ -8,6 +8,13 @@ lab:
 
 # AI-assisted work item management in Azure Boards
 
+
+## Customer Scenario
+
+A common customer scenario we see today is DevOps teams using **Azure DevOps Boards** as the **system of record** for project and work management - planning epics, tracking user stories, managing backlogs, and aligning delivery to business priorities while relying on **GitHub Copilot** as their primary generative AI assistant inside the developer workflow. With the **new integration** between Azure DevOps Boards and GitHub Copilot, these two worlds now come together seamlessly: developers can work in GitHub and their IDE with Copilot while staying fully connected to the work items, acceptance criteria, and priorities defined in Azure Boards. Copilot can surface context from linked work items, helping developers generate more relevant code, tests, and comments that directly map back to tracked requirements, while updates and progress remain visible to project managers in Azure DevOps. The result is a **unified experience** where planning and governance stay centralized in Azure DevOps Boards, AI-powered coding productivity lives in GitHub, and teams no longer have to choose between strong project management and modern, generative AI–driven development—they get both, working together by design.
+
+## Lab Scenario
+
 This lab provides a comprehensive experience of Azure Boards and GitHub Copilot integration. You'll work with realistic work items from an e-commerce platform project (EShopOnWeb), delegate tasks to Copilot's coding agent, use Copilot Chat for planning and analysis, and experience the full feedback loop from work item creation to merged code
 
 By the end of this lab, you will be able to:
@@ -70,7 +77,7 @@ If you don't already have an Azure DevOps Project, follow these steps:
 
 1. Sign in to Azure DevOps
 2. Select **New Project**
-3. Name the project **mslearn-devops**
+3. Name the project **ado-mslearn-devops**
 4. Set visibility to **Private**
 5. Choose **Agile** for work item process (Advanced)
 6. Select **Create**
@@ -113,14 +120,14 @@ With GitHub Copilot coding agent, GitHub Copilot can work autonomously in the ba
 1. When redirected to **Azure DevOps**, **authenticate** with your Azure DevOps credentials
 1. In the **Setup your Azure Boards project**, select your DevOps Organization and Project for this lab
 1. Select **Continue**
-1. From the Azure DevOps project, select **Project Settings** / **GitHub Connections** and confirm the GitHub connection is established
+1. From the Azure DevOps project, select **Project Settings** / **GitHub Connections** and confirm the GitHub connection is established. You can select **Skip** on the Success blade appearing.
 
 ## Task 2: Copilot Chat Analysis of Boards work items
 
 Before delegating work to Copilot's coding agent, use **GitHub Copilot Chat** to analyze your work items and prepare them for AI-assisted development. In the different prompts, we reference existing work items in Azure Boards, which are now accessible by GitHub Copilot.
 
 1. From **the browser**, open `https://github.com/copilot`
-1. In the **Copilot Chat** window, select **all repositories** and select **mslearn-devops**
+1. In the **Copilot Chat** window, select **all repositories** and select **<your_GitHub_Account>/mslearn-devops**
 1. **Copy** the following prompt into the chat window, allowing Copilot to **identify Copilot-ready work items** 
 
 ```
@@ -205,7 +212,7 @@ Search results include products that are out of stock without any visual indicat
 
 1. Select the **GitHub Copilot** icon on the work item
 1. Choose **Create pull request with GitHub Copilot**
-1. Select the connected **EShopOnWeb** GitHub repository
+1. Select the connected **<your_GitHub_Account/mslearn-devops>** GitHub repository
 1. Select the base branch: `main`
 1. Select **Create**
 
