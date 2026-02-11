@@ -117,12 +117,14 @@ Let's import the CD pipeline named [eshoponweb-cd-webapp-code.yml](https://githu
    - **subscriptionid**: your Azure subscription id (From Azure Portal / Subscriptions)
    - **azureserviceconnection**: **'azure subs'**
    - **webappname**: the globally unique name of the web app, for example **az400-webapp-NAME** (replace NAME)
-1. In the same YAML pipeline definition, update the **task: AzureResourceManagerTemplateDeployment@3** section,  
+1. In the same YAML pipeline definition, notice the **task: AzureResourceManagerTemplateDeployment@3** section,  
    **inputs** values:
    - **csmFile**: **`\$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)`**
-1. In the same YAML pipeline definition, update the **task: AzureRMWebAppDeployment@4** section,  
+   - this points to the `webapp.bicep` file in the /Bicep folder in the repo; it's a required setting for the AzureResourceManagerTemplateDeployment task configuration. 
+1. In the same YAML pipeline definition, notice the **task: AzureRMWebAppDeployment@4** section,  
    **inputs** values:
    - **packageForLinux**: **`\$(Pipeline.Workspace)/eshoponweb-ci/WebSite/Web.zip`**
+   - this refers to the Webdeploy zip package (artifact), created out of the Continuous Integration pipeline. 
 1. Select **Save and Run**
 1. Open the pipeline and wait for it to execute successfully. Deployment should take about 3-5 min on average.
 
