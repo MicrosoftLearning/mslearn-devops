@@ -213,40 +213,80 @@ if ($confirm -eq "n" -or $confirm -eq "N") {
 Write-Host "`nStarting EShopOnWeb work items import..." -ForegroundColor Cyan
 
 # ============================================
-# CREATE ITERATIONS (SPRINTS)
+# UPDATE EXISTING ITERATIONS WITH DATES
 # ============================================
-Write-Host "`nCreating Sprints..." -ForegroundColor Yellow
+Write-Host "`nConfiguring Iterations..." -ForegroundColor Yellow
 
-# Get today's date for sprint planning
-$sprintStart = Get-Date
-$sprintDuration = 14  # 2-week sprints
+# Get today's date for iteration planning
+$iterationStart = Get-Date
+$iterationDuration = 14  # 2-week iterations
+$iterationCount = 3
+$script:availableIterations = @()
 
-# Create 4 sprints
-for ($i = 1; $i -le 4; $i++) {
-    $startDate = $sprintStart.AddDays(($i - 1) * $sprintDuration)
-    $endDate = $startDate.AddDays($sprintDuration - 1)
+# Update existing iterations (Iteration 1-3) with dates
+for ($i = 1; $i -le $iterationCount; $i++) {
+    $iterationPath = "$Project\Iteration $i"
+    $startDate = $iterationStart.AddDays(($i - 1) * $iterationDuration)
+    $endDate = $startDate.AddDays($iterationDuration - 1)
     
     $startDateStr = $startDate.ToString("yyyy-MM-dd")
     $endDateStr = $endDate.ToString("yyyy-MM-dd")
     
     try {
-        az boards iteration project create --name "Sprint $i" --path "\$Project\Iteration" --start-date $startDateStr --finish-date $endDateStr --output none 2>$null
-        Write-Host "  Created Sprint $i ($startDateStr to $endDateStr)" -ForegroundColor Green
+        # Update existing iteration with dates
+        az boards iteration project update --path "\$iterationPath" --start-date $startDateStr --finish-date $endDateStr --output none 2>$null
+        if ($script:availableIterations -notcontains $iterationPath) {
+            $script:availableIterations += $iterationPath
+        }
+        Write-Host "  Updated Iteration $i ($startDateStr to $endDateStr)" -ForegroundColor Green
     } catch {
-        Write-Host "  Sprint $i already exists or could not be created" -ForegroundColor DarkGray
+        Write-Host "  Iteration $i could not be updated (may not exist)" -ForegroundColor DarkGray
     }
 }
 
-# Create team iterations (add sprints to team backlog)
-Write-Host "`nAdding Sprints to Team backlog..." -ForegroundColor Yellow
-$team = "$Project Team"
-for ($i = 1; $i -le 4; $i++) {
-    try {
-        az boards iteration team add --id "\$Project\Sprint $i" --team $team --output none 2>$null
-        Write-Host "  Added Sprint $i to team backlog" -ForegroundColor Green
-    } catch {
-        Write-Host "  Sprint $i already in team backlog" -ForegroundColor DarkGray
+# Collect valid iterations from the project once and reuse everywhere
+try {
+    $iterationListJson = az boards iteration project list --output json 2>$null
+    if ($iterationListJson) {
+        $iterationList = $iterationListJson | ConvertFrom-Json
+        foreach ($iteration in $iterationList) {
+            if ($iteration.path -match "^\\$Project\\Iteration(\\Iteration)? \d+$") {
+                $normalizedPath = $iteration.path.TrimStart("\")
+                if ($script:availableIterations -notcontains $normalizedPath) {
+                    $script:availableIterations += $normalizedPath
+                }
+            }
+        }
     }
+} catch {
+}
+
+if (-not $script:availableIterations -or $script:availableIterations.Count -eq 0) {
+    Write-Host "  ERROR: No valid project iterations available after update/discovery." -ForegroundColor Red
+    Write-Host "  Ensure iterations exist (for example '$Project\Iteration 1') and rerun this script." -ForegroundColor Yellow
+    exit 1
+}
+
+# Add discovered iterations to team backlog
+Write-Host "`nAdding Iterations to Team backlog..." -ForegroundColor Yellow
+$team = "$Project Team"
+foreach ($iterationPath in $script:availableIterations) {
+    try {
+        az boards iteration team add --id "\$iterationPath" --team $team --output none 2>$null
+        Write-Host "  Added $iterationPath to team backlog" -ForegroundColor Green
+    } catch {
+        Write-Host "  $iterationPath already in team backlog" -ForegroundColor DarkGray
+    }
+}
+
+# Helper function to get a random iteration path
+function Get-RandomIterationPath {
+    if (-not $script:availableIterations -or $script:availableIterations.Count -eq 0) {
+        throw "No valid iterations available for assignment."
+    }
+
+    # Use a discovered valid iteration path
+    return Get-Random -InputObject $script:availableIterations
 }
 
 # Helper function to create work item and return ID
@@ -303,14 +343,43 @@ function New-WorkItem {
         $fields += "--iteration", "`"$IterationPath`""
     }
     
-    $result = az boards work-item create @fields --output json | ConvertFrom-Json
-    $id = $result.id
+    # Debug: show the command being run
+    Write-Host "    Debug: Creating with iteration '$IterationPath'" -ForegroundColor DarkGray
+    
+    $errorOutput = $null
+    $jsonOutput = az boards work-item create @fields --output json 2>&1
+    
+    # Check if output contains error
+    if ($jsonOutput -match "^ERROR" -or $jsonOutput -match "TF\d+") {
+        Write-Host "  ERROR: Failed to create $Type : $Title" -ForegroundColor Red
+        Write-Host "    $jsonOutput" -ForegroundColor DarkRed
+        return 0
+    }
+    
+    if (-not $jsonOutput) {
+        Write-Host "  ERROR: Failed to create $Type : $Title (no output)" -ForegroundColor Red
+        return 0
+    }
+    
+    try {
+        $result = $jsonOutput | ConvertFrom-Json -ErrorAction Stop
+        $id = $result.id
+    } catch {
+        Write-Host "  ERROR: Failed to create $Type : $Title" -ForegroundColor Red
+        Write-Host "    $jsonOutput" -ForegroundColor DarkRed
+        return 0
+    }
+    
+    if (-not $id -or $id -le 0) {
+        Write-Host "  ERROR: Failed to create $Type : $Title" -ForegroundColor Red
+        return 0
+    }
     
     Write-Host "  Created $Type #$id : $Title" -ForegroundColor Green
     
     # Link to parent if specified
-    if ($ParentId -gt 0) {
-        az boards work-item relation add --id $id --relation-type Parent --target-id $ParentId --output none
+    if ($ParentId -gt 0 -and $id -gt 0) {
+        az boards work-item relation add --id $id --relation-type Parent --target-id $ParentId --output none 2>$null
         Write-Host "    Linked to parent #$ParentId" -ForegroundColor DarkGray
     }
     
@@ -330,15 +399,15 @@ Write-Host "`nCreating Epics..." -ForegroundColor Yellow
 
 $epicPlatform = New-WorkItem -Type "Epic" -Title "E-Commerce Platform Modernization" `
     -Description "Modernize the EShopOnWeb platform to improve performance and scalability" `
-    -State "Active" -Priority 1 -Tags "modernization;platform" -IterationPath "$Project"
+    -State "Active" -Priority 1 -Tags "modernization;platform" -IterationPath (Get-RandomIterationPath)
 
 $epicMobile = New-WorkItem -Type "Epic" -Title "Mobile Experience Enhancement" `
     -Description "Develop and optimize mobile shopping experience for iOS and Android users" `
-    -State "Active" -Priority 2 -Tags "mobile;ux" -IterationPath "$Project"
+    -State "Active" -Priority 2 -Tags "mobile;ux" -IterationPath (Get-RandomIterationPath)
 
 $epicPayment = New-WorkItem -Type "Epic" -Title "Payment & Checkout Optimization" `
     -Description "Streamline payment processing and checkout flow to reduce cart abandonment" `
-    -State "New" -Priority 1 -Tags "payments;checkout" -IterationPath "$Project"
+    -State "New" -Priority 1 -Tags "payments;checkout" -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # FEATURES (5 features linked to epics)
@@ -348,25 +417,25 @@ Write-Host "`nCreating Features..." -ForegroundColor Yellow
 # Platform Epic Features
 $featCatalog = New-WorkItem -Type "Feature" -Title "Product Catalog Redesign" `
     -Description "Redesign product catalog with improved filtering and search capabilities" `
-    -State "Active" -Priority 1 -Tags "catalog;search" -StoryPoints 13 -ParentId $epicPlatform -IterationPath "$Project\Sprint 1"
+    -State "Active" -Priority 1 -Tags "catalog;search" -StoryPoints 13 -ParentId $epicPlatform -IterationPath (Get-RandomIterationPath)
 
 $featAuth = New-WorkItem -Type "Feature" -Title "User Authentication & Profile" `
     -Description "Implement modern authentication with social login and enhanced profiles" `
-    -State "New" -Priority 1 -Tags "auth;security" -StoryPoints 8 -ParentId $epicPlatform -IterationPath "$Project\Sprint 2"
+    -State "New" -Priority 1 -Tags "auth;security" -StoryPoints 8 -ParentId $epicPlatform -IterationPath (Get-RandomIterationPath)
 
 # Mobile Epic Features
 $featMobileUI = New-WorkItem -Type "Feature" -Title "Responsive Mobile UI" `
     -Description "Create fully responsive UI optimized for mobile devices" `
-    -State "New" -Priority 1 -Tags "mobile;responsive" -StoryPoints 13 -ParentId $epicMobile -IterationPath "$Project\Sprint 2"
+    -State "New" -Priority 1 -Tags "mobile;responsive" -StoryPoints 13 -ParentId $epicMobile -IterationPath (Get-RandomIterationPath)
 
 # Payment Epic Features
 $featPaymentGateway = New-WorkItem -Type "Feature" -Title "Payment Gateway Integration" `
     -Description "Integrate multiple payment gateways including Stripe and PayPal" `
-    -State "New" -Priority 1 -Tags "payments;integration" -StoryPoints 13 -ParentId $epicPayment -IterationPath "$Project\Sprint 3"
+    -State "New" -Priority 1 -Tags "payments;integration" -StoryPoints 13 -ParentId $epicPayment -IterationPath (Get-RandomIterationPath)
 
 $featOneClick = New-WorkItem -Type "Feature" -Title "One-Click Checkout" `
     -Description "Implement streamlined one-click checkout for returning customers" `
-    -State "New" -Priority 2 -Tags "checkout;ux" -StoryPoints 8 -ParentId $epicPayment -IterationPath "$Project\Sprint 4"
+    -State "New" -Priority 2 -Tags "checkout;ux" -StoryPoints 8 -ParentId $epicPayment -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # USER STORIES (5 stories linked to features)
@@ -376,26 +445,26 @@ Write-Host "`nCreating User Stories..." -ForegroundColor Yellow
 # Product Catalog Stories
 $storySearch = New-WorkItem -Type "User Story" -Title "Implement advanced product search with filters" `
     -Description "As a customer I want to filter products by price brand and size" `
-    -State "Active" -Priority 1 -Tags "search;filters" -StoryPoints 5 -ParentId $featCatalog -IterationPath "$Project\Sprint 1"
+    -State "Active" -Priority 1 -Tags "search;filters" -StoryPoints 5 -ParentId $featCatalog -IterationPath (Get-RandomIterationPath)
 
 $storyImages = New-WorkItem -Type "User Story" -Title "Add product image gallery with zoom" `
     -Description "As a customer I want to view multiple product images and zoom in for details" `
-    -State "Closed" -Priority 2 -Tags "images;ux" -StoryPoints 3 -ParentId $featCatalog -IterationPath "$Project\Sprint 1"
+    -State "Closed" -Priority 2 -Tags "images;ux" -StoryPoints 3 -ParentId $featCatalog -IterationPath (Get-RandomIterationPath)
 
 # Authentication Stories
 $storySocialLogin = New-WorkItem -Type "User Story" -Title "Add social login options" `
     -Description "As a customer I want to sign in using Google or Facebook for convenience" `
-    -State "Active" -Priority 1 -Tags "auth;social" -StoryPoints 5 -ParentId $featAuth -IterationPath "$Project\Sprint 2"
+    -State "Active" -Priority 1 -Tags "auth;social" -StoryPoints 5 -ParentId $featAuth -IterationPath (Get-RandomIterationPath)
 
 # Mobile UI Stories
 $storyMobileNav = New-WorkItem -Type "User Story" -Title "Implement mobile-optimized navigation" `
     -Description "As a mobile user I want easy thumb-friendly navigation to browse products" `
-    -State "New" -Priority 1 -Tags "mobile;navigation" -StoryPoints 5 -ParentId $featMobileUI -IterationPath "$Project\Sprint 2"
+    -State "New" -Priority 1 -Tags "mobile;navigation" -StoryPoints 5 -ParentId $featMobileUI -IterationPath (Get-RandomIterationPath)
 
 # Payment Stories
 $storyStripe = New-WorkItem -Type "User Story" -Title "Integrate Stripe payment processing" `
     -Description "As a customer I want to pay securely with my credit card through Stripe" `
-    -State "New" -Priority 1 -Tags "payments;stripe" -StoryPoints 8 -ParentId $featPaymentGateway -IterationPath "$Project\Sprint 3"
+    -State "New" -Priority 1 -Tags "payments;stripe" -StoryPoints 8 -ParentId $featPaymentGateway -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # TASKS (5 tasks linked to stories)
@@ -406,29 +475,29 @@ Write-Host "`nCreating Tasks..." -ForegroundColor Yellow
 New-WorkItem -Type "Task" -Title "Set up Elasticsearch for product search" `
     -Description "Configure and deploy Elasticsearch cluster for product search" `
     -State "Closed" -Priority 1 -Tags "infrastructure;search" -OriginalEstimate 8 -RemainingWork 0 -CompletedWork 8 `
-    -ParentId $storySearch -IterationPath "$Project\Sprint 1"
+    -ParentId $storySearch -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Task" -Title "Create product filter UI components" `
     -Description "Develop reusable filter components for price range and categories" `
     -State "Active" -Priority 1 -Tags "frontend;components" -OriginalEstimate 16 -RemainingWork 10 -CompletedWork 6 `
-    -ParentId $storySearch -IterationPath "$Project\Sprint 1"
+    -ParentId $storySearch -IterationPath (Get-RandomIterationPath)
 
 # Image Gallery Tasks - linked to images story
 New-WorkItem -Type "Task" -Title "Implement image zoom component" `
     -Description "Create React component for product image zoom functionality" `
     -State "Closed" -Priority 2 -Tags "frontend;images" -OriginalEstimate 8 -RemainingWork 0 -CompletedWork 8 `
-    -ParentId $storyImages -IterationPath "$Project\Sprint 1"
+    -ParentId $storyImages -IterationPath (Get-RandomIterationPath)
 
 # OAuth Tasks - linked to social login story
 New-WorkItem -Type "Task" -Title "Create OAuth integration for Google" `
     -Description "Implement Google OAuth 2.0 authentication flow" `
     -State "Active" -Priority 1 -Tags "auth;google" -OriginalEstimate 8 -RemainingWork 4 -CompletedWork 4 `
-    -ParentId $storySocialLogin -IterationPath "$Project\Sprint 2"
+    -ParentId $storySocialLogin -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Task" -Title "Create OAuth integration for Facebook" `
     -Description "Implement Facebook Login authentication flow" `
     -State "New" -Priority 2 -Tags "auth;facebook" -OriginalEstimate 8 -RemainingWork 8 `
-    -ParentId $storySocialLogin -IterationPath "$Project\Sprint 2"
+    -ParentId $storySocialLogin -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # BUGS (5 bugs with varied states)
@@ -437,23 +506,23 @@ Write-Host "`nCreating Bugs..." -ForegroundColor Yellow
 
 New-WorkItem -Type "Bug" -Title "Product images not loading on slow connections" `
     -Description "Product images fail to load or timeout on 3G connections" `
-    -State "Resolved" -Priority 1 -Tags "images;performance" -Severity "3 - Medium" -IterationPath "$Project\Sprint 1"
+    -State "Resolved" -Priority 1 -Tags "images;performance" -Severity "3 - Medium" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Bug" -Title "Search results showing out-of-stock items" `
     -Description "Search results include products that are out of stock without indication" `
-    -State "Active" -Priority 2 -Tags "search;inventory" -Severity "2 - High" -IterationPath "$Project\Sprint 1"
+    -State "Active" -Priority 2 -Tags "search;inventory" -Severity "2 - High" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Bug" -Title "Cart total not updating after quantity change" `
     -Description "When changing item quantity in cart the total does not update" `
-    -State "Closed" -Priority 1 -Tags "cart;calculation" -Severity "2 - High" -IterationPath "$Project\Sprint 1"
+    -State "Closed" -Priority 1 -Tags "cart;calculation" -Severity "2 - High" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Bug" -Title "Mobile menu overlapping content on iOS Safari" `
     -Description "Navigation menu overlaps page content on iOS Safari orientation change" `
-    -State "New" -Priority 2 -Tags "mobile;ios" -Severity "3 - Medium" -IterationPath "$Project\Sprint 2"
+    -State "New" -Priority 2 -Tags "mobile;ios" -Severity "3 - Medium" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Bug" -Title "Social login failing with popup blocker" `
     -Description "Social login popup is blocked by default browser settings" `
-    -State "Active" -Priority 2 -Tags "auth;popup" -Severity "2 - High" -IterationPath "$Project\Sprint 2"
+    -State "Active" -Priority 2 -Tags "auth;popup" -Severity "2 - High" -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # ISSUES (5 issues with varied states)
@@ -462,23 +531,23 @@ Write-Host "`nCreating Issues..." -ForegroundColor Yellow
 
 New-WorkItem -Type "Issue" -Title "Third-party shipping API downtime" `
     -Description "FedEx API experiencing intermittent outages affecting order tracking" `
-    -State "Active" -Priority 1 -Tags "integration;shipping" -IterationPath "$Project\Sprint 4"
+    -State "Active" -Priority 1 -Tags "integration;shipping" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Issue" -Title "Payment gateway rate limits reached" `
     -Description "Stripe rate limits being hit during peak hours causing failures" `
-    -State "Active" -Priority 1 -Tags "payments;performance" -IterationPath "$Project\Sprint 3"
+    -State "Active" -Priority 1 -Tags "payments;performance" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Issue" -Title "CDN cache invalidation delays" `
     -Description "Product updates taking up to 2 hours to reflect due to CDN cache" `
-    -State "Closed" -Priority 2 -Tags "infrastructure;cdn" -IterationPath "$Project\Sprint 2"
+    -State "Closed" -Priority 2 -Tags "infrastructure;cdn" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Issue" -Title "Database connection pool exhaustion" `
     -Description "Database connections being exhausted during traffic spikes" `
-    -State "Closed" -Priority 1 -Tags "database;performance" -IterationPath "$Project\Sprint 1"
+    -State "Closed" -Priority 1 -Tags "database;performance" -IterationPath (Get-RandomIterationPath)
 
 New-WorkItem -Type "Issue" -Title "SSL certificate expiring next month" `
     -Description "Production SSL certificate expires in 30 days and needs renewal" `
-    -State "Active" -Priority 1 -Tags "security;infrastructure" -IterationPath "$Project\Sprint 2"
+    -State "Active" -Priority 1 -Tags "security;infrastructure" -IterationPath (Get-RandomIterationPath)
 
 # ============================================
 # SUMMARY
