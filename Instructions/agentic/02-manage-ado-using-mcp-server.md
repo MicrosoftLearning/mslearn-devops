@@ -1,5 +1,6 @@
 ---
 lab:
+    topic: Agentic
     title: 'Managing Azure DevOps Projects through Azure DevOps MCP Server'
     description: 'This exercise showcases different scenarios on how to use Azure DevOps MCP Server for day-to-day operations in Azure DevOps'
     level: 300
