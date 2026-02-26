@@ -122,6 +122,8 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
 
    > **Note**: If the **Windows Server 2022 Datacenter: Azure Edition - x64 Gen2** image is not available in the list of images suggested by the portal, select on the **See all images** link, then, on the marketplace page, select the **Select** combo box for the **Windows Server** product and choose the right image.
 
+   > **Note**: If you are looking for a specific **Size** for the virtual machine and you do not find it in the drop-down list (the list only offers suggested sizes), click on the **see all sizes** link, write the size you are looking for in the **Search by VM size...** textbox of the **Select the VM size** page to find the size, select it and click on the **Select**button on the botton part of the page.
+
 1. On the **Management** tab, in the **Identity** section, select the **Enable system assigned managed identity** checkbox and then select **Review + create**:
 
 1. On the **Review + create** tab, select **Create**.
