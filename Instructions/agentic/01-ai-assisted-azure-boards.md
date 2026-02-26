@@ -1,5 +1,6 @@
 ---
 lab:
+    topic: Agentic
     title: 'AI-assisted work item management in Azure Boards'
     description: 'This exercise provides a comprehensive experience of Azure Boards and GitHub Copilot integration.'
     level: 300
