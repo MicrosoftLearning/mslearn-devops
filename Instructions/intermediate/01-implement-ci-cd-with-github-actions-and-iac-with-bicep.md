@@ -98,23 +98,52 @@ The exercise consists of the following tasks:
 
 ### Configure the target environment
 
-> **Note:** You will start by creating the resource groups. You will run the workflow twice in order to deploy two instances of the website in two different Azure regions (East US and West US in this example). You can adapt these to use regions closer to your location if preferred.
+> **Note:** You will start by creating the resource groups. You will run the workflow twice to deploy two instances of the website in two Azure regions of your choice. In this lab, these are referenced as `region1` and `region2`.
+
+### Find Azure region names
+
+Before creating resources, identify the official Azure region names to use in workflow variables. Azure portal display names (for example, `East US`) differ from CLI names (for example, `eastus`).
+
+1. In the Azure portal, select the **Cloud Shell** icon to the right of the search text box.
+1. If prompted to select either **Bash** or **PowerShell**, select **Bash**.
+1. In the Bash session, run the following command:
+
+   ```cli
+   az account list-locations --query "[].{DisplayName:displayName, Name:name}" --output table
+   ```
+
+1. Record two region CLI names to use in this lab:
+   - `REGION1` (primary region for first workflow run)
+   - `REGION2` (secondary region for second workflow run)
+
+   > **Note:** Example region pairs include `eastus` and `westus`, `westeurope` and `northeurope`, or any two regions supported by your subscription quotas.
 
 1. Switch to the web browser tab displaying the Azure portal at `https://portal.azure.com`.
 1. In the Azure portal, in the search text box at the top of the page, enter **`Resource groups`** and select **Resource groups** in the list of results.
 1. On the **Resource groups** page, select **+ Create**.
-1. In the **Resource groups** text box, enter **`rg-eshoponweb-westus`**.
-1. In the **Region** drop-down list, select **(US) West US**.
+1. In the **Resource groups** text box, enter **`rg-eshoponweb-region1`**.
+1. In the **Region** drop-down list, select the Azure region corresponding to **REGION1**.
 1. Select **Review + create** and then, on the **Review + create**, select **Create**.
 1. On the **Resource groups** page, select **+ Create**.
-1. In the **Resource groups** text box, enter **`rg-eshoponweb-eastus`**.
-1. In the **Region** drop-down list, select **(US) East US**.
+1. In the **Resource groups** text box, enter **`rg-eshoponweb-region2`**.
+1. In the **Region** drop-down list, select the Azure region corresponding to **REGION2**.
 1. Select **Review + create** and then, on the **Review + create**, select **Create**.
 
    > **Note:** Next, you will create a service principal that will be used to authenticate from the GitHub Actions workflow to the target Azure subscription and assign to it the role of Contributor in the subscription.
 
 1. In the Azure portal, select the **Cloud Shell** icon to the right of the search text box.
 1. If necessary, select **Bash** in the drop-down menu in the upper-left corner of the Cloud Shell pane.
+1. In the Bash session within the Cloud Shell pane, run the following commands to declare variables for the two region CLI names you selected earlier:
+
+   ```cli
+   REGION1="<first-region-cli-name>"
+   REGION2="<second-region-cli-name>"
+   echo "REGION1=$REGION1"
+   echo "REGION2=$REGION2"
+   ```
+
+   > **Note:** Replace the placeholders with the actual region CLI names you recorded earlier (for example, `eastus`, `westeurope`, `northeurope`, `southeastasia`).
+
 1. In the Bash session within the Cloud Shell pane, run the following command to store the value of your Azure subscription ID in a variable:
 
    ```cli
@@ -154,14 +183,14 @@ The exercise consists of the following tasks:
 1. Switch back to the web browser displaying the Bash session within the Cloud Shell pane and run the following command to generate the name of the first App Service web app you'll be deploying:
 
    ```cli
-   echo devops-webapp-westus-$RANDOM$RANDOM
+   echo devops-webapp-$REGION1-$RANDOM$RANDOM
    ```
 
 1. Copy the value returned by the command and record it. You'll use it later in this exercise.
 1. In the Bash session within the Cloud Shell pane, run the following command to generate the name of the second App Service web app you'll be deploying:
 
    ```cli
-   echo devops-webapp-eastus-$RANDOM$RANDOM
+   echo devops-webapp-$REGION2-$RANDOM$RANDOM
    ```
 
 1. Copy the value returned by the command and record it. You'll use it later in this exercise.
@@ -182,9 +211,10 @@ The exercise consists of the following tasks:
 1. In the **Edit** pane, replace line 8 with the following text:
 
    ```yaml
-   RESOURCE-GROUP: rg-eshoponweb-westus
+   RESOURCE-GROUP: rg-eshoponweb-region1
    ```
 
+1. In the **Edit** pane, replace the `location` variable in line 9 with **REGION1** (the first region CLI name you recorded earlier).
 1. In the **Edit** pane, replace the `YOUR-SUBS-ID` placeholder in line 11 with the value of the Azure subscription ID you recorded earlier in this exercise:
 1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **first** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
@@ -222,10 +252,10 @@ The exercise consists of the following tasks:
 1. In the **Edit** pane, replace line 8 with the following text:
 
    ```yaml
-   RESOURCE-GROUP: rg-eshoponweb-eastus
+   RESOURCE-GROUP: rg-eshoponweb-region2
    ```
 
-1. In the **Edit** pane, replace the `location` variable in line 9 with the region nearest to your location.
+1. In the **Edit** pane, replace the `location` variable in line 9 with **REGION2** (the second region CLI name you recorded earlier).
 1. In the **Edit** pane, replace the `eshoponweb-webapp-NAME` placeholder in line 12 with the name of the **second** Azure App Service web app you generated earlier in this exercise.
 1. In the **.github/workflows/eshoponweb-cicd.yml** pane, select **Commit changes** and then select **Commit changes** again.
 1. In the web browser window displaying the forked **eShopOnWeb** GitHub repo page, select **Actions**.
@@ -243,9 +273,9 @@ The exercise consists of the following tasks:
    > **Note**: In case any of the steps fail, from the same page that displays the workflow progress, in the upper right corner, select **Re-run all jobs** and then, in the **Re-run all jobs** pane, select **Re-run jobs**.
 
 1. In the web browser window displaying the Azure portal, in the search text box at the top of the page, enter **`App Services`** and select **App Services** in the list of results.
-1. On the **App Services** page, in the list of App Services, select the **devops-webapp-westus-** app service you created earlier in this exercise.
-1. On the **devops-webapp-westus-** page, in the **Essentials** section, verify that the **Default domain** value is displayed and select it to open the web app in a new browser tab.
-1. In the new browser tab, verify that the web app is displayed and that it's functional. You can also verify the second web app in the **East US** region in the same way.
+1. On the **App Services** page, in the list of App Services, select the **devops-webapp-&lt;REGION1&gt;-** app service you created earlier in this exercise.
+1. On the **devops-webapp-&lt;REGION1&gt;-** page, in the **Essentials** section, verify that the **Default domain** value is displayed and select it to open the web app in a new browser tab.
+1. In the new browser tab, verify that the web app is displayed and that it's functional. You can also verify the second web app in **REGION2** in the same way.
 
 ## Clean up resources
 
