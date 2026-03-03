@@ -65,8 +65,8 @@ The exercise consists of the following tasks:
    > **Note:** You will create a milestone and an issue associated with the newly created repo that you will subsequently use when working with the project board.
 
 1. On the **Issues** page, to the left of the **New issue** button, select **Milestones**.
-1. On the **Milestones** page, select **New milestone**.
-1. On the **New milestone** page, do the following actions:
+1. On the **Milestones** page, select **Create a milestone**.
+1. On the **Create milestone** page, do the following actions:
 
    - In the **Title** text box, enter **`alpha release`**.
    - In the **Due date (optional)** text box, enter the date one week ahead from the current date.
@@ -83,7 +83,7 @@ The exercise consists of the following tasks:
 
 ### Create a GitHub project
 
-1. On the GitHub main page, select the avatar icon at the right side of the toolbar and, in the drop-down menu, select **Your projects**.
+1. On the repository page, look for the **Projects** tab and select it.
 1. Select **New project**.
 1. In the **Select a template** pane, select **Team planning**, and then select **Create project**.
 
@@ -115,9 +115,9 @@ The exercise consists of the following tasks:
 
 ### Create a GitHub project board
 
-1. On the **DevOps Core Intro Project** page, select the down-facing caret next to the **Backlog** tab and, in the **Layout** section, select **Board**.
+1. On the **DevOps Core Intro Project** page, select the **Board** tab near the current selected **Backlog** tab.
 
-   > **Note:** You can use this option to easily switch between the table, board, and roadmap views.
+   > **Note:** You can use different options to easily switch between the table, board, and roadmap views.
 
 1. Review the resulting page that consists of three predefined columns labeled:
 
@@ -154,8 +154,8 @@ The exercise consists of the following tasks:
 1. In the **Select an item** drop-down list, select **DevOpsCoreIntroRepo** to add the item to the repo you created in the previous exercise. Note that the issue has been automatically labeled with **#2**.
 1. Select the **Missing Wiki** issue.
 1. In the **Missing Wiki #2** pane, note that you have another configuration settings available at this point, including labels and milestones.
-1. Select **Add labels** and, in the **Select items** drop-down list, select **enhancement**.
-1. Select **Add milestone** and, in the **Select an item** drop-down list, select **alpha release**.
+1. Select **Labels** and, in the **Select items** drop-down list, select **enhancement**.
+1. Select **Milestone** and, in the **Select an item** drop-down list, select **alpha release**.
 1. Close the **Missing Wiki #2** pane.
 
    > **Note:** Now you will add another draft item and convert it into an issue.
@@ -164,25 +164,21 @@ The exercise consists of the following tasks:
 1. In the text box, enter **`Additional collaborators needed`** and then press **CTRL + Enter** on the keyboard. This will add a new draft item to the **Todo** column.
 1. In the newly added draft item, select the ellipsis symbol and, in the drop-down menu, select **Convert to issue** and select **DevOpsCoreIntroRepo** to add the item to the repo.
 
-### Add an item based on an issue
+### Navigate Project items configuration
 
-1. On the **DevOps Core Intro Project** page, in the **Todo** column, select **+ Add item**.
-1. In the text box, enter **#** to display a list of existing repositories. In the list, select **DevOpsCoreIntroRepo**.
-1. Next, in the list of existing issues, select **Repo README page is empty #1**. This will automatically add that issue to the **Todo** column.
 1. Select **Repo README page is empty** to display the corresponding pane.
 1. In the **Repo README page is empty** pane, in the Assignees section, select **Add assignees...**, in the **Select items** drop down list, select your GitHub user name, and close the **Repo README page is empty** pane.
 1. Drag the **Repo README page is empty** item from the **Todo** column and drop it in the **In Progress** column.
 
 ### Review automation settings
 
-1. In the **DevOps Core Intro Project** page, directly under the avatar icon, select the ellipsis icon.
-1. In the drop-down list, select **Workflows**.
+1. In the **DevOps Core Intro Project** page, directly under the avatar icon, near the ellipsis icon select **Workflows**.
 1. On the **Workflows** page, in the menu on the left side, review the list of default workflows. '
 
    > **Note:** By default, the **Item closed** and **Pull request merged** workflows are enabled.
 
 1. Select **Item closed** and review the workflow. The workflow automatically sets the status of an issue to **Done**, whenever that item is closed.
-1. Select the avatar icon at the upper right corner of the page and, in the drop-down menu, select **Your repositories**.
+1. Select the avatar icon at the upper right corner of the page and, in the drop-down menu, select **Repositories**.
 1. In the list of repositories, select **DevOpsCoreIntroRepo**.
 1. In the **README** section, select the pencil icon to open the file in the edit mode.
 1. Replace the existing content with the following text:
