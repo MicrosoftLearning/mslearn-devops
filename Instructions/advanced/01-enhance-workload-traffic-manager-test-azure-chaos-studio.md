@@ -45,7 +45,7 @@ To complete the lab, you need:
 1. Start a web browser and navigate to the Azure portal at `https://portal.azure.com`.
 1. If prompted, sign in by using your Microsoft Entra ID account with the Owner access to the Azure subscription available to you.
 1. In the web browser tab displaying the Azure portal, in the search text box at the top of the page, enter **`Subscriptions`** and, in the list of results, select **Subscriptions**.
-1. On the subscriptions page, in the vertical menu on the left side, select **Resource providers**.
+1. On the subscriptions page, in the vertical menu on the left side, select **Settings** **>** **Resource providers**.
 1. In the list of resource providers, search for and select **Microsoft.Chaos**.
 1. With the **Microsoft.Chaos** resource provider selected, in the toolbar, select **Register**.
 
