@@ -22,7 +22,7 @@ Before you can start this exercise, ensure you have:
 - [Node.js](https://nodejs.org/)) framework version 18 or later
 - [Visual Studio Code](https://code.visualstudio.com/download) installed
 
-> **Note**: If you don't have sample data in your Azure DevOps Organization and project, you can run the **[Setup_ADODemoEnvironment.ps1](https://raw.githubusercontent.com/MicrosoftLearning/mslearn-devops/refs/heads/main/setup-adodemoenvironment.ps1) PowerShell script** to create a new project with dummy data such as work items, pull requests, pipelines and alike. This would allow you to verify the ADO MCP Server connection and features against actual data.
+> **Note**: If you don't have sample data in your Azure DevOps Organization and project, you can run the **[Setup_ADODemoEnvironment.ps1](https://microsoftlearning.github.io/mslearn-devops/scripts/setup-adodemoenvironment.ps1) PowerShell script** to create a new project with dummy data such as work items, pull requests, pipelines and alike. This would allow you to verify the ADO MCP Server connection and features against actual data.
 ---
 
 ## Setting Up the Azure DevOps MCP Server in VSCode
