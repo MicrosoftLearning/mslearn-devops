@@ -1,8 +1,14 @@
 ---
 lab:
   topic: Intermediate
-  title: "Package Management with Azure Artifacts"
-  description: "Build and manage internal NuGet packages for a microservices architecture using Azure Artifacts, simulating a real-world enterprise scenario."
+  title: Package Management with Azure Artifacts
+  description: Build and manage internal NuGet packages for a microservices architecture using Azure Artifacts, simulating a real-world enterprise scenario.
+  duration: 40 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure Artifacts
 ---
 
 # Package Management with Azure Artifacts: Building an Internal Shared Library
