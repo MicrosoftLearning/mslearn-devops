@@ -1,8 +1,14 @@
 ---
 lab:
   topic: Advanced
-  title: "Deployments using Azure Bicep templates"
-  description: "Learn how to create an Azure Bicep template and modularize it using Azure Bicep Modules concept with Azure YAML pipelines."
+  title: Deployments using Azure Bicep templates
+  description: Learn how to create an Azure Bicep template and modularize it using
+    Azure Bicep Modules concept with Azure YAML pipelines.
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+  - Azure
 ---
 
 # Deployments using Azure Bicep templates
