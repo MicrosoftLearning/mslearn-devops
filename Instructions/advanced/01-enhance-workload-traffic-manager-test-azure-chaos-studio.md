@@ -1,8 +1,16 @@
 ---
 lab:
   topic: Advanced
-  title: "Deploy multi-region web apps and enhance resiliency with Traffic Manager and Azure Chaos Studio"
-  description: "Learn how to deploy multi-region web applications, enhance workload resiliency by using Traffic Manager, and test resiliency by using Azure Chaos Studio."
+  title: Deploy multi-region web apps and enhance resiliency with Traffic Manager
+    and Azure Chaos Studio
+  description: Learn how to deploy multi-region web applications, enhance workload
+    resiliency by using Traffic Manager, and test resiliency by using Azure Chaos
+    Studio.
+  duration: 60 minutes
+  level: 400
+  islab: true
+  primarytopics:
+  - Azure
 ---
 
 # Deploy multi-region web apps and enhance resiliency with Traffic Manager and Azure Chaos Studio
