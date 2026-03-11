@@ -1,8 +1,15 @@
 ---
 lab:
   topic: Advanced
-  title: "Integrate Azure Key Vault with Azure DevOps"
-  description: "Learn how to integrate Azure Key Vault with an Azure Pipeline to securely store and retrieve sensitive data such as passwords and keys."
+  title: Integrate Azure Key Vault with Azure DevOps
+  description: Learn how to integrate Azure Key Vault with an Azure Pipeline to securely store and retrieve sensitive data such as passwords and keys.
+  duration: 40 minutes
+  level: 500
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure DevOps
+    - Azure Key Vault
 ---
 
 # Integrate Azure Key Vault with Azure DevOps
