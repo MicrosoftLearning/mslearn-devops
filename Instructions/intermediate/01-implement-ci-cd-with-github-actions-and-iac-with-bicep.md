@@ -1,8 +1,13 @@
 ---
 lab:
   topic: Intermediate
-  title: "Implement CI/CD with GitHub Actions and IaC with Bicep"
-  description: "Learn how to implement CI/CD with GitHub Actions and Infrastructure as Code (IaC) using Bicep."
+  title: Implement CI/CD with GitHub Actions and IaC with Bicep
+  description: Learn how to implement CI/CD with GitHub Actions and Infrastructure as Code (IaC) using Bicep.
+  duration: 40 minutes
+  level: 500
+  islab: true
+  primarytopics:
+    - GitHub
 ---
 
 # Implement CI/CD with GitHub Actions and IaC with Bicep
