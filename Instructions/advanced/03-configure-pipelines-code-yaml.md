@@ -1,8 +1,11 @@
 ---
 lab:
   topic: Advanced
-  title: "Configure Pipelines as Code with YAML"
-  description: "Learn how to define build and release pipelines using YAML, allowing access to pipeline features with markup files managed like source code."
+  title: Configure Pipelines as Code with YAML
+  description: Learn how to define build and release pipelines using YAML, allowing access to pipeline features with markup files managed like source code.
+  duration: 45 minutes
+  level: 500
+  islab: true
 ---
 
 # Configure Pipelines as Code with YAML
