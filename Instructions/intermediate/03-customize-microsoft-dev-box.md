@@ -1,8 +1,11 @@
 ---
 lab:
   topic: Intermediate
-  title: "Customize Microsoft Dev Box with Custom Images and Networking"
-  description: "Learn how to customize Microsoft Dev Box environments with custom images, private networking, and advanced configurations."
+  title: Customize Microsoft Dev Box with Custom Images and Networking
+  description: Learn how to customize Microsoft Dev Box environments with custom images, private networking, and advanced configurations.
+  duration: 30 minutes
+  level: 500
+  islab: true
 ---
 
 # Customize Microsoft Dev Box with Custom Images and Networking
