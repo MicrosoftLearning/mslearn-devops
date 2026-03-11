@@ -1,8 +1,14 @@
 ---
 lab:
   topic: Intermediate
-  title: "Implement GitHub Actions for CI/CD"
-  description: "Learn how to implement a GitHub Action workflow that deploys an Azure web app using Service Principal authentication and GitHub environments."
+  title: Implement GitHub Actions for CI/CD
+  description: Learn how to implement a GitHub Action workflow that deploys an Azure web app using Service Principal authentication and GitHub environments.
+  duration: 40 minutes
+  level: 500
+  islab: true
+  primarytopics:
+    - Azure
+    - GitHub
 ---
 
 # Implement GitHub Actions for CI/CD
