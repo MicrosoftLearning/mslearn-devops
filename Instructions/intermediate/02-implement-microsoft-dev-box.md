@@ -1,8 +1,12 @@
 ---
 lab:
   topic: Intermediate
-  title: "Implement Microsoft Dev Box for Developer Self-Service"
-  description: "Learn how to implement basic Microsoft Dev Box environments for developer self-service scenarios."
+  title: Implement Microsoft Dev Box for Developer Self-Service
+  description: Learn how to implement basic Microsoft Dev Box environments for developer
+    self-service scenarios.
+  duration: 30 minutes
+  level: 300
+  islab: true
 ---
 
 # Implement Microsoft Dev Box for Developer Self-Service
