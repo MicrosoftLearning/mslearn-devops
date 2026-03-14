@@ -86,7 +86,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|10.0'
+      linuxFxVersion: 'DOTNETCORE|9.0'
       alwaysOn: true
       appSettings: [
         { name: 'COSMOS_ACCOUNT_ENDPOINT',               value: cosmosAccount.properties.documentEndpoint }
@@ -190,7 +190,7 @@ resource cpuAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   properties: {
     severity: 2
     enabled: true
-    scopes: [appService.id]
+    scopes: [appServicePlan.id]
     evaluationFrequency: 'PT1M'
     windowSize: 'PT5M'
     criteria: {

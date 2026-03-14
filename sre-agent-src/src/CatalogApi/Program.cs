@@ -23,19 +23,30 @@ app.UseSwaggerUI(c =>
 });
 
 // ---------------------------------------------------------------------------
-// Cosmos DB initialization (graceful — app starts even if DB is unreachable)
+// Cosmos DB initialization (non-blocking — app starts even if DB is unreachable)
 // ---------------------------------------------------------------------------
-try
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    var cosmosDb = app.Services.GetRequiredService<CosmosDbService>();
-    await cosmosDb.InitializeAsync();
-}
-catch (Exception ex)
-{
-    app.Logger.LogWarning(ex,
-        "Cosmos DB initialization failed. The app will start, but database requests will return errors. " +
-        "Verify that COSMOS_ACCOUNT_ENDPOINT is set correctly.");
-}
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            var cosmosDb = app.Services.GetRequiredService<CosmosDbService>();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            await cosmosDb.InitializeAsync().WaitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            app.Logger.LogWarning(
+                "Cosmos DB initialization timed out during background startup. The app remains online and will retry on request path.");
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex,
+                "Cosmos DB initialization failed in background. The app remains online, but database requests may return errors.");
+        }
+    });
+});
 
 // ---------------------------------------------------------------------------
 // Endpoints
