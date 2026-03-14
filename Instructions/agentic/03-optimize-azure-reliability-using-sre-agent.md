@@ -28,7 +28,7 @@ This exercise should take approximately **45** minutes to complete.
 Before you can start this exercise, ensure you have:
 
 - Access to an **[Azure Subscription](https://portal.azure.com)** with Contributor permissions. (Get a free Azure account: [https://azure.microsoft.com/free/](https://azure.microsoft.com/free/))
-- Access to the **Azure portal Cloud Shell** 
+- Access to the **[Azure portal Cloud Shell](https://shell.azure.com)** 
 
 > **Note**: At the time of writing this lab, Azure SRE Agent can only be deployed in *EastUS2*, *SwedenCentral* or *AustraliaEast* Azure Regions. The application workload itself, can be deployed in any given Azure region of choice, supporting the workload scenario within your subscription limits.
 
@@ -61,7 +61,9 @@ Before you can start this exercise, ensure you have:
 
 ---
 
-### Baseline scenario deployment
+### Task 1: Baseline scenario deployment
+
+In this task, you will use Azure Developer CLI to deploy the baseline app API workload in a healthy state. 
 
 1. Log on to the [Azure Portal](https://portal.azure.com) using your Azure admin credentials
 2. In the top menu bar, select **Cloud Shell**
@@ -74,7 +76,7 @@ git clone https://github.com/MicrosoftLearning/mslearn-devops.git
 5. Next, navigate into the mslearn-devops folder
 
 ```bash
-cd .\mslearn-devops
+cd ./mslearn-devops
 ```
 
 6. Trigger the Azure Developer CLI authentication by running the following command:
@@ -87,33 +89,98 @@ azd auth login
 
 ```bash
 Cloud Shell is automatically authenticated under the initial account used to sign in. Run 'azd auth login' only if you need to use a different account.
-To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code EC3Q7F2GQ to authenticate.
+To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code <YOURCODE> to authenticate.
 ```
 
-8. Open the **devicelogin** URL in the browser, and provide the device login code in the popup window
-9. Select "Next"
-10. When asked for your Azure credentials, log on with your Azure admin account credentials
+8. Open the **[https://microsoft.com/devicelogin](https://microsoft.com/devicelogin)** URL in the browser, and provide the device login code in the popup window that says 'Enter code to allow access"
+9. Select **Next**
+10. When asked for your Azure credentials, log on with your Azure admin account credentials. Select **Sign-in**
 11. When you are asked if you are trying to sign in to Microsoft Azure CLI, confirm by selecting **Continue**
-12. After successful login, you can close the devicelogin browser window
-13. Back in Azure Cloud Shell, run the following command to start the Azure resources deployment
+12. After successful login, you can **close** the devicelogin browser window
+13. Back in Azure Cloud Shell, **run** the following command to start the Azure resources deployment
 
 ```bash
+cd ./sre-agent-src
 azd up
 ```
 
-14. You are prompted for an environment name. Enter **srelab**
-15. You are prompted for your Azure subscription(s). Select the subscription you want to use for this deployment
-16. You are prompted for the Azure region. Select an Azure region of your choice which support the workload scenario
+14. You are prompted for a **unique environment name**. Enter **srelab**
+15. You are then prompted for your Azure subscription(s). Select the **subscription** you want to use for this deployment
+16. You are prompted for the **Azure region**. Select an Azure region of your choice which support the workload scenario
+17. The deployment starts with **'Packaging services (azd package)'**; this should take only a few minutes
+18. Next, azd will switch to **'Provisioning Azure resources (azd provision)'**; it will regularly update the deployment status
+19. **Wait** for the azd deployment to complete. you see a message **SUCCESS: Your up workflow to provision and deploy to Azure completed in x minutes x seconds.**
+
+> **Note**: The scenario deployment could take 8-10 minutes on average
 
 > **Note**: if the deployment should fail because of regional quota limits, run 'azd down --purge --force', which will delete the resource group and all resources within. Once complete, run 'azd environment new', give a new environment name, followed by 'azd up'. To then select a different Azure region.
 
-17. The deployment starts with 'Packaging services (azd package); this should take only a few minutes
-18. Next, azd will switch to 'Provisioning Azure resources (azd provision); i will regularly update the deployment status
-19. Wait for the azd deployment to complete. you should see a message **SUCCESS: Your up workflow to provision and deploy to Azure completed in x minutes x seconds.
-
-> **Note**: The scenario deployment could take 10-15 minutes on average
-
-20. Once azd deployment is complete, you can close Azure Cloud Shell
+20. Once azd deployment is complete, you can **close Azure Cloud Shell**
 21. From the Azure Portal, navigate to the new Resource Group that got created **rg-srelab** and validate the resources within (WebApp, Cosmos DB, Log Analytics workspace and a few other).
 22. Select the App Service **app-%uniquestring%**. From the **Overview** blade, navigate to **Default domain** and select the **azurewebsites.net** URL. 
-23. This opens the web app API in the browser  
+23. This opens the web app API in the browser, showing **Catalog API is running**, together with different API links
+
+```
+- GET /health - service and Cosmos connectivity check
+- GET /products - list products
+- GET /orders - list orders
+- Swagger UI - interactive API explorer
+- OpenAPI JSON - API schema
+```
+
+24. Select **GET /health**; this results in a json message similar to this:
+
+```json
+{"status":"healthy","timestamp":"2026-03-14T04:22:59.8100086Z"}
+```
+
+25. Return to the API home page, and select **GET /products**. This shows a list of products in json format, similar to this:
+
+```json
+[{"id":"f8182df5-ee0e-4d72-ad96-2319a0cbe91d","name":"Wireless Keyboard","category":"Electronics","description":"Ergonomic wireless keyboard with backlight","price":79.99,"stock":150},{"id":"41ca5862-a661-4758-93c1-30b2e41137b4","name":"USB-C Monitor","category":"Electronics",
+...}]
+```
+
+26. This **confirms the app is running healthy. 
+
+### Task 2: Set up Azure SRE Agent
+
+In this task, you introduce Azure SRE Agent into your environment, and link it to the deployed app API resource group.
+
+1. From the **Azure Portal**, search for **Azure SRE Agent**
+2. Select **Create**
+3. In the **Create Agent** popup window, complete the following parameters:
+
+- Subscription: **your Azure subscription**
+- Resource Group: **rg-srelab**
+- Agent Name: **api-sre-agent**
+- Region: **any available region**
+- Application Insights: **Use existing** / **appi-%uniquestring%**
+
+4. Select **Next** and review the info
+5. Select **Create**
+6. The necessary resources operations get executed. **Wait** for step 3 to complete
+
+>**Note**: while SRE Agent is getting set up, you can continue with the next task from a new browser tab
+
+### Task 3: Simulate a failure
+
+With both the app API workload running healthy and Azure SRE Agent deployed, you are ready to break the application and simulate a failure.
+
+1. Navigate to the **App Service**
+2. Navigate to **Settings** and select **Identity**
+3. Notice the App Service is configured with a **System-Assigned Managed Identity**
+4. Select the **Status** toggle button, to switch it off
+5. **Save** the changes
+6. **Confirm** the popup message *disable system assigned managed identity** by selecting **Yes**
+7. From the **App Service Overview** topic, select **Restart** to restart the web app
+8. Once restarted, connect to the **web API URL** and select **GET /products**
+9. This will result in an error message **Page isn't working**
+
+### Task 4: Use Azure SRE Agent to optimize reliability
+
+In this task, you will use Azure SRE Agent as the AI assistant to investigate the outage, verify, reason and suggest a solution. You will then use human-in-the-loop approval to allow Azure SRE Agent to run Azure CLI commands to restore the API to a healthy state.
+
+> **Note**: validate from the initial Azure portal tab in which you deployed SRE Agent, its setup completed successfully before continuing this task
+
+1. 
