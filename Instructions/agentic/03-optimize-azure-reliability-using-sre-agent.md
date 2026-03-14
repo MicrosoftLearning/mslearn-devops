@@ -34,6 +34,11 @@ Before you can start this exercise, ensure you have:
 
 > **Note**: The Azure SRE Agent uses Large Language Model and Generative AI agents, which don't require a separate GitHub Copilot or similar Generative AI subscription. Billing occurs through your Azure subscription.
 
+---
+**OPTIONAL**
+
+For ease of deployment across different platforms, this exercise **suggests to use Azure Cloud Shell**. However, if you want, you can run the scenario deployment from your local development workstation. You need both Azure CLI and Azure Developer CLI installed for this. 
+
 - The Azure Developer CLI is used to provision the baseline Azure infrastructure and manage deployments. Azure Developer CLI is embedded in Azure Cloud Shell. Only if you want to run the deployment from your local machine, instead of Azure Cloud Shell, you need to follow the below installation guidelines.
 
 - **Download Azure Developer CLI**: [https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
