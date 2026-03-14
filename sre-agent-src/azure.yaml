@@ -1,0 +1,10 @@
+# Azure Developer CLI (azd) configuration
+# Deploy with: azd up
+name: sre-agent-lab-config-drift
+metadata:
+  template: sre-agent-lab-config-drift
+services:
+  api:
+    project: ./src/CatalogApi
+    host: appservice
+    language: csharp
