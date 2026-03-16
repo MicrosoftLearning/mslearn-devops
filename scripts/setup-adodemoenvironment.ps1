@@ -12,20 +12,21 @@
     - CI/CD pipeline definitions
     - Sample builds and releases
 
-.PARAMETER Organization
-    The Azure DevOps organization URL (e.g., https://dev.azure.com/myorg)
+.PARAMETER ADOOrgUrl
+    Optional. The Azure DevOps organization URL (e.g., https://dev.azure.com/myorg).
+    If not provided, the script will discover your organizations and let you choose.
 
 .PARAMETER ProjectName
-    The name of the project to create (default: "Contoso Web App")
+    The name of the project to create (default: "ADO Demo Web App")
 
 .PARAMETER SkipCodePush
     Skip pushing sample code to the repository
 
 .EXAMPLE
-    .\Setup-ADODemoEnvironment.ps1 -Organization "https://dev.azure.com/myorg"
+    .\Setup-ADODemoEnvironment.ps1
 
 .EXAMPLE
-    .\Setup-ADODemoEnvironment.ps1 -Organization "https://dev.azure.com/myorg" -ProjectName "My Demo Project"
+    .\Setup-ADODemoEnvironment.ps1 -ADOOrgUrl "https://dev.azure.com/myorg" -ProjectName "My Demo Project"
 
 .NOTES
     Prerequisites:
@@ -36,11 +37,11 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$Organization,
+    [Parameter(Mandatory = $false)]
+    [string]$ADOOrgUrl,
 
     [Parameter(Mandatory = $false)]
-    [string]$ProjectName = "Contoso Web App",
+    [string]$ProjectName = "ADO Demo Web App",
 
     [Parameter(Mandatory = $false)]
     [switch]$SkipCodePush
@@ -60,20 +61,18 @@ function Write-Info { param($Message) Write-Host "  ℹ $Message" -ForegroundCol
 function Write-Warning { param($Message) Write-Host "  ⚠ $Message" -ForegroundColor Yellow }
 
 # Repository name
-$RepoName = "contoso-webapp"
+$RepoName = "adodemo-webapp"
 
-# Sprint dates (adjust based on current date)
+# Iteration dates (adjust based on current date)
 $Today = Get-Date
-$SprintDuration = 14 # days
+$IterationDuration = 7 # days (weekly iterations)
 
-$Sprint1Start = $Today.AddDays(-28).ToString("yyyy-MM-dd")
-$Sprint1End = $Today.AddDays(-15).ToString("yyyy-MM-dd")
-$Sprint2Start = $Today.AddDays(-14).ToString("yyyy-MM-dd")
-$Sprint2End = $Today.AddDays(-1).ToString("yyyy-MM-dd")
-$Sprint3Start = $Today.ToString("yyyy-MM-dd")
-$Sprint3End = $Today.AddDays(13).ToString("yyyy-MM-dd")
-$Sprint4Start = $Today.AddDays(14).ToString("yyyy-MM-dd")
-$Sprint4End = $Today.AddDays(27).ToString("yyyy-MM-dd")
+$Iteration1Start = $Today.AddDays(-14).ToString("yyyy-MM-dd")
+$Iteration1End = $Today.AddDays(-8).ToString("yyyy-MM-dd")
+$Iteration2Start = $Today.AddDays(-7).ToString("yyyy-MM-dd")
+$Iteration2End = $Today.AddDays(-1).ToString("yyyy-MM-dd")
+$Iteration3Start = $Today.ToString("yyyy-MM-dd")
+$Iteration3End = $Today.AddDays(6).ToString("yyyy-MM-dd")
 
 # ============================================================================
 # Helper Functions
@@ -120,13 +119,14 @@ function Invoke-AzDevOps {
         [switch]$AllowFailure
     )
     
-    $fullCommand = "az devops $Command --org `"$Organization`""
+    $fullCommand = "az devops $Command --org `"$ADOOrgUrl`""
     $result = Invoke-Expression $fullCommand 2>&1
     
-    if ($LASTEXITCODE -ne 0 -and -not $AllowFailure) {
-        Write-Warning "Command failed: $fullCommand"
-        Write-Warning "Error: $result"
-        return $null
+    if ($LASTEXITCODE -ne 0) {
+        if ($AllowFailure) {
+            return $null
+        }
+        throw "Azure DevOps command failed: $fullCommand`nError: $result"
     }
     
     if ($ReturnJson -and $result) {
@@ -142,15 +142,14 @@ function Invoke-AzBoards {
         [switch]$AllowFailure
     )
     
-    $fullCommand = "az boards $Command --org `"$Organization`" --project `"$ProjectName`""
+    $fullCommand = "az boards $Command --org `"$ADOOrgUrl`" --project `"$ProjectName`""
     $result = Invoke-Expression $fullCommand 2>&1
     
-    if ($LASTEXITCODE -ne 0 -and -not $AllowFailure) {
-        if (-not $AllowFailure) {
-            Write-Warning "Command failed: $fullCommand"
-            Write-Warning "Error: $result"
+    if ($LASTEXITCODE -ne 0) {
+        if ($AllowFailure) {
+            return $null
         }
-        return $null
+        throw "Azure Boards command failed: $fullCommand`nError: $result"
     }
     
     if ($ReturnJson -and $result) {
@@ -166,12 +165,14 @@ function Invoke-AzRepos {
         [switch]$AllowFailure
     )
     
-    $fullCommand = "az repos $Command --org `"$Organization`" --project `"$ProjectName`""
+    $fullCommand = "az repos $Command --org `"$ADOOrgUrl`" --project `"$ProjectName`""
     $result = Invoke-Expression $fullCommand 2>&1
     
-    if ($LASTEXITCODE -ne 0 -and -not $AllowFailure) {
-        Write-Warning "Command failed: $fullCommand"
-        return $null
+    if ($LASTEXITCODE -ne 0) {
+        if ($AllowFailure) {
+            return $null
+        }
+        throw "Azure Repos command failed: $fullCommand`nError: $result"
     }
     
     if ($ReturnJson -and $result) {
@@ -187,12 +188,14 @@ function Invoke-AzPipelines {
         [switch]$AllowFailure
     )
     
-    $fullCommand = "az pipelines $Command --org `"$Organization`" --project `"$ProjectName`""
+    $fullCommand = "az pipelines $Command --org `"$ADOOrgUrl`" --project `"$ProjectName`""
     $result = Invoke-Expression $fullCommand 2>&1
     
-    if ($LASTEXITCODE -ne 0 -and -not $AllowFailure) {
-        Write-Warning "Command failed: $fullCommand"
-        return $null
+    if ($LASTEXITCODE -ne 0) {
+        if ($AllowFailure) {
+            return $null
+        }
+        throw "Azure Pipelines command failed: $fullCommand`nError: $result"
     }
     
     if ($ReturnJson -and $result) {
@@ -228,26 +231,39 @@ function New-ADOProject {
 }
 
 # ============================================================================
-# Iterations/Sprints Setup
+# Iterations Setup
 # ============================================================================
 
 function New-Iterations {
-    Write-Step "Creating iterations (sprints)..."
+    Write-Step "Configuring iteration dates..."
     
-    # Create sprints
-    $sprints = @(
-        @{ Name = "Sprint 1"; Start = $Sprint1Start; End = $Sprint1End },
-        @{ Name = "Sprint 2"; Start = $Sprint2Start; End = $Sprint2End },
-        @{ Name = "Sprint 3"; Start = $Sprint3Start; End = $Sprint3End },
-        @{ Name = "Sprint 4"; Start = $Sprint4Start; End = $Sprint4End }
+    # First, list existing iterations to get their actual paths
+    Write-Info "Retrieving existing iterations..."
+    $existingIterations = Invoke-AzBoards -Command "iteration project list --depth 1" -ReturnJson -AllowFailure
+    
+    if (-not $existingIterations -or -not $existingIterations.children) {
+        Write-Warning "Could not retrieve iterations. They may need to be configured manually."
+        return
+    }
+    
+    # Map desired dates to the first 3 child iterations (Iteration 1, 2, 3)
+    $dates = @(
+        @{ Start = $Iteration1Start; End = $Iteration1End },
+        @{ Start = $Iteration2Start; End = $Iteration2End },
+        @{ Start = $Iteration3Start; End = $Iteration3End }
     )
     
-    foreach ($sprint in $sprints) {
-        $result = Invoke-AzBoards -Command "iteration project create --name `"$($sprint.Name)`" --start-date $($sprint.Start) --finish-date $($sprint.End)" -AllowFailure
+    $children = @($existingIterations.children)
+    $count = [Math]::Min($children.Count, $dates.Count)
+    
+    for ($i = 0; $i -lt $count; $i++) {
+        $iterPath = $children[$i].path
+        $iterName = $children[$i].name
+        $result = Invoke-AzBoards -Command "iteration project update --path `"$iterPath`" --start-date $($dates[$i].Start) --finish-date $($dates[$i].End)" -AllowFailure
         if ($result) {
-            Write-Success "Created: $($sprint.Name) ($($sprint.Start) to $($sprint.End))"
+            Write-Success "Updated: $iterName ($($dates[$i].Start) to $($dates[$i].End))"
         } else {
-            Write-Info "Sprint may already exist: $($sprint.Name)"
+            Write-Warning "Could not update iteration: $iterName (path: $iterPath)"
         }
     }
 }
@@ -263,7 +279,7 @@ function New-WorkItems {
     
     # Create Epic
     Write-Info "Creating Epic..."
-    $epic = Invoke-AzBoards -Command "work-item create --type `"Epic`" --title `"Customer Authentication Platform`" --description `"Complete authentication solution for the Contoso Web App`"" -ReturnJson
+    $epic = Invoke-AzBoards -Command "work-item create --type `"Epic`" --title `"Customer Authentication Platform`" --description `"Complete authentication solution for the adodemo Web App`"" -ReturnJson
     if ($epic) {
         $workItemIds["Epic1"] = $epic.id
         Write-Success "Epic #$($epic.id): Customer Authentication Platform"
@@ -286,7 +302,7 @@ function New-WorkItems {
             
             # Link to Epic
             if ($workItemIds["Epic1"]) {
-                $null = az boards work-item relation add --id $f.id --relation-type "Parent" --target-id $workItemIds["Epic1"] --org $Organization 2>&1
+                $null = az boards work-item relation add --id $f.id --relation-type "Parent" --target-id $workItemIds["Epic1"] --org $ADOOrgUrl 2>&1
             }
         }
         $featureIndex++
@@ -295,11 +311,11 @@ function New-WorkItems {
     # Create User Stories
     Write-Info "Creating User Stories..."
     $stories = @(
-        @{ Title = "As a user, I can login with email and password"; Points = 5; Sprint = "Sprint 3"; Feature = "Feature1"; State = "Active"; Assigned = $true },
-        @{ Title = "As a user, I can reset my forgotten password"; Points = 3; Sprint = "Sprint 3"; Feature = "Feature1"; State = "Active"; Assigned = $true },
-        @{ Title = "As a user, I can register a new account"; Points = 5; Sprint = "Sprint 3"; Feature = "Feature1"; State = "New"; Assigned = $true },
-        @{ Title = "As a user, I can login with Google"; Points = 8; Sprint = "Sprint 4"; Feature = "Feature2"; State = "New"; Assigned = $false },
-        @{ Title = "As a user, I can login with Microsoft"; Points = 8; Sprint = "Sprint 4"; Feature = "Feature2"; State = "New"; Assigned = $false },
+        @{ Title = "As a user, I can login with email and password"; Points = 5; Sprint = "Iteration 2"; Feature = "Feature1"; State = "Active"; Assigned = $true },
+        @{ Title = "As a user, I can reset my forgotten password"; Points = 3; Sprint = "Iteration 2"; Feature = "Feature1"; State = "Active"; Assigned = $true },
+        @{ Title = "As a user, I can register a new account"; Points = 5; Sprint = "Iteration 3"; Feature = "Feature1"; State = "New"; Assigned = $true },
+        @{ Title = "As a user, I can login with Google"; Points = 8; Sprint = "Iteration 3"; Feature = "Feature2"; State = "New"; Assigned = $false },
+        @{ Title = "As a user, I can login with Microsoft"; Points = 8; Sprint = "Iteration 3"; Feature = "Feature2"; State = "New"; Assigned = $false },
         @{ Title = "As an admin, I can enforce MFA for users"; Points = 13; Sprint = ""; Feature = "Feature3"; State = "New"; Assigned = $false }
     )
     
@@ -315,12 +331,12 @@ function New-WorkItems {
             Write-Success "Story #$($s.id): $($story.Title)"
             
             # Update story points and state
-            $null = az boards work-item update --id $s.id --fields "Microsoft.VSTS.Scheduling.StoryPoints=$($story.Points)" "System.State=$($story.State)" --org $Organization --project $ProjectName 2>&1
+            $null = az boards work-item update --id $s.id --fields "Microsoft.VSTS.Scheduling.StoryPoints=$($story.Points)" "System.State=$($story.State)" --org $ADOOrgUrl --project $ProjectName 2>&1
             
             # Link to Feature
             $featureKey = $story.Feature
             if ($workItemIds[$featureKey]) {
-                $null = az boards work-item relation add --id $s.id --relation-type "Parent" --target-id $workItemIds[$featureKey] --org $Organization 2>&1
+                $null = az boards work-item relation add --id $s.id --relation-type "Parent" --target-id $workItemIds[$featureKey] --org $ADOOrgUrl 2>&1
             }
         }
         $storyIndex++
@@ -345,12 +361,12 @@ function New-WorkItems {
             Write-Success "Task #$($t.id): $($task.Title)"
             
             # Update remaining work and state
-            $null = az boards work-item update --id $t.id --fields "Microsoft.VSTS.Scheduling.RemainingWork=$($task.Hours)" "System.State=$($task.State)" --org $Organization --project $ProjectName 2>&1
+            $null = az boards work-item update --id $t.id --fields "Microsoft.VSTS.Scheduling.RemainingWork=$($task.Hours)" "System.State=$($task.State)" --org $ADOOrgUrl --project $ProjectName 2>&1
             
             # Link to Story
             $storyKey = $task.Story
             if ($workItemIds[$storyKey]) {
-                $null = az boards work-item relation add --id $t.id --relation-type "Parent" --target-id $workItemIds[$storyKey] --org $Organization 2>&1
+                $null = az boards work-item relation add --id $t.id --relation-type "Parent" --target-id $workItemIds[$storyKey] --org $ADOOrgUrl 2>&1
             }
         }
         $taskIndex++
@@ -359,11 +375,11 @@ function New-WorkItems {
     # Create Bugs
     Write-Info "Creating Bugs..."
     $bugs = @(
-        @{ Title = "Login page crashes on mobile Safari"; Severity = "2 - High"; Priority = 2; State = "Active"; Sprint = "Sprint 3"; Story = "Story1"; Tags = "mobile,critical" },
-        @{ Title = "Password reset link expires too quickly"; Severity = "3 - Medium"; Priority = 2; State = "New"; Sprint = "Sprint 3"; Story = "Story2"; Tags = "" },
-        @{ Title = "Session timeout not working correctly"; Severity = "2 - High"; Priority = 1; State = "Active"; Sprint = "Sprint 3"; Story = "Story1"; Tags = "critical" },
+        @{ Title = "Login page crashes on mobile Safari"; Severity = "2 - High"; Priority = 2; State = "Active"; Sprint = "Iteration 2"; Story = "Story1"; Tags = "mobile,critical" },
+        @{ Title = "Password reset link expires too quickly"; Severity = "3 - Medium"; Priority = 2; State = "New"; Sprint = "Iteration 3"; Story = "Story2"; Tags = "" },
+        @{ Title = "Session timeout not working correctly"; Severity = "2 - High"; Priority = 1; State = "Active"; Sprint = "Iteration 2"; Story = "Story1"; Tags = "critical" },
         @{ Title = "Login button unresponsive on slow connections"; Severity = "3 - Medium"; Priority = 3; State = "New"; Sprint = ""; Story = "Story1"; Tags = "mobile" },
-        @{ Title = "Email validation accepts invalid formats"; Severity = "3 - Medium"; Priority = 2; State = "Resolved"; Sprint = "Sprint 2"; Story = "Story3"; Tags = "" }
+        @{ Title = "Email validation accepts invalid formats"; Severity = "3 - Medium"; Priority = 2; State = "Resolved"; Sprint = "Iteration 1"; Story = "Story3"; Tags = "" }
     )
     
     $bugIndex = 1
@@ -381,12 +397,12 @@ function New-WorkItems {
                 $fields += "System.Tags=`"$($bug.Tags)`""
             }
             $fieldsStr = $fields -join " "
-            $null = az boards work-item update --id $b.id --fields $fields --org $Organization --project $ProjectName 2>&1
+            $null = az boards work-item update --id $b.id --fields $fields --org $ADOOrgUrl --project $ProjectName 2>&1
             
             # Link to Story
             $storyKey = $bug.Story
             if ($workItemIds[$storyKey]) {
-                $null = az boards work-item relation add --id $b.id --relation-type "Related" --target-id $workItemIds[$storyKey] --org $Organization 2>&1
+                $null = az boards work-item relation add --id $b.id --relation-type "Related" --target-id $workItemIds[$storyKey] --org $ADOOrgUrl 2>&1
             }
         }
         $bugIndex++
@@ -407,9 +423,9 @@ function New-SampleCode {
     
     # Create directory structure
     $srcPath = Join-Path $TempPath "src"
-    $apiPath = Join-Path $srcPath "Contoso.WebApp.Api"
+    $apiPath = Join-Path $srcPath "adodemo.WebApp.Api"
     $testPath = Join-Path $TempPath "tests"
-    $unitTestPath = Join-Path $testPath "Contoso.WebApp.Api.Tests"
+    $unitTestPath = Join-Path $testPath "adodemo.WebApp.Api.Tests"
     $pipelinesPath = Join-Path $TempPath ".azure-pipelines"
     
     New-Item -ItemType Directory -Path $apiPath -Force | Out-Null
@@ -468,9 +484,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contoso.WebApp.Api", "src\Contoso.WebApp.Api\Contoso.WebApp.Api.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "adodemo.WebApp.Api", "src\adodemo.WebApp.Api\adodemo.WebApp.Api.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contoso.WebApp.Api.Tests", "tests\Contoso.WebApp.Api.Tests\Contoso.WebApp.Api.Tests.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "adodemo.WebApp.Api.Tests", "tests\adodemo.WebApp.Api.Tests\adodemo.WebApp.Api.Tests.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -488,7 +504,7 @@ Global
 		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
-"@ | Set-Content (Join-Path $TempPath "Contoso.WebApp.sln")
+"@ | Set-Content (Join-Path $TempPath "adodemo.WebApp.sln")
     
     # API Project file
     @"
@@ -506,11 +522,11 @@ EndGlobal
   </ItemGroup>
 
 </Project>
-"@ | Set-Content (Join-Path $apiPath "Contoso.WebApp.Api.csproj")
+"@ | Set-Content (Join-Path $apiPath "adodemo.WebApp.Api.csproj")
     
     # Program.cs
     @"
-using Contoso.WebApp.Api.Services;
+using adodemo.WebApp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -541,7 +557,7 @@ public partial class Program { }
     
     # Models
     @"
-namespace Contoso.WebApp.Api.Models;
+namespace adodemo.WebApp.Api.Models;
 
 public class LoginRequest
 {
@@ -585,9 +601,9 @@ public class PasswordResetConfirmRequest
     
     # Auth Service Interface
     @"
-using Contoso.WebApp.Api.Models;
+using adodemo.WebApp.Api.Models;
 
-namespace Contoso.WebApp.Api.Services;
+namespace adodemo.WebApp.Api.Services;
 
 public interface IAuthService
 {
@@ -601,17 +617,17 @@ public interface IAuthService
     
     # Auth Service Implementation
     @"
-using Contoso.WebApp.Api.Models;
+using adodemo.WebApp.Api.Models;
 using System.Text.RegularExpressions;
 
-namespace Contoso.WebApp.Api.Services;
+namespace adodemo.WebApp.Api.Services;
 
 public class AuthService : IAuthService
 {
     private readonly ILogger<AuthService> _logger;
     private static readonly Dictionary<string, (string Password, string DisplayName)> _users = new()
     {
-        ["demo@contoso.com"] = ("Demo123!", "Demo User")
+        ["demo@adodemo.com"] = ("Demo123!", "Demo User")
     };
     
     public AuthService(ILogger<AuthService> logger)
@@ -727,9 +743,9 @@ public class AuthService : IAuthService
     
     # User Service
     @"
-using Contoso.WebApp.Api.Models;
+using adodemo.WebApp.Api.Models;
 
-namespace Contoso.WebApp.Api.Services;
+namespace adodemo.WebApp.Api.Services;
 
 public interface IUserService
 {
@@ -754,7 +770,7 @@ public class UserService : IUserService
         return new UserInfo
         {
             Id = id,
-            Email = "demo@contoso.com",
+            Email = "demo@adodemo.com",
             DisplayName = "Demo User"
         };
     }
@@ -764,8 +780,8 @@ public class UserService : IUserService
         await Task.Delay(50);
         return new[]
         {
-            new UserInfo { Id = "1", Email = "demo@contoso.com", DisplayName = "Demo User" },
-            new UserInfo { Id = "2", Email = "admin@contoso.com", DisplayName = "Admin User" }
+            new UserInfo { Id = "1", Email = "demo@adodemo.com", DisplayName = "Demo User" },
+            new UserInfo { Id = "2", Email = "admin@adodemo.com", DisplayName = "Admin User" }
         };
     }
 }
@@ -774,10 +790,10 @@ public class UserService : IUserService
     # Auth Controller
     @"
 using Microsoft.AspNetCore.Mvc;
-using Contoso.WebApp.Api.Models;
-using Contoso.WebApp.Api.Services;
+using adodemo.WebApp.Api.Models;
+using adodemo.WebApp.Api.Services;
 
-namespace Contoso.WebApp.Api.Controllers;
+namespace adodemo.WebApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -879,10 +895,10 @@ public class AuthController : ControllerBase
     # Users Controller
     @"
 using Microsoft.AspNetCore.Mvc;
-using Contoso.WebApp.Api.Models;
-using Contoso.WebApp.Api.Services;
+using adodemo.WebApp.Api.Models;
+using adodemo.WebApp.Api.Services;
 
-namespace Contoso.WebApp.Api.Controllers;
+namespace adodemo.WebApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -932,7 +948,7 @@ public class UsersController : ControllerBase
     @"
 using Microsoft.AspNetCore.Mvc;
 
-namespace Contoso.WebApp.Api.Controllers;
+namespace adodemo.WebApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -985,21 +1001,21 @@ public class HealthController : ControllerBase
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Contoso.WebApp.Api\Contoso.WebApp.Api.csproj" />
+    <ProjectReference Include="..\..\src\adodemo.WebApp.Api\adodemo.WebApp.Api.csproj" />
   </ItemGroup>
 
 </Project>
-"@ | Set-Content (Join-Path $unitTestPath "Contoso.WebApp.Api.Tests.csproj")
+"@ | Set-Content (Join-Path $unitTestPath "adodemo.WebApp.Api.Tests.csproj")
     
     # Unit Tests
     @"
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
-using Contoso.WebApp.Api.Services;
-using Contoso.WebApp.Api.Models;
+using adodemo.WebApp.Api.Services;
+using adodemo.WebApp.Api.Models;
 
-namespace Contoso.WebApp.Api.Tests;
+namespace adodemo.WebApp.Api.Tests;
 
 public class AuthServiceTests
 {
@@ -1018,7 +1034,7 @@ public class AuthServiceTests
         // Arrange
         var request = new LoginRequest
         {
-            Email = "demo@contoso.com",
+            Email = "demo@adodemo.com",
             Password = "Demo123!"
         };
         
@@ -1029,7 +1045,7 @@ public class AuthServiceTests
         Assert.True(result.Success);
         Assert.NotNull(result.Token);
         Assert.NotNull(result.User);
-        Assert.Equal("demo@contoso.com", result.User.Email);
+        Assert.Equal("demo@adodemo.com", result.User.Email);
     }
     
     [Fact]
@@ -1038,7 +1054,7 @@ public class AuthServiceTests
         // Arrange
         var request = new LoginRequest
         {
-            Email = "demo@contoso.com",
+            Email = "demo@adodemo.com",
             Password = "wrongpassword"
         };
         
@@ -1090,7 +1106,7 @@ public class AuthServiceTests
         // Arrange
         var request = new RegisterRequest
         {
-            Email = $"newuser{Guid.NewGuid():N}@contoso.com",
+            Email = $"newuser{Guid.NewGuid():N}@adodemo.com",
             Password = "NewUser123!",
             DisplayName = "New User"
         };
@@ -1133,7 +1149,7 @@ public class AuthServiceTests
     
     # CI Pipeline
     @"
-# Contoso WebApp - CI Pipeline
+# adodemo WebApp - CI Pipeline
 # Triggers on PR and feature branches
 
 trigger:
@@ -1250,7 +1266,7 @@ stages:
     
     # CD Pipeline
     @"
-# Contoso WebApp - CD Pipeline
+# adodemo WebApp - CD Pipeline
 # Deploys to Azure environments
 
 trigger:
@@ -1293,7 +1309,7 @@ stages:
   dependsOn: Build
   variables:
     environmentName: 'Development'
-    appServiceName: 'contoso-webapp-dev'
+    appServiceName: 'adodemo-webapp-dev'
   jobs:
   - deployment: DeployDev
     displayName: 'Deploy to Dev'
@@ -1315,7 +1331,7 @@ stages:
   dependsOn: DeployDev
   variables:
     environmentName: 'Staging'
-    appServiceName: 'contoso-webapp-staging'
+    appServiceName: 'adodemo-webapp-staging'
   jobs:
   - deployment: DeployStaging
     displayName: 'Deploy to Staging'
@@ -1337,7 +1353,7 @@ stages:
   dependsOn: DeployStaging
   variables:
     environmentName: 'Production'
-    appServiceName: 'contoso-webapp-prod'
+    appServiceName: 'adodemo-webapp-prod'
   jobs:
   - deployment: DeployProduction
     displayName: 'Deploy to Production'
@@ -1357,7 +1373,7 @@ stages:
     
     # README
     @"
-# Contoso WebApp
+# adodemo WebApp
 
 A modern .NET 8 web application demonstrating authentication patterns.
 
@@ -1379,7 +1395,7 @@ A modern .NET 8 web application demonstrating authentication patterns.
 ### Running Locally
 
 ```bash
-cd src/Contoso.WebApp.Api
+cd src/adodemo.WebApp.Api
 dotnet run
 ```
 
@@ -1395,12 +1411,12 @@ dotnet test
 
 ```
 ├── src/
-│   └── Contoso.WebApp.Api/     # Main API project
+│   └── adodemo.WebApp.Api/     # Main API project
 │       ├── Controllers/         # API controllers
 │       ├── Models/             # Data models
 │       └── Services/           # Business logic
 ├── tests/
-│   └── Contoso.WebApp.Api.Tests/  # Unit tests
+│   └── adodemo.WebApp.Api.Tests/  # Unit tests
 └── .azure-pipelines/           # CI/CD pipelines
 ```
 
@@ -1423,7 +1439,7 @@ dotnet test
 
 ## License
 
-Copyright © Contoso Ltd. All rights reserved.
+Copyright © adodemo Ltd. All rights reserved.
 "@ | Set-Content (Join-Path $TempPath "README.md")
     
     Write-Success "Sample .NET Core application generated"
@@ -1442,7 +1458,7 @@ function Push-SampleCode {
     
     # Try to get the repo by name
     Write-Info "Checking for existing repository: $RepoName"
-    $repoList = az repos list --org $Organization --project "$ProjectName" 2>&1 | ConvertFrom-Json -ErrorAction SilentlyContinue
+    $repoList = az repos list --org $ADOOrgUrl --project "$ProjectName" 2>&1 | ConvertFrom-Json -ErrorAction SilentlyContinue
     
     if ($repoList) {
         $repo = $repoList | Where-Object { $_.name -eq $RepoName } | Select-Object -First 1
@@ -1454,7 +1470,7 @@ function Push-SampleCode {
         
         if ($defaultRepo -and -not ($repoList | Where-Object { $_.name -eq $RepoName })) {
             Write-Info "Creating repository: $RepoName"
-            $createResult = az repos create --name "$RepoName" --org $Organization --project "$ProjectName" 2>&1
+            $createResult = az repos create --name "$RepoName" --org $ADOOrgUrl --project "$ProjectName" 2>&1
             if ($LASTEXITCODE -eq 0) {
                 $repo = $createResult | ConvertFrom-Json -ErrorAction SilentlyContinue
                 Write-Success "Repository created: $RepoName"
@@ -1472,7 +1488,7 @@ function Push-SampleCode {
     if (-not $repo) {
         # Last resort: create the repo
         Write-Info "Creating repository: $RepoName"
-        $createResult = az repos create --name "$RepoName" --org $Organization --project "$ProjectName" 2>&1
+        $createResult = az repos create --name "$RepoName" --org $ADOOrgUrl --project "$ProjectName" 2>&1
         if ($LASTEXITCODE -eq 0) {
             $repo = $createResult | ConvertFrom-Json -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 3
@@ -1493,7 +1509,7 @@ function Push-SampleCode {
     Push-Location $TempPath
     try {
         # Configure git for this operation
-        git config --local user.email "demo@contoso.com" 2>$null
+        git config --local user.email "demo@adodemo.com" 2>$null
         git config --local user.name "Demo Setup Script" 2>$null
         
         git init 2>$null
@@ -1539,7 +1555,7 @@ function Push-SampleCode {
         git checkout -b bugfix/safari-crash 2>$null
         
         # Make a fix in the bugfix branch
-        $authServicePath = Join-Path $TempPath "src" "Contoso.WebApp.Api" "Services" "AuthService.cs"
+        $authServicePath = Join-Path $TempPath "src" "adodemo.WebApp.Api" "Services" "AuthService.cs"
         if (Test-Path $authServicePath) {
             $content = Get-Content $authServicePath -Raw
             $content = $content -replace "// Simplified validation", "// Safari compatibility fix - Simplified validation"
@@ -1581,7 +1597,7 @@ function New-Pipelines {
     
     # Create CI Pipeline
     Write-Info "Creating CI Pipeline..."
-    $ciPipeline = Invoke-AzPipelines -Command "create --name `"Contoso WebApp - CI`" --repository `"$targetRepo`" --repository-type tfsgit --branch main --yml-path .azure-pipelines/ci-pipeline.yml --skip-first-run true" -ReturnJson -AllowFailure
+    $ciPipeline = Invoke-AzPipelines -Command "create --name `"adodemo WebApp - CI`" --repository `"$targetRepo`" --repository-type tfsgit --branch main --yml-path .azure-pipelines/ci-pipeline.yml --skip-first-run true" -ReturnJson -AllowFailure
     
     if ($ciPipeline) {
         Write-Success "CI Pipeline created: $($ciPipeline.name)"
@@ -1591,7 +1607,7 @@ function New-Pipelines {
     
     # Create CD Pipeline
     Write-Info "Creating CD Pipeline..."
-    $cdPipeline = Invoke-AzPipelines -Command "create --name `"Contoso WebApp - CD`" --repository `"$targetRepo`" --repository-type tfsgit --branch main --yml-path .azure-pipelines/cd-pipeline.yml --skip-first-run true" -ReturnJson -AllowFailure
+    $cdPipeline = Invoke-AzPipelines -Command "create --name `"adodemo WebApp - CD`" --repository `"$targetRepo`" --repository-type tfsgit --branch main --yml-path .azure-pipelines/cd-pipeline.yml --skip-first-run true" -ReturnJson -AllowFailure
     
     if ($cdPipeline) {
         Write-Success "CD Pipeline created: $($cdPipeline.name)"
@@ -1651,7 +1667,7 @@ function New-PullRequests {
         
         # Link work item if we have the bug ID
         if ($WorkItemIds['Bug1']) {
-            $null = az repos pr work-item add --id $pr1.pullRequestId --work-items $WorkItemIds['Bug1'] --org $Organization --project $ProjectName 2>&1
+            $null = az repos pr work-item add --id $pr1.pullRequestId --work-items $WorkItemIds['Bug1'] --org $ADOOrgUrl --project $ProjectName 2>&1
         }
     }
     
@@ -1663,7 +1679,7 @@ function New-PullRequests {
         Write-Success "PR #$($pr2.pullRequestId): Add authentication feature documentation (Draft)"
         
         if ($WorkItemIds['Story1']) {
-            $null = az repos pr work-item add --id $pr2.pullRequestId --work-items $WorkItemIds['Story1'] --org $Organization --project $ProjectName 2>&1
+            $null = az repos pr work-item add --id $pr2.pullRequestId --work-items $WorkItemIds['Story1'] --org $ADOOrgUrl --project $ProjectName 2>&1
         }
     }
 }
@@ -1685,13 +1701,27 @@ function Main {
         # Prerequisites check
         Test-AzDevOpsCliReady
         
-        # Configure defaults
-        Write-Step "Configuring Azure DevOps defaults..."
-        az devops configure --defaults organization=$Organization project="$ProjectName" 2>$null
-        Write-Success "Defaults configured"
+        # Prompt for or validate ADO Org URL
+        if (-not $ADOOrgUrl) {
+            Write-Host ""
+            $script:ADOOrgUrl = Read-Host "  Enter your Azure DevOps organization URL (e.g., https://dev.azure.com/myorg)"
+        }
+        if ($ADOOrgUrl -notmatch '^https://dev\.azure\.com/.+') {
+            throw "Invalid ADO Org URL '$ADOOrgUrl'. Expected format: https://dev.azure.com/<yourorg>"
+        }
+        # Verify the user has access to the organization
+        Write-Step "Validating access to organization..."
+        $null = az devops project list --org "$ADOOrgUrl" --top 1 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Cannot access organization '$ADOOrgUrl'. Verify the URL is correct and you have permissions."
+        }
+        Write-Success "Organization validated: $ADOOrgUrl"
         
         # Create project
         $project = New-ADOProject
+        if (-not $project) {
+            throw "Failed to create or find Azure DevOps project '$ProjectName'. Verify the organization URL is correct and you have permissions."
+        }
         
         # Create iterations
         New-Iterations
@@ -1701,7 +1731,7 @@ function Main {
         
         # Create and push sample code
         if (-not $SkipCodePush) {
-            $tempPath = Join-Path $env:TEMP "contoso-webapp-$(Get-Random)"
+            $tempPath = Join-Path $env:TEMP "adodemo-webapp-$(Get-Random)"
             New-Item -ItemType Directory -Path $tempPath -Force | Out-Null
             
             try {
@@ -1734,7 +1764,7 @@ function Main {
         Write-Host "║     ✓ Setup Complete!                                        ║" -ForegroundColor Green
         Write-Host "╠══════════════════════════════════════════════════════════════╣" -ForegroundColor Green
         Write-Host "║  Project URL:                                                ║" -ForegroundColor Green
-        Write-Host "║  $($Organization.Replace('https://',''))/$([uri]::EscapeDataString($ProjectName))".PadRight(61) + "║" -ForegroundColor Cyan
+        Write-Host "║  $($ADOOrgUrl.Replace('https://',''))/$([uri]::EscapeDataString($ProjectName))".PadRight(61) + "║" -ForegroundColor Cyan
         Write-Host "║                                                              ║" -ForegroundColor Green
         Write-Host "║  Time elapsed: $($elapsed.ToString('mm\:ss'))                                        ║" -ForegroundColor Green
         Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
