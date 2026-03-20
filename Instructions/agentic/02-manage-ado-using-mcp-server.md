@@ -1,10 +1,15 @@
 ---
 lab:
-    topic: Agentic
-    title: 'Managing Azure DevOps Projects through Azure DevOps MCP Server'
-    description: 'This exercise showcases different scenarios on how to use Azure DevOps MCP Server for day-to-day operations in Azure DevOps'
-    level: 300
-    Duration: 30 minutes
+  topic: Agentic
+  title: Managing Azure DevOps Projects through Azure DevOps MCP Server
+  description: This exercise showcases different scenarios on how to use Azure DevOps MCP Server for day-to-day operations in Azure DevOps
+  level: 300
+  duration: 30 minutes
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure DevOps
+    - MCP
 ---
 
 # Managing Azure DevOps Projects through Azure DevOps MCP Server

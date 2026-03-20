@@ -1,8 +1,13 @@
 ---
 lab:
   topic: Basic
-  title: "Agile Planning and Management using GitHub"
-  description: "Learn how to create a GitHub repo, project, and project board, and manage items on the project board."
+  title: Agile Planning and Management using GitHub
+  description: Learn how to create a GitHub repo, project, and project board, and manage items on the project board.
+  duration: 40 minutes
+  level: 200
+  islab: true
+  primarytopics:
+    - GitHub
 ---
 
 # Agile Planning and Management using GitHub

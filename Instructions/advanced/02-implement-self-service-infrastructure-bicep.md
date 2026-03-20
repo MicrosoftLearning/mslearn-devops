@@ -1,8 +1,11 @@
 ---
 lab:
   topic: Advanced
-  title: "Implement Self-Service Infrastructure with Bicep"
-  description: "Learn how to implement Infrastructure as Code using Bicep for self-service platform engineering scenarios."
+  title: Implement Self-Service Infrastructure with Bicep
+  description: Learn how to implement Infrastructure as Code using Bicep for self-service platform engineering scenarios.
+  duration: 30 minutes
+  level: 400
+  islab: true
 ---
 
 # Implement Self-Service Infrastructure with Bicep
