@@ -4,7 +4,7 @@ lab:
   title: Enable Dynamic Configuration and Feature Flags
   description: Learn how to use Azure App Configuration to manage application settings and feature flags centrally with dynamic feature toggling.
   duration: 45 minutes
-  level: 500
+  level: 400
   islab: true
   primarytopics:
     - Azure

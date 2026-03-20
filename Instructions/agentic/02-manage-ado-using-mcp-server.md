@@ -9,6 +9,7 @@ lab:
   primarytopics:
     - Azure
     - Azure DevOps
+    - MCP
 ---
 
 # Managing Azure DevOps Projects through Azure DevOps MCP Server

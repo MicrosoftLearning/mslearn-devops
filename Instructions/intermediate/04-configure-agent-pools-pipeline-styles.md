@@ -4,7 +4,7 @@ lab:
   title: Configure Agent Pools and Understand Pipeline Styles
   description: Learn how to implement and use self-hosted agents with YAML pipelines in Azure DevOps. You'll create Azure VMs as agents and configure agent pools for CI/CD processes.
   duration: 45 minutes
-  level: 500
+  level: 400
   islab: true
   primarytopics:
     - Azure
