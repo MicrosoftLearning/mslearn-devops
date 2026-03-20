@@ -4,7 +4,7 @@ lab:
   title: Implement Flow of Work with GitHub
   description: Learn how to implement and manage repositories using GitHub, including forking a repo, creating issues, branches, and pull requests.
   duration: 30 minutes
-  level: 100
+  level: 200
   islab: true
   primarytopics:
     - GitHub

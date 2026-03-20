@@ -4,7 +4,7 @@ lab:
   title: Monitor Application Performance with Azure Load Testing
   description: Learn how to use Azure Load Testing to simulate performance testing against live-running web applications with different load scenarios.
   duration: 35 minutes
-  level: 500
+  level: 400
   islab: true
   primarytopics:
     - Azure

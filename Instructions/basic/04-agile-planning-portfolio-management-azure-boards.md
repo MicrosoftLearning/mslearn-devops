@@ -9,6 +9,7 @@ lab:
   primarytopics:
     - Azure
     - Azure Boards
+    - Azure DevOps
 ---
 
 # Agile Planning and Portfolio Management with Azure Boards

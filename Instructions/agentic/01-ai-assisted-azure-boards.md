@@ -10,6 +10,7 @@ lab:
     - Azure
     - Azure Boards
     - GitHub
+    - GitHub Copilot
 ---
 
 # AI-assisted work item management in Azure Boards
