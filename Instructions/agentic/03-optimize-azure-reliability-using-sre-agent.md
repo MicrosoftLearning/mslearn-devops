@@ -1,10 +1,15 @@
 ---
 lab:
-    topic: Agentic
-    title: 'Optimizing Azure Reliability using Azure SRE Agent'
-    description: 'This exercise demonstrates the full agentic operations control loop **Detect → Investigate → Explain → Propose → Approve → Execute → Verify**. Which gets applied to a traditional Azure workload architecture using App Service and Cosmos DB.'
-    level: 300
-    Duration: 45 minutes
+  topic: Agentic
+  title: 'Optimizing Azure Reliability using Azure SRE Agent'
+  description: 'This exercise demonstrates the full agentic operations control loop **Detect → Investigate → Explain → Propose → Approve → Execute → Verify**. Which gets applied to a traditional Azure workload architecture using App Service and Cosmos DB.'
+  level: 300
+  Duration: 45 minutes
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure DevOps
+    - MCP
 ---
 
 # Optimizing Azure Reliability using Azure SRE Agent
@@ -146,29 +151,9 @@ azd up
 ...}]
 ```
 
-26. This **confirms the app is running healthy. 
+26. This **confirms** the app is running healthy. 
 
-### Task 2: Set up Azure SRE Agent
-
-In this task, you introduce Azure SRE Agent into your environment, and link it to the deployed app API resource group.
-
-1. From the **Azure Portal**, search for **Azure SRE Agent**
-2. Select **Create**
-3. In the **Create Agent** popup window, complete the following parameters:
-
-- Subscription: **your Azure subscription**
-- Resource Group: **rg-srelab**
-- Agent Name: **api-sre-agent**
-- Region: **any available region**
-- Application Insights: **Use existing** / **appi-%uniquestring%**
-
-4. Select **Next** and review the info
-5. Select **Create**
-6. The necessary resources operations get executed. **Wait** for step 3 to complete
-
->**Note**: while SRE Agent is getting set up, you can continue with the next task from a new browser tab
-
-### Task 3: Simulate a failure
+### Task 2: Simulate a failure
 
 With both the app API workload running healthy and Azure SRE Agent deployed, you are ready to break the application and simulate a failure.
 
@@ -182,11 +167,11 @@ With both the app API workload running healthy and Azure SRE Agent deployed, you
 8. Once restarted, connect to the **web API URL** and select **GET /products**
 9. This will result in an error message **Page isn't working**
 
-### Task 4: Deploy Azure SRE Agent
+### Task 3: Deploy Azure SRE Agent
 
 In this task, you will use go through the Azure SRE Agent initial setup and configuration of context. 
 
-1. **Browse** to the [Azure SRE Agent Portal](https://sre.azure.com) in a new borwser tab
+1. **Browse** to the [Azure SRE Agent Portal](https://sre.azure.com) in a new browser tab
 
 2. Select **Create Agent**
 3. Provide the following information in the **Create agent** window:
@@ -214,7 +199,7 @@ In this task, you will use go through the Azure SRE Agent initial setup and conf
 
 > **Note**: There are more context options available to configure, but they go outside of the scope of this lab exercise
 
-### Task 5: Using Azure SRE Agent to investigate, triage, troubleshoot and mitigate reliability
+### Task 4: Using Azure SRE Agent to investigate, triage, troubleshoot and mitigate reliability
 
 In this task, you use the deployed SRE Agent as the AI assistant to investigate the outage, verify, reason and suggest a solution. You will then use human-in-the-loop approval to allow Azure SRE Agent to run Azure CLI commands to restore the API to a healthy state.
 
