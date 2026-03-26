@@ -105,8 +105,6 @@ You will need to create a service connection in Azure DevOps which will allow yo
 
 1. Select the **Service connections** under Pipelines, and then select **Create service connection** button.
 
-   ![Screenshot of the new service connection creation button.](images/new-service-connection.png)
-
 1. On the **New service connection** blade, select **Azure Resource Manager** and **Next** (you may need to scroll down).
 
 1. Select **App registration (automatic)** from the **Identity type** dropbox.
