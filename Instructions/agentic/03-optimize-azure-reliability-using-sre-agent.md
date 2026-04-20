@@ -1,15 +1,15 @@
 ---
 lab:
   topic: Agentic
-  title: 'Optimizing Azure Reliability using Azure SRE Agent'
-  description: 'This exercise demonstrates the full agentic operations control loop **Detect → Investigate → Explain → Propose → Approve → Execute → Verify**. Which gets applied to a traditional Azure workload architecture using App Service and Cosmos DB.'
+  title: Optimizing Azure Reliability using Azure SRE Agent
+  description: This exercise demonstrates the full agentic operations control loop **Detect → Investigate → Explain → Propose → Approve → Execute → Verify**. Which gets applied to a traditional Azure workload architecture using App Service and Cosmos DB.
   level: 300
-  Duration: 45 minutes
   islab: true
   primarytopics:
     - Azure
     - Azure DevOps
     - MCP
+  duration: 45 minutes
 ---
 
 # Optimizing Azure Reliability using Azure SRE Agent
