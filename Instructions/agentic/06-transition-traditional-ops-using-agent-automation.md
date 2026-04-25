@@ -594,7 +594,7 @@ Use `Ctrl+F` to search for:
 
 ---
 
-## Task 7 : Commit to Your GitHub Repository
+### Task 7 : Commit to Your GitHub Repository
 
 Commit the agent solution to GitHub so you can reuse and share it.
 
@@ -669,5 +669,4 @@ That is the full extensibility model — no framework, no configuration system, 
 - [Azure Developer CLI documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview)
 - [Bicep documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview)
 - [GitHub Copilot agent mode](https://docs.github.com/en/copilot/using-github-copilot/agents)
-- [tdd-azd-demo-builder — extended pipeline example](https://github.com/petender/tdd-azd-demo-builder)
 
