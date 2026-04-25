@@ -1,10 +1,8 @@
-
 ---
 lab:
-  topic: Agentic DevOps
+  topic: Agentic
   title: Transition traditional operations using agent automation in Azure 
-  description: >
-    Build a minimal multi-agent solution from scratch. You create the agent files, shared skill, and Bicep instruction that let GitHub Copilot orchestrate an end-to-end Azure infrastructure provisioning workflow from a single natural-language prompt.
+  description: Build a minimal multi-agent solution from scratch. You create the agent files, shared skill, and Bicep instruction that let GitHub Copilot orchestrate an end-to-end Azure infrastructure provisioning workflow from a single natural-language prompt.
   level: 300
   duration: 45 minutes
   islab: true
