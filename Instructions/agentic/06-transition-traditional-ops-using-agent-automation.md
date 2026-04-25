@@ -157,7 +157,9 @@ After saving the file, reload the VS Code window once:
 
 ---
 
-## Exercise 2: Create the Shared Skill (5 minutes)
+## Exercise 2: Create the agentic Agent definition files
+
+### Task 1: Create the Skill Instruction file
 
 A **skill** is a Markdown knowledge file that agents read explicitly at runtime. It carries domain information that is too large or too organization-specific to embed directly in every agent's system prompt. Because agents pull skills on demand, every agent in your solution can share the same naming conventions and security baseline while keeping its own system prompt focused.
 
@@ -210,7 +212,7 @@ Apply these rules to every deployment:
 
 ---
 
-## Exercise 3: Create the Bicep Instruction File (5 minutes)
+### Task 2: Create the Bicep Instruction File 
 
 An **instruction file** is the opposite of a skill — it uses a **push** model. VS Code reads the `applyTo` glob in the file's front matter and automatically injects the instruction into any agent's context whenever that agent creates or edits a file whose path matches the pattern.
 
@@ -259,21 +261,21 @@ Every generated Bicep file must:
 
 ---
 
-## Exercise 4: Create the Architect Agent (8 minutes)
+### Task 3: Create the Architect Agent
 
 > **Why start with the leaf agents?**
 > The Conductor (Exercise 6) references the other agents by name in its `agents` array. By creating the two leaf agents first, every name and capability in the Conductor's front matter is already concrete — no forward references to agents you haven't seen yet.
 
 Your first specialized agent combines requirements gathering and architecture assessment. It reads the user's scenario description and produces a single structured document that the Bicep + Deploy agent uses as its source of truth.
 
-### The Agent File Format
+#### The Agent File Format
 
 Every agent is a single Markdown file with two parts:
 
 1. **YAML front matter** (between the `---` delimiters): declares the agent's identity, tools it can use, and other agents it can call.
 2. **Markdown body** (below the second `---`): this is the agent's **system prompt** — the instructions the model follows when acting as this agent.
 
-### Create the Agent File
+#### Create the Agent File
 
 Create `.github/agents/02-architect.agent.md` and paste the following content:
 
@@ -352,7 +354,7 @@ A table listing the files the Bicep + Deploy agent must produce:
 
 ---
 
-## Exercise 5: Create the Bicep + Deploy Agent (10 minutes)
+### Task 4: Create the Bicep + Deploy Agent
 
 Your second specialized agent handles both Bicep generation and deployment. In a larger solution you might separate these into two agents (so you can review templates before deploying), but keeping them combined here reduces the number of files and keeps the lab within the 45-minute target.
 
@@ -448,7 +450,7 @@ Create `scenario/deployment-summary.md` after deployment completes:
 > Only the Bicep + Deploy agent needs to execute `azd` commands. Keeping `runInTerminal` out of the Architect agent's tool list means that even if the Architect agent produced unexpected output, it could not run arbitrary commands on your machine. Restricting tools per agent is a key security practice in multi-agent systems.
 
 
-## Exercise 6: Create the Conductor Agent (5 minutes)
+### Task 5: Create the Conductor Agent
 
 The Conductor is the only agent the user interacts with directly. It receives the scenario prompt, delegates work to the two specialized agents in sequence, and verifies that each stage produced the expected artifacts before moving on.
 It does not write Bicep or architecture documents itself.
@@ -502,7 +504,7 @@ You orchestrate a two-stage solution for Azure infrastructure provisioning. You 
 
 ---
 
-## Exercise 7: Run the solution (8 minutes)
+### Task 6: Run the solution
 
 Your workspace now contains all the files the solution needs. Verify the structure before running:
 
@@ -592,7 +594,7 @@ Use `Ctrl+F` to search for:
 
 ---
 
-## Exercise 8: Commit to Your GitHub Repository (4 minutes)
+## Task 7 : Commit to Your GitHub Repository
 
 Commit the agent solution to GitHub so you can reuse and share it.
 
@@ -626,7 +628,7 @@ git push -u origin main
 
 ---
 
-## Cleanup
+## Exercise 3: Cleanup
 
 Remove the Azure resources created during Exercise 7 to avoid ongoing charges.
 
