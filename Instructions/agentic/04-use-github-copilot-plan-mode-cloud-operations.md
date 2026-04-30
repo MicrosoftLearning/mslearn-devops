@@ -19,7 +19,7 @@ Your task is not to write infrastructure code. Your task is to use GitHub Copilo
 
 The plan you produce at the end of this exercise must be detailed enough to present to a Change Advisory Board (CAB) for approval.
 
-This exercise should take approximately 90 minutes to complete.
+This exercise should take approximately 45 minutes to complete.
 
 ## Before you start
 
