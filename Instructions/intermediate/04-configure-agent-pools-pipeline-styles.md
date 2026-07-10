@@ -103,13 +103,11 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
 
 1. Select the **Create** button.
 
-1. Select the **Presets**.
+1. Select the **Virtual machine**.
 
-   ![Screenshot of the create virtual machine with preset configuration.](media/create-virtual-machine-preset.png)
+   ![Screenshot of the create virtual machine with configuration.](media/create-virtual-machine.png)
 
-1. Select the **Dev/Test** as the workload environment and the **General purpose** as the workload type.
-
-1. Select the **Continue to create a VM** button, on the **Basics** tab perform the following actions and then select **Management**:
+1. On the **Basics** tab perform the following actions and then select **Management**:
 
    | Setting                                 | Action                                                                                                                                                               |
    | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
