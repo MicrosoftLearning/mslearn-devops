@@ -99,7 +99,7 @@ You'll create Azure resources needed for this lab using Azure Cloud Shell.
 
    ```bash
    WEBAPPNAME=az400eshoponweb$RANDOM$RANDOM
-   az webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME
+   az webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME --runtime "DOTNETCORE|10.0"
    ```
 
 > **Note**: Record the name of the web app. You will need it later in this lab.
