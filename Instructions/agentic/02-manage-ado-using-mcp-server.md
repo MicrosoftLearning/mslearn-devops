@@ -30,36 +30,151 @@ Before you can start this exercise, ensure you have:
 > **Note**: If you don't have sample data in your Azure DevOps Organization and project, you can run the **[Setup_ADODemoEnvironment.ps1](https://microsoftlearning.github.io/mslearn-devops/scripts/setup-adodemoenvironment.ps1) PowerShell script** to create a new project with dummy data such as work items, pull requests, pipelines and alike. This would allow you to verify the ADO MCP Server connection and features against actual data.
 ---
 
-## Setting Up the Azure DevOps MCP Server in VSCode
+## Setting up the Azure DevOps MCP Server in Visual Studio Code
 
-**Objective:** Install and configure the Azure DevOps MCP Server to enable natural language interactions with Azure DevOps through GitHub Copilot.
+**Objective:** Configure the remote Azure DevOps MCP Server so that GitHub Copilot can interact with Azure DevOps through natural language prompts.
 
-> **Note**: The [ADO MCP GitHub repo](https://github.com/microsoft/azure-devops-mcp) describes other ways to get the ADO MCP Server installed, if you can't use the above approach. The described approach below is the most transparent across different platforms, assuming you have the correct permissions in place and no VS Code extension restrictions.
+The remote MCP Server is hosted by Azure DevOps. You configure it in Visual Studio Code by adding a `.vscode/mcp.json` file to your workspace.
 
-1. Navigate to the [Azure DevOps MCP Server repository](https://github.com/microsoft/azure-devops-mcp) on Github
-1. In the [README.md](https://github.com/microsoft/azure-devops-mcp/blob/main/README.md), **select** the **VSCode - Install Azure DevOps MCP Server** ribbon
-1. When you get prompted to **This site is trying to open Visual Studio Code**, select **Open**
-1. The **MCP Server:ado** tab opens
-1. Select **install**
-1. From the **GitHub Copilot Chat** window, select **Configure Tools...**
-1. In the list of **tools**, confirm you have **ado** in the list
-1. Select **ado** to open a list of **tools** available within the **ado MCP Server**; several of these will be used in later exercises.
-1. **Open GitHub Copilot Chat**
-1. **Test the connection** using a simple prompt:
+### Create the MCP Server configuration
 
-   ```bash
-   List all projects in my Azure DevOps organization
+1. Open Visual Studio Code.
+
+1. Open the folder that you will use for this exercise.
+
+1. Create a folder named `.vscode` at the root of the workspace if it doesn't already exist.
+
+1. In the `.vscode` folder, create a file named `mcp.json`.
+
+   The resulting path should be:
+
+   ```text
+   .vscode/mcp.json
    ```
 
-**Expected Result:**
-**GitHub Copilot** should recognize the keyword *azure devops organization* to use the **ado MCP Server** and offer to **run *core_list_projects***, which is described as *Retrieve a list of project in your Azure DevOps organization*
- 
-1. Select **Allow**
-1. You will get **redirected** to a new **browser tab** to **authenticate**; use your **Azure DevOps Organization** credentials.
-1. Once successfully authenticated, you can **close the browser tab**  
-1. The MCP server should respond with a list of projects
+1. Add the following configuration to `mcp.json`:
 
-> **Note**: If you see project names, the connection is working successfully!
+   ```json
+   {
+     "servers": {
+       "ado-remote-mcp": {
+         "type": "http",
+         "url": "https://mcp.dev.azure.com/<your-organization>"
+       }
+     },
+     "inputs": []
+   }
+   ```
+
+1. Replace `<your-organization>` with the name of your Azure DevOps organization.
+
+   For example, if your Azure DevOps URL is:
+
+   ```text
+   https://dev.azure.com/contoso
+   ```
+
+   use `contoso` in the MCP Server URL:
+
+   ```json
+   {
+     "servers": {
+       "ado-remote-mcp": {
+         "type": "http",
+         "url": "https://mcp.dev.azure.com/contoso"
+       }
+     },
+     "inputs": []
+   }
+   ```
+
+1. Save the file.
+
+1. If Visual Studio Code asks you to trust or allow the MCP Server, review the configuration and select **Trust** or **Allow**.
+
+> **Note:** Keep the organization name in the server URL whenever possible. This allows the MCP Server to use the organization as context for tool calls.
+
+### Start using the MCP Server
+
+1. Open GitHub Copilot Chat in Visual Studio Code.
+
+1. Change the chat mode to **Agent**.
+
+   The Azure DevOps MCP tools are used from Agent mode. They aren't available from standard Chat mode.
+
+1. In the Chat view, select the **Tools**, **Select Tools**, or **Configure Tools** button. The label can vary depending on your Visual Studio Code version.
+
+1. Locate the `ado-remote-mcp` server.
+
+1. If the server is stopped, select **Start**.
+
+1. Select the Azure DevOps tools that you want GitHub Copilot to use.
+
+1. Test the connection with the following prompt:
+
+   ```text
+   List all projects in my Azure DevOps organization.
+   ```
+
+1. When prompted, authenticate using the Microsoft Entra account that has access to your Azure DevOps organization.
+
+1. Review and approve the request to use the Azure DevOps MCP tool.
+
+**Expected Result:**
+
+GitHub Copilot returns a list of projects from your Azure DevOps organization.
+
+> **Note:** The MCP Server may display a task or tool name before it runs the request. Tool names and groupings can change between the remote server, local server, and different server versions. Focus on whether the requested Azure DevOps operation completes successfully rather than expecting a specific internal tool name.
+
+> **Note:** If project names are returned, the connection is working successfully.
+
+### Troubleshooting the connection
+
+If the MCP Server doesn't appear or GitHub Copilot doesn't use the Azure DevOps tools, try the following:
+
+1. Confirm that the file is named `mcp.json` and is located at:
+
+   ```text
+   .vscode/mcp.json
+   ```
+
+1. Confirm that the server configuration uses:
+
+   ```json
+   "type": "http"
+   ```
+
+   and a URL similar to:
+
+   ```text
+   https://mcp.dev.azure.com/<your-organization>
+   ```
+
+1. Confirm that GitHub Copilot Chat is in **Agent** mode.
+
+1. Open the Tools list and confirm that `ado-remote-mcp` is running and that its tools are selected.
+
+1. Run **Developer: Reload Window** from the Visual Studio Code Command Palette.
+
+1. Check the **Output** view and select the MCP or GitHub Copilot output channel to look for connection errors.
+
+1. Confirm that you signed in with the Microsoft Entra account that has access to the Azure DevOps organization.
+
+1. Include the organization and project name in your prompt. For example:
+
+   ```text
+   List the active bugs in the Fabrikam project in the Contoso Azure DevOps organization.
+   ```
+
+1. Confirm that your network allows outbound HTTPS access to:
+
+   ```text
+   https://mcp.dev.azure.com
+   ```
+
+> **Note:** The remote MCP Server uses the permissions of your signed-in Azure DevOps identity. It can't access projects or resources that your account isn't authorized to access.
+
+
 
 ## Managing Work Items
 
