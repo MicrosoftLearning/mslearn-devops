@@ -98,7 +98,7 @@ You'll create an Azure web app to deploy your application to.
 
    ```bash
    WEBAPPNAME=eshoponWebYAML$RANDOM$RANDOM
-   az webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME
+   az webapp create --resource-group $RESOURCEGROUPNAME --plan $SERVICEPLANNAME --name $WEBAPPNAME --runtime "DOTNETCORE|10.0"
    ```
 
 > **Note**: Record the name of the web app. You'll need it later in this lab.
