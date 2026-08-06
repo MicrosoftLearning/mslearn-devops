@@ -134,8 +134,8 @@ You'll create two Azure web apps representing the DevTest and Production environ
 
    ```bash
    SUFFIX=$RANDOM$RANDOM
-   az webapp create -g $RESOURCEGROUPNAME -p $SERVICEPLANNAME -n RGATES$SUFFIX-DevTest
-   az webapp create -g $RESOURCEGROUPNAME -p $SERVICEPLANNAME -n RGATES$SUFFIX-Prod
+   az webapp create -g $RESOURCEGROUPNAME -p $SERVICEPLANNAME -n RGATES$SUFFIX-DevTest --runtime "DOTNETCORE|10.0"
+   az webapp create -g $RESOURCEGROUPNAME -p $SERVICEPLANNAME -n RGATES$SUFFIX-Prod --runtime "DOTNETCORE|10.0"
    ```
 
 > **Note**: Record the name of the DevTest web app. You'll need it later.
