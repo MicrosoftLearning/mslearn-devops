@@ -1,0 +1,397 @@
+---
+lab:
+  topic: Agentic
+  title: Managing Azure DevOps Projects through Azure DevOps MCP Server
+  description: This exercise showcases different scenarios on how to use Azure DevOps MCP Server for day-to-day operations in Azure DevOps
+  level: 300
+  duration: 30 minutes
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure DevOps
+    - MCP
+---
+
+# Managing Azure DevOps Projects through Azure DevOps MCP Server
+
+This exercise walks learners through different common DevOps engineering tasks, demonstrating Azure DevOps capabilities via the new MCP Server integration.
+
+This exercise should take approximately **30** minutes to complete.
+
+## Before you start
+
+Before you can start this exercise, ensure you have:
+
+- Access to an [Azure DevOps](aex.dev.azure.com) Organization and Project with Contributor permissions
+- [GitHub Copilot](https://github.com/copilot) subscription (any subscription will work, Free, Pro, Business, Enterprise)
+- [Node.js](https://nodejs.org/)) framework version 18 or later
+- [Visual Studio Code](https://code.visualstudio.com/download) installed
+
+> **Note**: If you don't have sample data in your Azure DevOps Organization and project, you can run the **[Setup_ADODemoEnvironment.ps1](https://microsoftlearning.github.io/mslearn-devops/scripts/setup-adodemoenvironment.ps1) PowerShell script** to create a new project with dummy data such as work items, pull requests, pipelines and alike. This would allow you to verify the ADO MCP Server connection and features against actual data.
+---
+
+## Setting up the Azure DevOps MCP Server in Visual Studio Code
+
+**Objective:** Configure the remote Azure DevOps MCP Server so that GitHub Copilot can interact with Azure DevOps through natural language prompts.
+
+The remote MCP Server is hosted by Azure DevOps. You configure it in Visual Studio Code by adding a `.vscode/mcp.json` file to your workspace.
+
+### Create the MCP Server configuration
+
+1. Open Visual Studio Code.
+
+1. Open the folder that you will use for this exercise.
+
+1. Create a folder named `.vscode` at the root of the workspace if it doesn't already exist.
+
+1. In the `.vscode` folder, create a file named `mcp.json`.
+
+   The resulting path should be:
+
+   ```text
+   .vscode/mcp.json
+   ```
+
+1. Add the following configuration to `mcp.json`:
+
+   ```json
+   {
+     "servers": {
+       "ado-remote-mcp": {
+         "type": "http",
+         "url": "https://mcp.dev.azure.com/<your-organization>"
+       }
+     },
+     "inputs": []
+   }
+   ```
+
+1. Replace `<your-organization>` with the name of your Azure DevOps organization.
+
+   For example, if your Azure DevOps URL is:
+
+   ```text
+   https://dev.azure.com/contoso
+   ```
+
+   use `contoso` in the MCP Server URL:
+
+   ```json
+   {
+     "servers": {
+       "ado-remote-mcp": {
+         "type": "http",
+         "url": "https://mcp.dev.azure.com/contoso"
+       }
+     },
+     "inputs": []
+   }
+   ```
+
+1. Save the file.
+
+1. If Visual Studio Code asks you to trust or allow the MCP Server, review the configuration and select **Trust** or **Allow**.
+
+> **Note:** Keep the organization name in the server URL whenever possible. This allows the MCP Server to use the organization as context for tool calls.
+
+### Start using the MCP Server
+
+1. Open GitHub Copilot Chat in Visual Studio Code.
+
+1. Change the chat mode to **Agent**.
+
+   The Azure DevOps MCP tools are used from Agent mode. They aren't available from standard Chat mode.
+
+1. In the Chat view, select the **Tools**, **Select Tools**, or **Configure Tools** button. The label can vary depending on your Visual Studio Code version.
+
+1. Locate the `ado-remote-mcp` server.
+
+1. If the server is stopped, select **Start**.
+
+1. Select the Azure DevOps tools that you want GitHub Copilot to use.
+
+1. Test the connection with the following prompt:
+
+   ```text
+   List all projects in my Azure DevOps organization.
+   ```
+
+1. When prompted, authenticate using the Microsoft Entra account that has access to your Azure DevOps organization.
+
+1. Review and approve the request to use the Azure DevOps MCP tool.
+
+**Expected Result:**
+
+GitHub Copilot returns a list of projects from your Azure DevOps organization.
+
+> **Note:** The MCP Server may display a task or tool name before it runs the request. Tool names and groupings can change between the remote server, local server, and different server versions. Focus on whether the requested Azure DevOps operation completes successfully rather than expecting a specific internal tool name.
+
+> **Note:** If project names are returned, the connection is working successfully.
+
+### Troubleshooting the connection
+
+If the MCP Server doesn't appear or GitHub Copilot doesn't use the Azure DevOps tools, try the following:
+
+1. Confirm that the file is named `mcp.json` and is located at:
+
+   ```text
+   .vscode/mcp.json
+   ```
+
+1. Confirm that the server configuration uses:
+
+   ```json
+   "type": "http"
+   ```
+
+   and a URL similar to:
+
+   ```text
+   https://mcp.dev.azure.com/<your-organization>
+   ```
+
+1. Confirm that GitHub Copilot Chat is in **Agent** mode.
+
+1. Open the Tools list and confirm that `ado-remote-mcp` is running and that its tools are selected.
+
+1. Run **Developer: Reload Window** from the Visual Studio Code Command Palette.
+
+1. Check the **Output** view and select the MCP or GitHub Copilot output channel to look for connection errors.
+
+1. Confirm that you signed in with the Microsoft Entra account that has access to the Azure DevOps organization.
+
+1. Include the organization and project name in your prompt. For example:
+
+   ```text
+   List the active bugs in the Fabrikam project in the Contoso Azure DevOps organization.
+   ```
+
+1. Confirm that your network allows outbound HTTPS access to:
+
+   ```text
+   https://mcp.dev.azure.com
+   ```
+
+> **Note:** The remote MCP Server uses the permissions of your signed-in Azure DevOps identity. It can't access projects or resources that your account isn't authorized to access.
+
+
+
+## Managing Work Items
+
+**Objective:** Learn how to quickly explore and understand an Azure DevOps organization and project context using natural language queries.
+
+### Understand the Current Sprint
+
+1. Continue the conversation
+2. Ask: *"What is the current sprint for the `your project name` project?"*
+3. **Expected Result:** Sprint name, start/end dates, and sprint goals
+
+> **Note**: for each prompt, notice how the natural language question gets transformed into a **JSON formatted** Input string
+
+**Follow-up queries to try:**
+
+- *"How many days are left in this sprint?"*
+- *"What was completed in the previous sprint?"*
+
+> **Note**: notice how GitHub Copilot is relying on different tools `work_list_iterations`, `search_workitem`, `wit_get_work_items_for_iteration` and potentially others, to find the relevant information.
+
+### Create a Bug
+
+With a clear view on the Azure DevOps Project, it is also possible to **add information** to it. 
+
+Let's create a new bug work item, by using the following prompts:
+
+1. Run the following prompt from GitHub Copilot Chat:
+
+```
+Create a new bug in the <your devops project>  project
+```
+
+2. Provide details when prompted:
+
+```
+   - **Title:** "Login page crashes on mobile Safari"
+   - **Description:** "Users on iOS Safari experience a crash when tapping the login button. Affects iOS 17+."
+   - **Priority:** 2 (High)
+   - **Severity:** 2 - High
+```
+
+3. **Inspect the input JSON:**, which should look like the following:
+
+```json
+{
+  "project": "<your ADO Project>",
+  "workItemType": "Bug",
+  "fields": [
+    {
+      "name": "System.Title",
+      "value": "Login page crashes on mobile Safari"
+    },
+    {
+      "name": "System.Description",
+      "value": "Users on iOS Safari experience a crash when tapping the login button. Affects iOS 17+."
+    },
+    {
+      "name": "Microsoft.VSTS.Common.Priority",
+      "value": "2"
+    },
+    {
+      "name": "Microsoft.VSTS.Common.Severity",
+      "value": "2 - High"
+    }
+  ]
+}
+```
+
+4. Select the **down arrow** on the **Allow** button, to see more options. While not running **autonomously**, it is possible to circumvent the *continuous acknowledge step*, by selecting other options, e.g. 
+
+- Allow in this session / this workspace
+- Always Allow
+- Allow Tools from Azure DevOps MCP Server in this session / workspace
+
+5. Select **Allow in this session**
+
+6. The outcome from this task, is that the **bug got created with a work item ID returned**, as well as a **deeplink** to the actual work item. 
+
+7. Select the **deeplink** to get redirected to the work item in Azure DevOps
+
+8. Next, let's try a [one-shot prompt](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/prompt-engineering) creation, by **asking Github Copilot** to perform the following:
+
+```
+Create a bug titled 'Login page crashes on mobile Android' with high priority in the <your ado project> project. Assign it to myself, and add it to Iteration Sprint 2. Add this in the discussion: "we heard from users that the login page of the app on certain Android devices is crashing". We have a similar issue on Safari on iOS, see work item #<work item ID from the previous step>. Can you link them together? 
+```
+
+9. Since this request involves more steps with more requirements, GitHub Copilot transforms the prompt into a task list, similar to the following:
+
+- Get Identity first (1/4) `core_get_identity_ids` tool
+- Create Android bug (2/4) `wit_create_work_item` tool
+- Add discussion comment (3/4) `wit_add_work_item_comment` tool
+- Link to work item ID (4/4) `wit_work_items_link` tool
+
+10. The new work item is getting created. Open it in Azure DevOps Boards, and **notice** how it **got linked** to the previous work item ID from the **Related Work** section of the work item. The reverse link also got established, from the previous work item ID to this new one.
+
+> **Note**: The Related Work link is very powerful, and works across all work item types. For example, "Link bug #[bug ID] to User Story #[User Story ID] would work as well
+
+### Update Work Items
+
+Apart from creating new work items, it is also possible to **update** existing ones.
+
+1. Ask: 
+
+```
+Move bug #[ID] to 'Active' state and assign it to <person>`
+```
+
+**Expected Result:** Work item updated with new state and assignee
+
+2. Next, **perform batch updates** using a similar prompt as below (adapted to your work items):
+
+```
+update all bugs with the word "mobile" in the subject of the work item, with a tag "mobile"
+```
+
+**Expected Result:** GitHub Copilot informs you about the number of bugs found, including their work item IDs. Results are presented in a table.
+
+## Code & Pull Request Operations
+
+**Objective:** Perform complete code review workflows including listing, reviewing, commenting, and merging pull requests.
+
+### List Open Pull Requests
+
+Let's start with getting a list of currently Open Pull Requests.
+
+1. Ask GitHub Copilot Chat the following:
+
+```
+Show me all open pull requests in the <name of your repo> within the chosen ADO Project
+```
+
+2. **Expected Result:** List of PRs with:
+   - PR number and title
+   - Author
+   - Source / Target Branch
+   - Review status
+
+> **Note**: feel free to try other similar prompts:
+- *Show PRs targeting the main branch*
+- *List PRs waiting for my review*
+- *Find PRs older than 7 days*
+
+### Review PR Details
+
+1. Ask:
+```
+show me the details of PR #[ID], highlighting what files got changed as well as the diff for these files
+```
+
+**Expected Result:** PR description, linked work items, and reviewers
+
+2. You might get asked by GitHub Copilot to **Fetch web page**, showing a link to the actual Pull Request. This is interesting, since the MCP Server request gets now transformed into a ADO REST API request 
+
+3. Select **Allow and Review**
+
+> **Note**: Depending on your ADO Organization settings or permissions, this step might not be successful, informing you that "file diffs was blocked"
+
+4. Even if **blocked**, GitHub Copilot should still provide a response regarding the PR with more details such as **commit IDs**, **files changed**
+
+### Add Comments to Approve and Complete a PR
+
+1. Continue the PR handling by **asking** Github Copilot Chat this next prompt:
+```
+add a comment to PR #[ID]
+'PR reviewed and closing', 
+ok to complete the merge operation
+```
+
+**Expected Result:** Vote recorded as "Approved", followed by a PR merged operation
+
+2. From the Azure DevOps **Repos** / **Pull Requests**, navigate to **Completed** and open the completed Pull Request. Notice the comment 'PR reviewed and closing'
+
+## Pipeline & Build Operations
+
+In this last task, let's focus on interacting with Azure DevOps Pipelines. You'll explore how to monitor, trigger, and troubleshoot CI/CD pipelines through natural language commands.
+
+### List Pipeline Definitions
+
+1. Ask:
+```
+List all pipelines in the <your project> 
+```
+
+**Expected Result:** Pipeline names, folder paths, and last run status
+
+### Trigger a Pipeline Run
+
+1. Triggering a pipeline run is possible by **initiating** the following prompt:
+
+```
+Run the CI pipeline on the `feature/auth` branch (or main or any other branch name)
+```
+
+**Expected Result:** Build queued with a build number/ID
+
+> **Note**: You can add more details to the prompt, which interacts with pipeline variables. For example, you could ask : "Run pipeline with ID [ID] and parameter environment=staging"
+
+### Monitor Build Status
+
+1. Verifying the status of a pipeline run is possible by **triggering the following ask**:
+```
+What's the status of build #[ID]?
+```
+
+**Expected Result:** Current state, duration, and stage progress
+
+### Retrieve Build Logs
+
+1. From here, it is also possible to **ask** for more specific information, related to the pipeline. Ask the following:
+
+```
+Get the logs for the failed 'Build' stage in build pipeline #[ID]
+```
+
+**Expected Result:** Relevant log output showing the success or failure reason, depending on the state of the pipeline
+
+## Summary
+
+In this exercise, you learned about Azure DevOps MCP Server, and how it can be used from within VS Code with Github Copilot, to interact with different aspects of the project, such as work items, Pull Requests or exchanging information related to pipelines. Know that there are many more operations possible, by checking the **ado tools** list in the Command Palette 
+

@@ -1,8 +1,14 @@
 ---
 lab:
   topic: Basic
-  title: "Implement Real-Time Monitoring with Azure Monitor"
-  description: "Learn how to implement comprehensive monitoring and observability for applications using Azure Monitor and Application Insights."
+  title: Implement Real-Time Monitoring with Azure Monitor
+  description: Learn how to implement comprehensive monitoring and observability for applications using Azure Monitor and Application Insights.
+  duration: 20 minutes
+  level: 200
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure Monitor
 ---
 
 # Implement Real-Time Monitoring with Azure Monitor

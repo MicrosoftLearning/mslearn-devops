@@ -1,8 +1,14 @@
 ---
 lab:
   topic: Intermediate
-  title: "Configure Agent Pools and Understand Pipeline Styles"
-  description: "Learn how to implement and use self-hosted agents with YAML pipelines in Azure DevOps. You'll create Azure VMs as agents and configure agent pools for CI/CD processes."
+  title: Configure Agent Pools and Understand Pipeline Styles
+  description: Learn how to implement and use self-hosted agents with YAML pipelines in Azure DevOps. You'll create Azure VMs as agents and configure agent pools for CI/CD processes.
+  duration: 45 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure DevOps
 ---
 
 # Configure Agent Pools and Understand Pipeline Styles
@@ -97,13 +103,11 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
 
 1. Select the **Create** button.
 
-1. Select the **Presets**.
+1. Select the **Virtual machine**.
 
-   ![Screenshot of the create virtual machine with preset configuration.](media/create-virtual-machine-preset.png)
+   ![Screenshot of the create virtual machine with configuration.](media/create-virtual-machine.png)
 
-1. Select the **Dev/Test** as the workload environment and the **General purpose** as the workload type.
-
-1. Select the **Continue to create a VM** button, on the **Basics** tab perform the following actions and then select **Management**:
+1. On the **Basics** tab perform the following actions and then select **Management**:
 
    | Setting                                 | Action                                                                                                                                                               |
    | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -121,6 +125,8 @@ In this section, you will create an Azure virtual machine (VM) and use it to cre
    | **Select inbound ports** drop-down list | Select **RDP (3389)**.                                                                                                                                               |
 
    > **Note**: If the **Windows Server 2022 Datacenter: Azure Edition - x64 Gen2** image is not available in the list of images suggested by the portal, select on the **See all images** link, then, on the marketplace page, select the **Select** combo box for the **Windows Server** product and choose the right image.
+
+   > **Note**: If you are looking for a specific **Size** for the virtual machine and you do not find it in the drop-down list (the list only offers suggested sizes), click on the **see all sizes** link, write the size you are looking for in the **Search by VM size...** textbox of the **Select the VM size** page to find the size, select it and click on the **Select**button on the botton part of the page.
 
 1. On the **Management** tab, in the **Identity** section, select the **Enable system assigned managed identity** checkbox and then select **Review + create**:
 

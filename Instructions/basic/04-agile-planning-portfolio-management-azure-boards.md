@@ -1,8 +1,15 @@
 ---
 lab:
   topic: Basic
-  title: "Agile Planning and Portfolio Management with Azure Boards"
-  description: "Learn about the agile planning and portfolio management tools and processes provided by Azure Boards and how they can help you quickly plan, manage, and track work across your entire team."
+  title: Agile Planning and Portfolio Management with Azure Boards
+  description: Learn about the agile planning and portfolio management tools and processes provided by Azure Boards and how they can help you quickly plan, manage, and track work across your entire team.
+  duration: 60 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure
+    - Azure Boards
+    - Azure DevOps
 ---
 
 # Agile Planning and Portfolio Management with Azure Boards
