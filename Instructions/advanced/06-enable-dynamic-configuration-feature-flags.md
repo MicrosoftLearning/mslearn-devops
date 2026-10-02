@@ -201,7 +201,7 @@ In this step, you'll define several App Service Environment Variables to connect
 
 > **Note**: use the "Show Values" option (the eye icon) to unhide the characters while typing
 
-- **Name**: AppConfigEndPoint
+- **Name**: AppConfigEndpoint
 - **Value**: The URL of the App Configuration resource, including **https://** (_https://%yourappconfigname%.azconfig.io)
 - **Name**: UseAppConfig
 - **Value**: true
