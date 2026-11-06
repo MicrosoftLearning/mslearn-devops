@@ -1,0 +1,149 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - ado-copilot-cli-src/*
+
+# Azure Repos pull request validation is configured as a branch policy, not with
+# a YAML `pr` trigger. See ado-copilot-cli-src/README.md.
+pr: none
+
+parameters:
+  - name: runAdvancedSecurity
+    displayName: Run GitHub Advanced Security tasks
+    type: boolean
+    default: false
+
+pool:
+  vmImage: ubuntu-24.04
+
+variables:
+  copilotCliVersion: '1.0.89'
+  copilotSecurityMode: 'advisory'
+  copilotFailOnSeverity: 'high'
+
+steps:
+  - checkout: self
+    clean: 'true'
+    fetchDepth: '0'
+    persistCredentials: 'false'
+
+  - task: UseDotNet@2
+    displayName: Use .NET 8 SDK
+    inputs:
+      packageType: sdk
+      version: '8.x'
+
+  - task: UseNode@1
+    displayName: Use Node.js 22
+    inputs:
+      version: '22.x'
+
+  - bash: |
+      set -euo pipefail
+      mkdir -p "$(Build.ArtifactStagingDirectory)/copilot-security-review"
+      echo "##vso[task.setvariable variable=copilotArtifactReady]true"
+    displayName: Initialize security review artifact
+
+  - bash: |
+      set -euo pipefail
+      python -m unittest discover \
+        -s ado-copilot-cli-src/scripts -p "test_*.py"
+    displayName: Test security report processor
+
+  - ${{ if eq(parameters.runAdvancedSecurity, true) }}:
+    - task: AdvancedSecurity-Codeql-Init@1
+      displayName: Initialize CodeQL
+      inputs:
+        languages: csharp
+        buildtype: none
+
+  - bash: |
+      set -euo pipefail
+      dotnet build ado-copilot-cli-src/src/DocumentPortal/DocumentPortal.csproj \
+        --configuration Release
+    displayName: Build security scenario
+
+  - ${{ if eq(parameters.runAdvancedSecurity, true) }}:
+    - task: AdvancedSecurity-Dependency-Scanning@1
+      displayName: Run dependency scanning
+
+    - task: AdvancedSecurity-Codeql-Analyze@1
+      displayName: Run CodeQL analysis
+
+  - bash: |
+      set -euo pipefail
+      npm install --global "@github/copilot@$(copilotCliVersion)"
+      copilot --version
+    displayName: Install pinned GitHub Copilot CLI
+
+  - bash: |
+      set -euo pipefail
+
+      outputDirectory="$(Build.ArtifactStagingDirectory)/copilot-security-review"
+      mkdir -p "$outputDirectory"
+
+      targetBranch="${SYSTEM_PULLREQUEST_TARGETBRANCH:-}"
+      if [[ -n "$targetBranch" && "$targetBranch" != '$('* ]]; then
+        targetBranch="${targetBranch#refs/heads/}"
+        targetRef="refs/remotes/origin/$targetBranch"
+        git rev-parse --verify "$targetRef" >/dev/null
+        reviewBase="$(git merge-base HEAD "$targetRef")"
+      elif git rev-parse --verify --quiet HEAD^ >/dev/null; then
+        reviewBase="$(git rev-parse HEAD^)"
+      else
+        reviewBase="$(git hash-object -t tree /dev/null)"
+      fi
+
+      printf '%s\n' "$reviewBase" > "$outputDirectory/review-base.txt"
+      git diff --name-only "$reviewBase" HEAD \
+        > "$outputDirectory/changed-files.txt"
+
+      prompt="$(cat ado-copilot-cli-src/prompts/security-review.md)"
+      prompt="$prompt
+
+      REVIEW_BASE_COMMIT: $reviewBase
+      REVIEW_HEAD_COMMIT: $(git rev-parse HEAD)"
+
+      copilot -p "$prompt" \
+        --silent \
+        --no-color \
+        --no-ask-user \
+        --disable-builtin-mcps \
+        --available-tools='view,glob,grep,bash' \
+        --allow-tool='read,shell(git status),shell(git status:*),shell(git show),shell(git show:*),shell(git diff),shell(git diff:*)' \
+        > "$outputDirectory/security-review.json"
+
+      test -s "$outputDirectory/security-review.json"
+    displayName: Review branch security with Copilot
+    env:
+      COPILOT_GITHUB_TOKEN: $(copilotGithubToken)
+      COPILOT_HOME: $(Agent.TempDirectory)/copilot
+      SYSTEM_PULLREQUEST_TARGETBRANCH: $(System.PullRequest.TargetBranch)
+
+  - bash: |
+      set -euo pipefail
+      python ado-copilot-cli-src/scripts/process_security_review.py \
+        --input "$(Build.ArtifactStagingDirectory)/copilot-security-review/security-review.json" \
+        --output "$(Build.ArtifactStagingDirectory)/copilot-security-review/security-review.md" \
+        --repository-root "$(Build.SourcesDirectory)" \
+        --fail-on "$(copilotFailOnSeverity)" \
+        --mode "$(copilotSecurityMode)"
+    displayName: Validate and render security review
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Copilot security review
+    condition: and(succeededOrFailed(), eq(variables['copilotArtifactReady'], 'true'))
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/copilot-security-review
+      artifact: copilot-security-review
+      publishLocation: pipeline
+
+  - bash: |
+      echo "Enforce mode: intentionally failing because Copilot reported at least one $(copilotFailOnSeverity)-or-higher finding."
+      echo "Review the published evidence before changing code."
+      exit 1
+    displayName: Enforce Copilot security gate
+    condition: and(succeeded(), eq(variables['copilotSecurityMode'], 'enforce'), eq(variables['copilotGateTriggered'], 'true'))

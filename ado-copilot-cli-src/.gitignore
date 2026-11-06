@@ -1,0 +1,5 @@
+bin/
+obj/
+__pycache__/
+*.pyc
+copilot-security-review/
