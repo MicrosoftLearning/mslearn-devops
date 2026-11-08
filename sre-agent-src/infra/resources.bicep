@@ -66,6 +66,17 @@ resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
   }
 }
 
+resource cosmosOrdersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: cosmosDatabase
+  name: 'orders'
+  properties: {
+    resource: {
+      id: 'orders'
+      partitionKey: { paths: ['/customerId'], kind: 'Hash' }
+    }
+  }
+}
+
 // ===== App Service =====
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
@@ -92,6 +103,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'COSMOS_ACCOUNT_ENDPOINT',               value: cosmosAccount.properties.documentEndpoint }
         { name: 'COSMOS_DATABASE_NAME',                  value: 'catalogdb' }
         { name: 'COSMOS_CONTAINER_NAME',                 value: 'products' }
+        { name: 'COSMOS_ORDERS_CONTAINER_NAME',          value: 'orders' }
         { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING',  value: appInsights.properties.ConnectionString }
       ]
     }
