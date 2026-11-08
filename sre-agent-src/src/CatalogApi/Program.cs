@@ -1,5 +1,7 @@
 using CatalogApi.Models;
 using CatalogApi.Services;
+using Azure.Identity;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var endpoint = configuration["COSMOS_ACCOUNT_ENDPOINT"]
+        ?? throw new InvalidOperationException(
+            "COSMOS_ACCOUNT_ENDPOINT is not configured. Set it as an app setting or environment variable.");
+    return new CosmosClient(endpoint, new DefaultAzureCredential(), new CosmosClientOptions
+    {
+        SerializerOptions = new CosmosSerializationOptions
+        {
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+        }
+    });
+});
 builder.Services.AddSingleton<CosmosDbService>();
 builder.Services.AddSingleton<OrderValidationService>();
 
@@ -33,7 +49,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
         {
             var cosmosDb = app.Services.GetRequiredService<CosmosDbService>();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            await cosmosDb.InitializeAsync().WaitAsync(cts.Token);
+            await cosmosDb.InitializeAsync(cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -96,57 +112,57 @@ app.MapGet("/", () =>
 });
 
 // Health check — validates Cosmos DB connectivity
-app.MapGet("/health", async (CosmosDbService db) =>
+app.MapGet("/health", async (CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var healthy = await db.CheckHealthAsync();
+    var healthy = await db.CheckHealthAsync(cancellationToken);
     return healthy
         ? Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow })
         : Results.Json(new { status = "unhealthy", timestamp = DateTime.UtcNow }, statusCode: 503);
 });
 
 // GET /products — list all products
-app.MapGet("/products", async (CosmosDbService db) =>
+app.MapGet("/products", async (CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var products = await db.GetProductsAsync();
+    var products = await db.GetProductsAsync(cancellationToken);
     return Results.Ok(products);
 });
 
 // GET /products/{id} — get a single product by id
-app.MapGet("/products/{id}", async (string id, CosmosDbService db) =>
+app.MapGet("/products/{id}", async (string id, CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var product = await db.GetProductByIdAsync(id);
+    var product = await db.GetProductByIdAsync(id, cancellationToken);
     return product is not null ? Results.Ok(product) : Results.NotFound();
 });
 
 // POST /products — create a new product
-app.MapPost("/products", async (Product product, CosmosDbService db) =>
+app.MapPost("/products", async (Product product, CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var created = await db.CreateProductAsync(product);
+    var created = await db.CreateProductAsync(product, cancellationToken);
     return Results.Created($"/products/{created.Id}", created);
 });
 
 // GET /orders — list all orders
-app.MapGet("/orders", async (CosmosDbService db) =>
+app.MapGet("/orders", async (CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var orders = await db.GetOrdersAsync();
+    var orders = await db.GetOrdersAsync(cancellationToken);
     return Results.Ok(orders);
 });
 
 // GET /orders/{id} — get a single order by id
-app.MapGet("/orders/{id}", async (string id, CosmosDbService db) =>
+app.MapGet("/orders/{id}", async (string id, CosmosDbService db, CancellationToken cancellationToken) =>
 {
-    var order = await db.GetOrderByIdAsync(id);
+    var order = await db.GetOrderByIdAsync(id, cancellationToken);
     return order is not null ? Results.Ok(order) : Results.NotFound();
 });
 
 // POST /orders — create a new order (can trigger CPU spike in strict mode)
-app.MapPost("/orders", async (Order order, CosmosDbService db, OrderValidationService validator) =>
+app.MapPost("/orders", async (Order order, CosmosDbService db, OrderValidationService validator, CancellationToken cancellationToken) =>
 {
     var validation = validator.ValidateOrder(order);
     if (!validation.IsValid)
         return Results.BadRequest(new { error = validation.Error });
 
-    var created = await db.CreateOrderAsync(order);
+    var created = await db.CreateOrderAsync(order, cancellationToken);
     return Results.Created($"/orders/{created.Id}", created);
 });
 

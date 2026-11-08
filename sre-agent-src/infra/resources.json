@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.41.2.15936",
-      "templateHash": "12187453054574099058"
+      "version": "0.48.1.52935",
+      "templateHash": "15076119022024061951"
     }
   },
   "parameters": {
@@ -110,6 +110,25 @@
       ]
     },
     {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-05-15",
+      "name": "[format('{0}/{1}/{2}', format('cosmos-{0}', parameters('resourceToken')), 'catalogdb', 'orders')]",
+      "properties": {
+        "resource": {
+          "id": "orders",
+          "partitionKey": {
+            "paths": [
+              "/customerId"
+            ],
+            "kind": "Hash"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', format('cosmos-{0}', parameters('resourceToken')), 'catalogdb')]"
+      ]
+    },
+    {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2023-12-01",
       "name": "[format('plan-{0}', parameters('resourceToken'))]",
@@ -149,6 +168,10 @@
             {
               "name": "COSMOS_CONTAINER_NAME",
               "value": "products"
+            },
+            {
+              "name": "COSMOS_ORDERS_CONTAINER_NAME",
+              "value": "orders"
             },
             {
               "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",

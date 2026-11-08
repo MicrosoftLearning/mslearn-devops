@@ -151,7 +151,13 @@ azd up
 ...}]
 ```
 
-26. This **confirms** the app is running healthy. 
+26. Return to the API home page and select **GET /orders**. Verify that it returns four sample orders in JSON format.
+
+27. This **confirms** the app is running healthy. On a fresh deployment, expect eight products and four orders. The deployment provisions both Cosmos DB containers: `products` (partition key `/category`) and `orders` (partition key `/customerId`). The app uses managed identity only for data access, validates both containers, and seeds them if empty. Startup initialization failures are retried on subsequent database requests, including `/health`; the health endpoint returns HTTP 503 if initialization or access to either container fails.
+
+> **Note**: If updating an existing deployment, rerun `azd up` to provision the missing `orders` container and deploy the updated app. Restart the app if necessary to rerun initialization. Existing data in nonempty containers is preserved.
+
+> **Note**: Sample documents use stable IDs (`sample-product-001` through `sample-product-008` and `sample-order-001` through `sample-order-004`). If initialization is interrupted during seeding, a subsequent request or app restart completes the partial sample dataset without duplicating or overwriting existing documents.
 
 ### Task 2: Simulate a failure
 
@@ -344,4 +350,3 @@ Yes, go ahead and assist me with fixing this problem using the described steps
 ## Summary
 
 In this exercise, you applied traditional SRE principles to validate the reliability of a web app workload. You learned how to deploy Azure SRE Agent, and how to configure agent context. Next, you used natural language prompts, to trigger the agent. Using AI skills, in combination with **human-in-the-loop** approvals, Azure SRE Agent assisted with the root-cause investigation and analysis, as well as running the necessary steps to **mitigate** the problem. All this with detailed feedback.
-

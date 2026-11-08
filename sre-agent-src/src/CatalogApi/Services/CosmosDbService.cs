@@ -1,4 +1,4 @@
-using Azure.Identity;
+using System.Net;
 using Microsoft.Azure.Cosmos;
 using CatalogApi.Models;
 
@@ -10,18 +10,15 @@ public class CosmosDbService
     private readonly string _databaseName;
     private readonly string _productsContainerName;
     private readonly string _ordersContainerName;
-    private Container? _productsContainer;
-    private Container? _ordersContainer;
+    private readonly Container _productsContainer;
+    private readonly Container _ordersContainer;
+    private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private bool _initialized;
     private readonly ILogger<CosmosDbService> _logger;
 
-    public CosmosDbService(IConfiguration configuration, ILogger<CosmosDbService> logger)
+    public CosmosDbService(IConfiguration configuration, CosmosClient client, ILogger<CosmosDbService> logger)
     {
         _logger = logger;
-
-        var endpoint = configuration["COSMOS_ACCOUNT_ENDPOINT"]
-            ?? throw new InvalidOperationException(
-                "COSMOS_ACCOUNT_ENDPOINT is not configured. Set it as an app setting or environment variable.");
 
         _databaseName = configuration["COSMOS_DATABASE_NAME"] ?? "catalogdb";
         _productsContainerName = configuration["COSMOS_PRODUCTS_CONTAINER_NAME"]
@@ -29,55 +26,56 @@ public class CosmosDbService
             ?? "products";
         _ordersContainerName = configuration["COSMOS_ORDERS_CONTAINER_NAME"] ?? "orders";
 
-        // Keyless authentication via managed identity (App Service) or
-        // developer credential (local: az login / VS / VSCode).
-        _client = new CosmosClient(endpoint, new DefaultAzureCredential(), new CosmosClientOptions
-        {
-            SerializerOptions = new CosmosSerializationOptions
-            {
-                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-            }
-        });
+        _client = client;
+        _productsContainer = _client.GetContainer(_databaseName, _productsContainerName);
+        _ordersContainer = _client.GetContainer(_databaseName, _ordersContainerName);
     }
 
     /// <summary>
-    /// Creates the database, product/order containers, and seeds sample data if containers are empty.
-    /// Call once at startup. Failures are non-fatal — the app starts but DB requests will fail.
+    /// Validates infrastructure-provisioned containers and seeds empty containers.
+    /// Failed startup initialization is retried by subsequent database requests.
     /// </summary>
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        var database = await _client.CreateDatabaseIfNotExistsAsync(_databaseName);
-        var productsResponse = await database.Database.CreateContainerIfNotExistsAsync(
-            _productsContainerName, "/category");
-        _productsContainer = productsResponse.Container;
-
-        var ordersResponse = await database.Database.CreateContainerIfNotExistsAsync(
-            _ordersContainerName, "/customerId");
-        _ordersContainer = ordersResponse.Container;
-
-        var productsCountQuery = _productsContainer.GetItemQueryIterator<int>("SELECT VALUE COUNT(1) FROM c");
-        var productsCountResponse = await productsCountQuery.ReadNextAsync();
-        if (productsCountResponse.Resource.First() == 0)
+        await _initializationLock.WaitAsync(cancellationToken);
+        try
         {
-            _logger.LogInformation("Seeding sample product data...");
-            await SeedProductsAsync();
-        }
+            if (_initialized)
+                return;
 
-        var ordersCountQuery = _ordersContainer.GetItemQueryIterator<int>("SELECT VALUE COUNT(1) FROM c");
-        var ordersCountResponse = await ordersCountQuery.ReadNextAsync();
-        if (ordersCountResponse.Resource.First() == 0)
+            await _productsContainer.ReadContainerAsync(cancellationToken: cancellationToken);
+            await _ordersContainer.ReadContainerAsync(cancellationToken: cancellationToken);
+
+            using var productsCountQuery = _productsContainer.GetItemQueryIterator<int>("SELECT VALUE COUNT(1) FROM c");
+            var productsCountResponse = await productsCountQuery.ReadNextAsync(cancellationToken);
+            if (productsCountResponse.Resource.First() == 0 ||
+                await HasIncompleteSeedAsync(_productsContainer, "sample-product-", 8, cancellationToken))
+            {
+                _logger.LogInformation("Seeding sample product data...");
+                await SeedProductsAsync(cancellationToken);
+            }
+
+            using var ordersCountQuery = _ordersContainer.GetItemQueryIterator<int>("SELECT VALUE COUNT(1) FROM c");
+            var ordersCountResponse = await ordersCountQuery.ReadNextAsync(cancellationToken);
+            if (ordersCountResponse.Resource.First() == 0 ||
+                await HasIncompleteSeedAsync(_ordersContainer, "sample-order-", 4, cancellationToken))
+            {
+                _logger.LogInformation("Seeding sample order data...");
+                await SeedOrdersAsync(cancellationToken);
+            }
+
+            _initialized = true;
+            _logger.LogInformation(
+                "Cosmos DB initialized: database={Database}, productsContainer={ProductsContainer}, ordersContainer={OrdersContainer}",
+                _databaseName, _productsContainerName, _ordersContainerName);
+        }
+        finally
         {
-            _logger.LogInformation("Seeding sample order data...");
-            await SeedOrdersAsync();
+            _initializationLock.Release();
         }
-
-        _initialized = true;
-        _logger.LogInformation(
-            "Cosmos DB initialized: database={Database}, productsContainer={ProductsContainer}, ordersContainer={OrdersContainer}",
-            _databaseName, _productsContainerName, _ordersContainerName);
     }
 
-    private async Task SeedProductsAsync()
+    private async Task SeedProductsAsync(CancellationToken cancellationToken)
     {
         var products = new List<Product>
         {
@@ -91,15 +89,17 @@ public class CosmosDbService
             new() { Name = "Mouse Pad XL",         Category = "Accessories", Description = "Extended mouse pad with stitched edges",             Price = 19.99m,  Stock = 500 },
         };
 
-        foreach (var product in products)
+        for (var index = 0; index < products.Count; index++)
         {
-            await _productsContainer!.CreateItemAsync(product, new PartitionKey(product.Category));
+            var product = products[index];
+            product.Id = $"sample-product-{index + 1:000}";
+            await CreateSeedItemAsync(_productsContainer, product, new PartitionKey(product.Category), cancellationToken);
         }
 
         _logger.LogInformation("Seeded {Count} products.", products.Count);
     }
 
-    private async Task SeedOrdersAsync()
+    private async Task SeedOrdersAsync(CancellationToken cancellationToken)
     {
         var orders = new List<Order>
         {
@@ -109,38 +109,66 @@ public class CosmosDbService
             new() { CustomerId = "cust-004", Description = "Webcams for remote team",         ProductName = "Webcam HD",         Quantity = 30, Total = 2699.70m, Status = "pending" }
         };
 
-        foreach (var order in orders)
+        for (var index = 0; index < orders.Count; index++)
         {
-            await _ordersContainer!.CreateItemAsync(order, new PartitionKey(order.CustomerId));
+            var order = orders[index];
+            order.Id = $"sample-order-{index + 1:000}";
+            await CreateSeedItemAsync(_ordersContainer, order, new PartitionKey(order.CustomerId), cancellationToken);
         }
 
         _logger.LogInformation("Seeded {Count} orders.", orders.Count);
     }
 
-    /// <summary>Returns all products in the container.</summary>
-    public async Task<IEnumerable<Product>> GetProductsAsync()
+    private static async Task<bool> HasIncompleteSeedAsync(
+        Container container, string idPrefix, int expectedCount, CancellationToken cancellationToken)
     {
-        EnsureContainers();
-        var query = _productsContainer!.GetItemQueryIterator<Product>("SELECT * FROM c");
+        var queryDefinition = new QueryDefinition(
+            "SELECT VALUE COUNT(1) FROM c WHERE STARTSWITH(c.id, @prefix)")
+            .WithParameter("@prefix", idPrefix);
+        using var query = container.GetItemQueryIterator<int>(queryDefinition);
+        var response = await query.ReadNextAsync(cancellationToken);
+        var count = response.Resource.First();
+        return count > 0 && count < expectedCount;
+    }
+
+    private async Task CreateSeedItemAsync<T>(
+        Container container, T item, PartitionKey partitionKey, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await container.CreateItemAsync(item, partitionKey, cancellationToken: cancellationToken);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+        {
+            // A retry or another app instance may already have created this sample.
+            _logger.LogInformation("Sample document already exists; preserving it in container {Container}.", container.Id);
+        }
+    }
+
+    /// <summary>Returns all products in the container.</summary>
+    public async Task<IEnumerable<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
+    {
+        await InitializeAsync(cancellationToken);
+        using var query = _productsContainer.GetItemQueryIterator<Product>("SELECT * FROM c");
         var results = new List<Product>();
         while (query.HasMoreResults)
         {
-            var response = await query.ReadNextAsync();
+            var response = await query.ReadNextAsync(cancellationToken);
             results.AddRange(response);
         }
         return results;
     }
 
     /// <summary>Returns a single product by id (cross-partition query).</summary>
-    public async Task<Product?> GetProductByIdAsync(string id)
+    public async Task<Product?> GetProductByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        EnsureContainers();
+        await InitializeAsync(cancellationToken);
         var queryDef = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
             .WithParameter("@id", id);
-        var iterator = _productsContainer!.GetItemQueryIterator<Product>(queryDef);
+        using var iterator = _productsContainer.GetItemQueryIterator<Product>(queryDef);
         while (iterator.HasMoreResults)
         {
-            var response = await iterator.ReadNextAsync();
+            var response = await iterator.ReadNextAsync(cancellationToken);
             var match = response.FirstOrDefault();
             if (match is not null) return match;
         }
@@ -148,73 +176,70 @@ public class CosmosDbService
     }
 
     /// <summary>Creates a new product.</summary>
-    public async Task<Product> CreateProductAsync(Product product)
+    public async Task<Product> CreateProductAsync(Product product, CancellationToken cancellationToken = default)
     {
-        EnsureContainers();
+        await InitializeAsync(cancellationToken);
         product.Id = Guid.NewGuid().ToString();
-        var response = await _productsContainer!.CreateItemAsync(product, new PartitionKey(product.Category));
+        var response = await _productsContainer.CreateItemAsync(product, new PartitionKey(product.Category), cancellationToken: cancellationToken);
         return response.Resource;
     }
 
-    public async Task<IEnumerable<Order>> GetOrdersAsync()
+    public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        EnsureContainers();
-        var query = _ordersContainer!.GetItemQueryIterator<Order>("SELECT * FROM c");
+        await InitializeAsync(cancellationToken);
+        using var query = _ordersContainer.GetItemQueryIterator<Order>("SELECT * FROM c");
         var results = new List<Order>();
         while (query.HasMoreResults)
         {
-            var response = await query.ReadNextAsync();
+            var response = await query.ReadNextAsync(cancellationToken);
             results.AddRange(response);
         }
         return results;
     }
 
-    public async Task<Order?> GetOrderByIdAsync(string id)
+    public async Task<Order?> GetOrderByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        EnsureContainers();
+        await InitializeAsync(cancellationToken);
         var queryDef = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
             .WithParameter("@id", id);
-        var iterator = _ordersContainer!.GetItemQueryIterator<Order>(queryDef);
+        using var iterator = _ordersContainer.GetItemQueryIterator<Order>(queryDef);
         while (iterator.HasMoreResults)
         {
-            var response = await iterator.ReadNextAsync();
+            var response = await iterator.ReadNextAsync(cancellationToken);
             var match = response.FirstOrDefault();
             if (match is not null) return match;
         }
         return null;
     }
 
-    public async Task<Order> CreateOrderAsync(Order order)
+    public async Task<Order> CreateOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
-        EnsureContainers();
+        await InitializeAsync(cancellationToken);
         order.Id = Guid.NewGuid().ToString();
         order.CreatedAt = DateTime.UtcNow;
         order.Status = "pending";
-        var response = await _ordersContainer!.CreateItemAsync(order, new PartitionKey(order.CustomerId));
+        var response = await _ordersContainer.CreateItemAsync(order, new PartitionKey(order.CustomerId), cancellationToken: cancellationToken);
         return response.Resource;
     }
 
-    /// <summary>Validates connectivity to the Cosmos DB account.</summary>
-    public async Task<bool> CheckHealthAsync()
+    /// <summary>Validates initialization and availability of both required containers.</summary>
+    public async Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await _client.ReadAccountAsync();
+            await InitializeAsync(cancellationToken);
+            await _productsContainer.ReadContainerAsync(cancellationToken: cancellationToken);
+            await _ordersContainer.ReadContainerAsync(cancellationToken: cancellationToken);
             return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Cosmos DB health check failed.");
             return false;
-        }
-    }
-
-    private void EnsureContainers()
-    {
-        if (!_initialized || _productsContainer is null || _ordersContainer is null)
-        {
-            _productsContainer ??= _client.GetContainer(_databaseName, _productsContainerName);
-            _ordersContainer ??= _client.GetContainer(_databaseName, _ordersContainerName);
         }
     }
 }
