@@ -1,0 +1,88 @@
+name: Deploy infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - infra/**
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build Bicep and run staging what-if
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/staging-drop"
+          az bicep build \
+            --file infra/main.bicep \
+            --outfile "${RUNNER_TEMP}/staging-drop/main.json"
+          az deployment group what-if \
+            --name "iaclab-staging-${GITHUB_RUN_ID}" \
+            --resource-group rg-iaclab-staging \
+            --template-file infra/main.bicep
+
+      - name: Publish staging Bicep artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-drop
+          path: ${{ runner.temp }}/staging-drop/main.json
+          if-no-files-found: error
+
+  deploy-staging:
+    name: Deploy Staging
+    needs: validate
+    uses: ./.github/workflows/deploy-bicep.yml
+    with:
+      environment: staging
+      resource-group: rg-iaclab-staging
+      deployment-name: iaclab-staging-${{ github.run_id }}
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  deploy-production:
+    name: Deploy Production
+    needs: deploy-staging
+    uses: ./.github/workflows/deploy-bicep.yml
+    with:
+      environment: production
+      resource-group: rg-iaclab-production
+      deployment-name: iaclab-production-${{ github.run_id }}
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+  rollback:
+    name: Rollback Production
+    needs: deploy-production
+    if: ${{ always() && needs.deploy-production.result == 'failure' }}
+    uses: ./.github/workflows/deploy-bicep.yml
+    with:
+      environment: production
+      resource-group: rg-iaclab-production
+      deployment-name: iaclab-production-rollback-${{ github.run_id }}
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

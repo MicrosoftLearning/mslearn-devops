@@ -1,0 +1,56 @@
+name: Deploy Bicep artifact
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub Environment used for deployment controls
+        required: true
+        type: string
+      resource-group:
+        description: Target Azure resource group
+        required: true
+        type: string
+      deployment-name:
+        description: Azure deployment name
+        required: true
+        type: string
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Download staging Bicep artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: staging-drop
+          path: staging-drop
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep template
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group create \
+            --name "${{ inputs.deployment-name }}" \
+            --resource-group "${{ inputs.resource-group }}" \
+            --template-file staging-drop/main.json

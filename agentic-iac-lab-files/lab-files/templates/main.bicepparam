@@ -1,0 +1,23 @@
+using './main.bicep'
+
+param location = 'eastus'
+param resourceGroupName = 'rg-agentic-iaclab'
+param vnetName = 'vnet-agentic-iaclab'
+param vnetAddressPrefix = '10.10.0.0/16'
+param appSubnetName = 'snet-app'
+param appSubnetAddressPrefix = '10.10.1.0/24'
+param dataSubnetName = 'snet-data'
+param dataSubnetAddressPrefix = '10.10.2.0/24'
+param nicName = 'nic-vm-iaclab'
+param vmName = 'vm-iaclab'
+param vmSize = 'Standard_B2s'
+param vmImagePublisher = 'Canonical'
+param vmImageOffer = '0001-com-ubuntu-server-jammy'
+param vmImageSku = '22_04-lts-gen2'
+param vmImageVersion = 'latest'
+param vmAdminUsername = 'azureuser'
+param sshPublicKey = '<replace-with-your-ssh-public-key>'
+param tags = {
+  Environment: 'Training'
+  Owner: 'agentic-iaclab'
+}
