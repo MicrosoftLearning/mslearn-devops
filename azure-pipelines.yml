@@ -1,0 +1,146 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - infra/**
+
+variables:
+  templateFile: infra/main.bicep
+
+stages:
+  - stage: Validate
+    displayName: Validate
+    variables:
+      - group: vg-iaclab-staging
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - job: ValidateBicep
+        displayName: Build and preview Bicep
+        steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: Build Bicep and run staging what-if
+            inputs:
+              azureSubscription: sc-iaclab-staging
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                az bicep build \
+                  --file "$(templateFile)" \
+                  --outfile "$(Build.ArtifactStagingDirectory)/main.json"
+                az deployment group what-if \
+                  --name "iaclab-staging-$(Build.BuildId)" \
+                  --resource-group rg-iaclab-staging \
+                  --template-file "$(templateFile)"
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish staging Bicep artifact
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/main.json
+              artifact: staging-drop
+
+  - stage: Deploy_Staging
+    displayName: Deploy Staging
+    dependsOn: Validate
+    condition: succeeded()
+    variables:
+      - group: vg-iaclab-staging
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - deployment: DeployStaging
+        displayName: Deploy to staging
+        environment: staging
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+
+                - download: current
+                  displayName: Download staging Bicep artifact
+                  artifact: staging-drop
+
+                - task: AzureCLI@2
+                  displayName: Deploy Bicep to staging
+                  inputs:
+                    azureSubscription: sc-iaclab-staging
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      az deployment group create \
+                        --name "iaclab-staging-$(Build.BuildId)" \
+                        --resource-group rg-iaclab-staging \
+                        --template-file "$(Pipeline.Workspace)/staging-drop/main.json"
+
+  - stage: Deploy_Production
+    displayName: Deploy Production
+    dependsOn: Deploy_Staging
+    condition: succeeded()
+    variables:
+      - group: vg-iaclab-production
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - deployment: DeployProduction
+        displayName: Deploy to production
+        environment: production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+
+                - download: current
+                  displayName: Download staging Bicep artifact
+                  artifact: staging-drop
+
+                - task: AzureCLI@2
+                  displayName: Deploy Bicep to production
+                  inputs:
+                    azureSubscription: sc-iaclab-production
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -euo pipefail
+                      az deployment group create \
+                        --name "iaclab-production-$(Build.BuildId)" \
+                        --resource-group rg-iaclab-production \
+                        --template-file "$(Pipeline.Workspace)/staging-drop/main.json"
+
+  - stage: Rollback
+    displayName: Rollback Production
+    dependsOn: Deploy_Production
+    condition: failed()
+    variables:
+      - group: vg-iaclab-production
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - job: RollbackProduction
+        displayName: Re-deploy staging artifact to production
+        steps:
+          - checkout: none
+
+          - download: current
+            displayName: Download staging Bicep artifact
+            artifact: staging-drop
+
+          - task: AzureCLI@2
+            displayName: Roll back production
+            inputs:
+              azureSubscription: sc-iaclab-production
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                az deployment group create \
+                  --name "iaclab-production-rollback-$(Build.BuildId)" \
+                  --resource-group rg-iaclab-production \
+                  --template-file "$(Pipeline.Workspace)/staging-drop/main.json"
