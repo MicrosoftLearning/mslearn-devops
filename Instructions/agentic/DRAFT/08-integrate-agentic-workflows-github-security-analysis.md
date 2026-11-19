@@ -33,7 +33,7 @@ By the end of this exercise, you will be able to:
 - Explain the difference between authoring YAML with AI and running an agent.
 - Compile and inspect an agentic workflow before enabling it.
 - Separate repository access, Copilot authentication, and permitted writes.
-- Evaluate an advisory report against source evidence.
+- Describe how an agent automates initial source inspection and report drafting.
 - Explain what AI assists with and what remains a deterministic or human task.
 
 Allow approximately **45 minutes**.
@@ -368,75 +368,35 @@ workflow list. It hasn't started automatically: its `workflow_dispatch`
 trigger requires a manual run. Pushing the files or enabling Actions doesn't
 start this workflow or make a Copilot request.
 
-## Task 5: Run the review and verify the evidence
+## Task 5: Run the review and view the report
 
 1. In **Actions**, select **Prepare an advisory security review**, then
    **Run workflow**.
 1. Select **main**. Use only the trusted default-branch definition for this
    exercise; don't dispatch a contributor-controlled branch.
-1. Open the run and record its URL and source commit.
-1. Verify that **validate-sample** successfully builds the library before
-   the agent starts.
-1. In the run summary, inspect the agent, detection, and safe-output jobs.
-   **Creating the advisory report should not cause the run to fail**, even
-   when the report identifies security risks. Conditional jobs may be skipped;
-   a failed job indicates an execution or publication problem, not a finding.
+1. Open the run and wait for it to complete successfully. The
+   **validate-sample** job builds the library before the agent reviews it.
+   Security observations don't cause this advisory workflow to fail.
+1. After the run completes successfully, open the repository's **Issues**
+   tab and select the issue whose title starts with **[Lab security review]**.
+   Notice the observations from the agent's review of
+   `agentic-workflows-src/src/` at the run's recorded commit. The sample
+   contains document-path handling, webhook-signature comparison, and
+   audit-entry construction. The report presents supported observations
+   with source references, potential impact, and suggested remediations;
+   individual findings can vary between runs.
 
-   If a job fails, open that job and expand its failed step to read the error.
-   Check any linked failure issue and the run's diagnostic artifacts. Resolve
-   the reported problem and rerun the workflow before evaluating the review.
-1. In the repository's **Issues** tab, distinguish the two possible outputs:
-
-   - **[Lab security review] ...** is the requested advisory report. Open it
-     and check its generated provenance, run link, and reviewed commit.
-   - **[aw] Prepare an advisory security review: ...** is a framework-generated
-     failure notification, not the advisory report. For example, **finished
-     without a terminal safe output** means the framework couldn't confirm
-     completion of the requested task. Read its **Failure details** and use
-     the linked run to investigate; the existence of this issue does not mean
-     the security review succeeded.
-
-   Continue only when the advisory report is available and the run has
-   completed successfully.
-1. For each observation, open the cited source **at that commit**, not a
-   newer `main`. Verify the named path, line range, and evidence.
-1. Record whether you **accept**, **revise**, or **reject** each observation,
-   with a reason. Don't implement suggested code changes automatically.
-
-For orientation, the sample includes document-path handling, signature
-comparison, and audit-entry construction. Those are review targets, not a
-guaranteed answer key. The library has no web entry point. Don't infer remote
-exploitability, a scanner result, or a deployed logging sink from its source.
-
-An empty findings report can be a valid result if evidence was read. A missing
-report, unreadable source, or failed agent is **not** an empty findings report.
-Safe-output validation checks the permitted publication operation; it doesn't
-certify the report's technical accuracy.
-
-**Expected result:** The run completes successfully and creates an advisory
-report issue, not just a failure notification. You can trace the report to an
-exact revision and explain one supported observation or why a proposed
-observation should be rejected.
-
-## Clean up
-
-1. Disable **lab-security-review** in this lab repo to prevent more requests.
-1. Delete the lab repo's **COPILOT_GITHUB_TOKEN** repository secret.
-1. Revoke the dedicated fine-grained token in your personal GitHub settings.
-1. Close the generated lab report issues. Keep their links if required for
-   assessment, but don't retain credentials or sensitive context.
-1. If this lab repo was created only for the exercise, optionally delete the
-   exact **YOUR-OWNER/agentic-workflows-security-lab** repository after saving
-   required evidence. 
-1. Remove a local extension or checkout only if it was created solely for
-   this exercise and is no longer needed.
+**Expected result:** The workflow has created an advisory security report as
+a GitHub issue. No comments, code changes, or further review tasks are required
+to complete this lab.
 
 ## Review
 
-You built the document-library sample and reviewed it with GitHub Agentic
-Workflows. The framework supplied authoring, isolation, and safe outputs, while
-GitHub Actions performed deterministic validation. AI helped prepare the
-review; it didn't replace source evidence, tests, or human authorization.
+Typically, a developer or security reviewer would read the source, identify
+potential risks, prioritize observations, and write a review brief. Your
+agentic workflow automated that initial inspection and report drafting, while
+GitHub Actions handled the build. The issue is advisory: the agent hasn't
+fixed the code or certified it as secure. This completes the lab.
 
 Further reading:
 
