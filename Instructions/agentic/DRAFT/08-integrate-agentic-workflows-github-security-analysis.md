@@ -85,26 +85,45 @@ authoring extension in Task 3.
 
 ## Task 1: Create an isolated GitHub lab repository
 
-1. In GitHub, open
-   [MicrosoftLearning/mslearn-devops](https://github.com/MicrosoftLearning/mslearn-devops).
-1. Select **Fork** or **Clone**, depending on your preference. Either will work. We will refer to the created repo as "lab repo" in all further instructions.
-1. Choose your approved account or organization and name the lab repo **agentic-workflows-security-lab**. Copy only `main` if offered.
-1. In the lab repo, enable **Issues** under **Settings > General > Features**.
-   Don't configure GitHub Pages, deployment secrets, or environments.
-1. Open a Terminal shell and replace `YOUR-OWNER` below with the lab repo's owner:
+1. Open a terminal in a local directory where you want to keep the lab files.
+   Clone the `main` branch of the public source repository:
 
    ```bash
    gh auth status
-   gh repo clone YOUR-OWNER/agentic-workflows-security-lab
+   git clone --branch main --single-branch https://github.com/MicrosoftLearning/mslearn-devops.git agentic-workflows-security-lab
    cd agentic-workflows-security-lab
+   git remote rename origin upstream
+   ```
+
+   This creates a local copy, not a new GitHub repository. The `upstream`
+   remote identifies the source repository; don't push to it.
+1. Create your own public GitHub repository from this local copy. Replace
+   `YOUR-OWNER` with your approved GitHub account or organization. Use a new,
+   unused repository name: **agentic-workflows-security-lab**.
+
+   ```bash
+   gh repo create YOUR-OWNER/agentic-workflows-security-lab --public --source . --remote origin --push
    gh repo set-default YOUR-OWNER/agentic-workflows-security-lab
+   gh repo edit --default-branch main
    gh repo view --json nameWithOwner
    git remote -v
    git status --short
    ```
 
+   The command creates an independent repository, not a fork, adds it as
+   `origin`, and pushes the cloned code. We call it the **lab repo** below.
 1. Confirm the default GitHub CLI destination and Git `origin` both identify
-   **your lab repo**, not `MicrosoftLearning/mslearn-devops`. 
+   **your lab repo**, not `MicrosoftLearning/mslearn-devops`. Only `upstream`
+   should identify the source repository.
+1. Open the verified lab repo in your browser:
+
+   ```bash
+   gh repo view --web
+   ```
+
+   Under **Settings > General > Features**, confirm **Issues** is enabled;
+   enable it if necessary. Don't configure GitHub Pages, deployment secrets,
+   or environments.
 1. Verify these existing paths without moving or renaming them:
 
    | Path | Purpose |
@@ -118,15 +137,16 @@ sample.
 
 ## Task 2: Configure Copilot authentication
 
-1. In your personal GitHub settings, open **Developer settings > Personal
+1. Select your personal account in GitHub, open the user navigation menu and select **Settings** 
+1. From the settings, open **Developer settings > Personal
    access tokens > Fine-grained tokens > Generate new token**.
 1. Name it **agentic-workflows-security-lab**, choose a short permitted
    expiration, and select your **personal account** as resource owner.
 1. Leave repository access at **Public repositories (read-only)**. Under
-   account permissions, add **Copilot Requests: Read**. Don't grant repository
-   write permissions.
-1. Generate the token. In **your lab repo**, open **Settings > Secrets and
-   variables > Actions** and create a repository secret named exactly
+   account permissions, add **Copilot Requests: Access: Read-only**. 
+1. Generate the token. Once generated, make sure to copy this token as you need it in the next step. 
+1. In **your lab repo**, open **Settings > Secrets and
+   variables > Actions** and create a **New repository secret** named exactly
    **`COPILOT_GITHUB_TOKEN`**.
 1. Paste the token into the secret value and save. Don't place it in source,
    frontmatter, a shell command, a screenshot, or a chat.
@@ -145,13 +165,34 @@ Copilot inference.
 1. From the lab repo's root, install the pinned authoring extension for GitHub Agentic Workflows (gh-aw):
 
    ```bash
-   gh extension install github/gh-aw --pin v1.2.2
+   gh extension install github/gh-aw
    gh aw version
    ```
 
-   If already installed, check its version. If needed, consider upgrading to the latest version.
+   If already installed, check its version. At the time of writing this lab, it's version is v1.2.2
+   If needed, consider upgrading to the latest version.
 
-1. Create **`.github/workflows/lab-security-review.md`** with this content:
+1. From the lab repo's root, create the workflow folder and open a new file.
+   If you use Visual Studio Code with the `code` command available in your
+   terminal, run the commands for your shell:
+
+   **PowerShell:**
+
+   ```powershell
+   New-Item -ItemType Directory -Force -Path .github\workflows
+   code .github\workflows\lab-security-review.md
+   ```
+
+   **Bash:**
+
+   ```bash
+   mkdir -p .github/workflows
+   code .github/workflows/lab-security-review.md
+   ```
+
+   Alternatively, create the folder and file in your editor. Paste the
+   following content into **`.github/workflows/lab-security-review.md`**
+   and save it:
 
    ```markdown
    ---
@@ -171,7 +212,7 @@ Copilot inference.
        toolsets: [repos]
        allowed: [get_file_contents]
        allowed-repos: ["${{ github.repository }}"]
-       min-integrity: approved
+       min-integrity: none
    safe-outputs:
      create-issue:
        title-prefix: "[Lab security review] "
@@ -184,13 +225,13 @@ Copilot inference.
        outputs:
          reviewed_commit: ${{ steps.revision.outputs.sha }}
        steps:
-         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+         - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
            with:
              persist-credentials: false
          - name: Record the checked-out revision
            id: revision
            run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-         - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+         - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
            with:
              dotnet-version: '8.0.x'
          - name: Build the supplied library
@@ -228,16 +269,35 @@ Copilot inference.
    Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
    ```
 
-1. Review the workflow's execution and access boundaries:
+1. In VS Code, read the workflow definition you just saved. This is a
+   **local code review**, not a workflow run. Saving the Markdown doesn't
+   start GitHub Actions or make a Copilot request. You'll compile and publish
+   the definition in Task 4, then manually start the workflow in Task 5.
 
-   - `workflow_dispatch` permits a deliberate manual run, not every push or PR.
-   - The custom `validate-sample` job runs before the agent. Its ordinary
+   Find each setting below in the copied content and check its purpose.
+   No terminal command or GitHub action is required at this step:
+
+   - Find `on: workflow_dispatch`. It permits a deliberate manual run,
+     not an automatic run on every push or PR.
+   - Find `jobs: validate-sample`. When the workflow runs, this custom job
+     builds the sample before the agent starts. Its ordinary
      build commands run **outside the agent firewall**, on a separate
      hosted runner. Only trusted, supplied code belongs in this lab build.
-   - The agent has no checkout and no shell tool. It reads source through a
-     restricted GitHub tool at the run's commit.
-   - The issue request goes through `create-issue`, limited to one report per
-     run in this repository. A separate generated job receives write authority.
+   - Find `permissions: contents: read`, `checkout: false`, `bash: false`,
+     and the GitHub tool settings. The agent has no checkout and no shell
+     tool. It reads source through a restricted GitHub tool at the run's commit.
+   - Find `min-integrity: none` and `allowed-repos`. GitHub integrity filtering
+     assigns file reads at explicit commit SHAs baseline `none` integrity;
+     `approved` would block the exact-revision reads this lab requires.
+     This setting permits lower-trust content, not additional write access.
+     Use it only for the supplied public sample in your isolated lab repo,
+     with organization approval where required. Keep the current-repository
+     allowlist, file-reading-only tool, and other restrictions unchanged.
+     Source remains untrusted evidence, never instructions. If policy requires
+     a higher integrity threshold, stop and request an approved lab environment.
+   - Find `safe-outputs: create-issue` and `max: 1`. They limit publication
+     to one report issue per run in this repository. A separate job generated
+     during compilation receives write authority.
    - The .NET build verifies that the sample compiles; it **doesn't**
      validate this workflow's issue body or prove that its findings are true.
 
@@ -245,8 +305,10 @@ Copilot inference.
    configuration enforce repository/API boundaries, not a folder-level access
    control list or the truth of the report.
 
-**Expected result:** The Markdown contains an explicit trigger, a deterministic
-prerequisite job, a read-only agent task, and a bounded publication route.
+**Expected result:** You have saved the Markdown definition locally and
+identified its manual trigger, prerequisite build, read-only agent settings,
+and issue-output limit. The workflow hasn't run, and no report issue has been
+created yet. Continue to Task 4 to compile and publish the definition.
 
 ## Task 4: Compile, inspect, and publish the workflow definition
 
@@ -269,7 +331,8 @@ prerequisite job, a read-only agent task, and a bounded publication route.
      permitted publication and failure reporting.
    - There is no deployment job, PR-merge output, or privileged PR trigger.
    - Referenced actions are fixed to commits. The two authored action
-     references above resolve to checkout v4 and setup-dotnet v4;
+     references above resolve to checkout v7.0.1 and setup-dotnet v6.1.0,
+     both using Node.js 24;
      compiler-owned actions have their own fixed references.
 
 1. If compilation fails, correct the source using the first diagnostic.
@@ -282,6 +345,10 @@ prerequisite job, a read-only agent task, and a bounded publication route.
    git diff --cached
    ```
 
+   If the diff opens in a pager showing `:` or a percentage, press **q** to
+   exit and return to the terminal prompt before continuing. To view the diff
+   without a pager, use `git --no-pager diff --cached` instead.
+
 1. Confirm no secret or unrelated change is staged. For an unprotected,
    disposable lab repo, commit and push this initial setup:
 
@@ -290,25 +357,47 @@ prerequisite job, a read-only agent task, and a bounded publication route.
    git push origin main
    ```
 
-1. In the lab repo, open **Actions** and enable workflows if prompted. Confirm
-   organization policy permits the compiled workflow's actions.
+1. In your browser, open the lab repo's **Actions** tab. Under **All workflows**
+   in the left sidebar, find **Prepare an advisory security review**. If GitHub
+   prompts you to enable Actions, do so only if organization policy permits it,
+   then check the workflow list again.
+   Don't select **Run workflow** yet; you'll do that in Task 5.
 
-**Expected result:** GitHub recognizes the compiled workflow on the lab repo's
-default branch. Merely pushing it hasn't started a model request.
+**Expected result:** **Prepare an advisory security review** appears in the
+workflow list. It hasn't started automatically: its `workflow_dispatch`
+trigger requires a manual run. Pushing the files or enabling Actions doesn't
+start this workflow or make a Copilot request.
 
 ## Task 5: Run the review and verify the evidence
 
-1. In **Actions**, select **lab-security-review** (its display name can be
-   derived from the source heading), then **Run workflow**.
+1. In **Actions**, select **Prepare an advisory security review**, then
+   **Run workflow**.
 1. Select **main**. Use only the trusted default-branch definition for this
    exercise; don't dispatch a contributor-controlled branch.
 1. Open the run and record its URL and source commit.
 1. Verify that **validate-sample** successfully builds the library before
    the agent starts.
-1. Inspect the generated agent, detection, and safe-output jobs as present
-   in the compiled definition. Follow the first failure if a job fails.
-1. Open the issue whose title starts with **[Lab security review]**.
-   Check its generated provenance, run link, and reviewed commit.
+1. In the run summary, inspect the agent, detection, and safe-output jobs.
+   **Creating the advisory report should not cause the run to fail**, even
+   when the report identifies security risks. Conditional jobs may be skipped;
+   a failed job indicates an execution or publication problem, not a finding.
+
+   If a job fails, open that job and expand its failed step to read the error.
+   Check any linked failure issue and the run's diagnostic artifacts. Resolve
+   the reported problem and rerun the workflow before evaluating the review.
+1. In the repository's **Issues** tab, distinguish the two possible outputs:
+
+   - **[Lab security review] ...** is the requested advisory report. Open it
+     and check its generated provenance, run link, and reviewed commit.
+   - **[aw] Prepare an advisory security review: ...** is a framework-generated
+     failure notification, not the advisory report. For example, **finished
+     without a terminal safe output** means the framework couldn't confirm
+     completion of the requested task. Read its **Failure details** and use
+     the linked run to investigate; the existence of this issue does not mean
+     the security review succeeded.
+
+   Continue only when the advisory report is available and the run has
+   completed successfully.
 1. For each observation, open the cited source **at that commit**, not a
    newer `main`. Verify the named path, line range, and evidence.
 1. Record whether you **accept**, **revise**, or **reject** each observation,
@@ -324,8 +413,10 @@ report, unreadable source, or failed agent is **not** an empty findings report.
 Safe-output validation checks the permitted publication operation; it doesn't
 certify the report's technical accuracy.
 
-**Expected result:** You can trace the report to an exact revision and explain
-one supported observation or why a proposed observation should be rejected.
+**Expected result:** The run completes successfully and creates an advisory
+report issue, not just a failure notification. You can trace the report to an
+exact revision and explain one supported observation or why a proposed
+observation should be rejected.
 
 ## Clean up
 
@@ -354,3 +445,4 @@ Further reading:
 - [Custom steps and jobs](https://github.github.com/gh-aw/reference/steps-jobs/)
 - [Safe outputs](https://github.github.com/gh-aw/reference/safe-outputs/)
 - [Authentication](https://github.github.com/gh-aw/reference/auth/)
+- [GitHub integrity filtering](https://github.github.com/gh-aw/reference/integrity/)
