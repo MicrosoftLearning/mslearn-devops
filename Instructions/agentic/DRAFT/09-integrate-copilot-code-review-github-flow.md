@@ -1,10 +1,10 @@
 ---
 lab:
   topic: Agentic
-  title: "DRAFT - Extend GitHub flow with Copilot code review"
-  description: Extend the existing Spoon-Knife repository exercise with bounded Copilot assistance, native PR code review, deterministic checks, and independent human approval.
+  title: "Extend GitHub flow with Copilot code review"
+  description: Practice GitHub source control with bounded Copilot assistance, native PR code review, and a learner-controlled merge.
   level: 300
-  duration: 60 minutes
+  duration: 45 minutes
   islab: true
   primarytopics:
     - GitHub
@@ -13,109 +13,111 @@ lab:
     - Agentic DevOps
 ---
 
-# DRAFT - Extend GitHub flow with Copilot code review
-
-> **Draft for author review:** Companion to **Architect and optimize multi-stage
-> pipelines with AI assistance**.
-> Validate the GitHub UI, Copilot entitlement, and two-person approval flow in
-> a learner-owned repository before publication.
+# Extend GitHub flow with Copilot code review
 
 ## Exercise scenario
 
-In the traditional
-[Implement Flow of Work with GitHub](../../basic/02-implement-manage-repositories-using-github.md)
-lab, you fork Spoon-Knife, create an issue and branch, edit HTML/CSS, and merge
-a PR. Here you retain that contribution route and add GitHub Copilot.
+You clone the public Spoon-Knife sample to your local machine and push it to
+a new repository in your personal GitHub account. In your own repository,
+you create an issue and branch, edit HTML/CSS, and merge a PR with GitHub
+Copilot assistance. You aren't contributing changes to the source repository.
 
-Copilot helps explain a proposed change, draft a focused summary, and review
-the PR. You still inspect actual commits, run a deterministic check, evaluate
-feedback, and obtain an independent human approval before merging.
+Copilot helps explain a proposed change, prepare a focused summary, and review
+the PR. You still inspect actual commits, preview the page locally, evaluate
+feedback, and decide when to merge. This is a solo exercise: no second
+reviewer or approving review is required.
 
-The supplied module uses a fictitious EShopOnWeb search fix to explain this
-process. This lab uses Spoon-Knife's existing, small HTML/CSS files so you can
-practice the same governance without deploying an application.
+You'll update Spoon-Knife's `index.html` and `styles.css` to improve its
+collaboration page, including image alternative text and responsive styling.
+No application deployment or GitHub Actions workflow configuration is required.
 
 By the end of this exercise, you will be able to:
 
-- Distinguish a fork, feature branch, commit, and PR.
+- Distinguish a local clone, remote repository, feature branch, commit, and PR.
 - Give Copilot a bounded change/review contract.
 - Request native Copilot code review and evaluate its suggestions.
 - Update the same PR and obtain review for the revised source.
-- Separate AI feedback from required checks and human merge authorization.
+- Separate AI feedback from manual verification and your merge decision.
 
-Allow approximately **60 minutes**. You don't need to complete the older lab
-first; this draft contains the complete core route.
-
-## Companion module reading
-
-Read these units in the supplied **Architect and optimize multi-stage pipelines
-with AI assistance** module. Its draft publication link is pending editorial
-review.
-
-| Module unit | How this lab applies it |
-|---|---|
-| Unit 2: Design a repository, branch, and pull-request workflow | Issue, feature branch, inspected commits, PR, and allowed merge method. |
-| Unit 3: Review pull requests and resolve conflicts with GitHub Copilot | Native Copilot review, evaluating suggestions, revised commits, and re-review. |
-| Unit 4: Connect reviewed changes to reusable multi-stage pipelines | PR-triggered validation and the distinction between source and target branches. |
-| Unit 5: Evaluate Copilot-generated pipeline YAML | Review a small workflow's trigger, permissions, and deterministic behavior. |
-| Unit 6: Govern AI-assisted repository and build workflows | Human authorization, protected controls, and an evidence record. |
-
-This exercise uses **native Copilot code review**, not GitHub Agentic Workflows.
-The [Agentic Workflows companion lab](08-integrate-agentic-workflows-github-security-analysis.md)
-teaches that separate automation pattern. GitHub Pages deployment, Projects,
-cloud-agent fixes, and MCP configuration aren't required here.
+Allow approximately **45 minutes**. You don't need to complete the older lab
+first; this lab contains the complete core route.
 
 ## Before you start
 
 You need:
 
-- A GitHub account permitted to fork a public repository and administer that
-  disposable fork, including Actions and branch protection or rulesets.
+- A personal GitHub account permitted to create and administer a public lab
+  repository, including branch protection or rulesets.
 - Native Copilot code review enabled and available for this account/repository.
   Check the current plan and organization policy with your instructor. Access
   to Copilot Chat alone doesn't establish access to hosted PR code review.
 - An approved Copilot Chat client for the bounded assistance task. It doesn't
   need permission to write to the repository.
-- A teammate or instructor with a **separate GitHub account**, invited as a
-  collaborator with permission to approve PRs in your fork.
-- Available GitHub Actions capacity and Copilot usage allowance. AI requests
-  and runner time can incur charges.
-- A browser. You can edit and commit files in GitHub's web UI; a local Git
-  installation is optional.
+- Available Copilot usage allowance. AI requests can incur charges.
+- A browser, [Git installed locally](https://git-scm.com/downloads), and
+  [Visual Studio Code](https://code.visualstudio.com/). Make file changes in
+  VS Code and use its integrated terminal to commit and push. Use GitHub in
+  your browser for repository settings, issues, PRs, and Copilot code review.
 
-Use only the supplied public sample. Don't add credentials or business data.
-If protection or Copilot review isn't available, ask for a suitable training
-repository. Don't disable required controls or substitute a PR summary for a
-code review and claim the exercise is complete.
+## Task 1: Clone the sample and create your personal lab repository
 
-## Task 1: Fork the sample and prepare the collaboration route
+1. Open a terminal on your local machine in a directory where you want to
+   keep the lab files. Use an unused folder name; don't overwrite existing work.
+   Clone the sample's `main` branch:
 
-1. Open [octocat/Spoon-Knife](https://github.com/octocat/Spoon-Knife), select
-   **Fork**, and create **copilot-review-spoon-knife** under your approved
-   account or organization. Copy only `main` if offered.
-1. If you already have a Spoon-Knife fork, inspect it first. Use an
-   instructor-approved fresh copy or a clean existing fork; don't overwrite
-   unrelated work to recreate the exercise.
-1. Confirm the repository URL belongs to **your owner**, and that `main` is
-   the default branch. Enable **Issues** under **Settings > General**.
-1. Inspect `index.html`, `styles.css`, and the existing `forkit.gif` image.
-   A fork is your server-side repository; it isn't a local clone.
-1. Invite your teammate or instructor under **Settings > Collaborators**
-   (or the organization repository's access settings). Have them accept.
-1. Agree that this lab requires **one independent human approval**, even if
-   your Copilot configuration can submit an approving review.
+   ```bash
+   git clone --branch main --single-branch https://github.com/octocat/Spoon-Knife.git copilot-review-spoon-knife
+   cd copilot-review-spoon-knife
+   git remote rename origin upstream
+   ```
 
-**Expected result:** You own an isolated fork and have a human reviewer.
-All PRs in this lab will target `main` **in this fork**, never `octocat/main`.
+   This creates a local copy. The `upstream` remote identifies the source
+   repository; don't push to it.
+1. In GitHub, select **New repository**. Choose your **personal account** as
+   the owner, name the repository **copilot-review-spoon-knife**, and select
+   **Public**. Leave the README, `.gitignore`, and license initialization
+   options unselected so the repository is empty, then select **Create repository**.
+1. In your terminal, add your new repository as `origin` and push the cloned
+   code. Replace `YOUR-OWNER` with your personal GitHub username:
 
-## Task 2: Bootstrap review guidance and a deterministic check
+   ```bash
+   git remote add origin https://github.com/YOUR-OWNER/copilot-review-spoon-knife.git
+   git remote -v
+   ```
 
-As the repository owner, configure the lab's initial controls on `main`
-before starting feature work. In a repository with existing protection, use
+   Confirm `origin` points to your personal repository and only `upstream`
+   points to `octocat/Spoon-Knife`. Then push, authenticating with your
+   personal GitHub account if prompted:
+
+   ```bash
+   git push --set-upstream origin main
+   ```
+
+1. Refresh your personal repository in GitHub. Confirm the sample files are
+   present and `main` is the default branch. Enable **Issues** under
+   **Settings > General > Features** if needed.
+1. From the cloned repository's directory, open it in VS Code:
+
+   ```bash
+   code .
+   ```
+
+   If `code` isn't available, open VS Code and select **File > Open Folder**
+   to open **copilot-review-spoon-knife**.
+1. In VS Code's **Explorer**, inspect `index.html`, `styles.css`, and the
+   existing `forkit.gif` image. Select **Terminal > New Terminal**. Run the
+   remaining Git commands in this integrated terminal at the repository root.
+
+## Task 2: Add Copilot review guidance in VS Code
+
+Add repository instructions so Copilot has context for its code review.
+Do this on `main` before starting feature work. In a repository with existing protection, use
 its normal reviewed configuration PR instead of bypassing controls.
 
-1. On `main`, use **Add file > Create new file** to create
-   **`.github/copilot-instructions.md`**:
+1. In VS Code, confirm the branch indicator at the bottom left shows **main**.
+   In **Explorer**, create a folder named **`.github`** at the repository root,
+   then create **`copilot-instructions.md`** inside it. Paste the following
+   content and save the file:
 
    ```markdown
    # Review guidance for the Spoon-Knife collaboration page
@@ -129,112 +131,54 @@ its normal reviewed configuration PR instead of bypassing controls.
    Prefer concrete, evidence-backed findings over generic style suggestions.
    State missing context rather than inventing requirements.
    Don't claim a visual or accessibility test ran unless evidence is supplied.
-   Suggestions don't authorize a merge or replace independent human approval.
+   Suggestions don't authorize a merge; the learner decides after manual verification.
    ```
 
-1. Commit the setup file to your fork's `main`.
-1. Create **`.github/workflows/pr-validation.yml`** on `main`:
+1. In the integrated terminal, stage the instructions file, inspect the staged
+   changes, and commit and push it to your personal repository:
 
-   ```yaml
-   name: PR validation
-
-   on:
-     pull_request:
-       branches:
-         - main
-       types: [opened, synchronize, reopened, ready_for_review]
-
-   permissions:
-     contents: read
-
-   jobs:
-     page-check:
-       name: Check page image
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-           with:
-             persist-credentials: false
-         - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-           with:
-             python-version: '3.12'
-         - name: Check the collaboration image
-           run: |
-             python - <<'PY'
-             from html.parser import HTMLParser
-             from pathlib import Path
-
-             class Page(HTMLParser):
-                 def __init__(self):
-                     super().__init__()
-                     self.images = []
-
-                 def handle_starttag(self, tag, attrs):
-                     if tag == "img":
-                         attributes = dict(attrs)
-                         if attributes.get("id") == "octocat":
-                             self.images.append(attributes)
-
-             page = Page()
-             page.feed(Path("index.html").read_text(encoding="utf-8"))
-             if len(page.images) != 1:
-                 raise SystemExit("Expected exactly one octocat image.")
-             image = page.images[0]
-             if image.get("src") != "forkit.gif":
-                 raise SystemExit("Keep the supplied forkit.gif image.")
-             if not image.get("alt", "").strip():
-                 raise SystemExit("The collaboration image needs meaningful alternative text.")
-             print("Image source and non-empty alternative-text checks passed.")
-             PY
+   ```bash
+   git add .github/copilot-instructions.md
+   git --no-pager diff --cached
+   git commit -m "Add Copilot review guidance"
+   git push origin main
    ```
 
-1. Commit the workflow and enable Actions in the fork if prompted.
-1. Explain the definition before continuing:
+   These initial instructions go on `main` before branch protection is
+   configured. The HTML/CSS changes will use a feature branch and PR.
+1. In your browser, confirm **`.github/copilot-instructions.md`** appears on
+   your repository's `main` branch.
 
-   - `pull_request.branches: [main]` filters the **target**, not the source.
-   - A push to a branch without a PR doesn't trigger this workflow.
-   - Opening a PR or pushing another commit to its source triggers validation.
-   - Checkout normally uses a temporary test-merge revision.
-   - No `push` trigger means this workflow doesn't run again just because the
-     PR merged into `main`.
-   - `contents: read` and nonpersisted checkout credentials provide no
-     repository write operation or deployment authority.
-
-The check verifies image identity and the presence of alternative text.
-It **doesn't** judge the quality of that text, validate all HTML/CSS, or prove
-responsive behavior. Those remain explicit review tasks.
-
-**Expected result:** Your default branch contains review guidance and a
-small deterministic PR check. No PAT, AI action, or custom agent is needed
-for native Copilot review.
+**Expected result:** Your repository contains context for Copilot code review.
+These instructions guide feedback; they don't enforce acceptance criteria
+or merge rules.
 
 ## Task 3: Protect the integration branch
 
-1. Under **Settings > Branches**, add a branch protection rule for `main`,
+1. In your browser, under the lab repository's **Settings > Branches**,
+   add a branch protection rule for `main`,
    or create an equivalent active branch ruleset.
-1. Require a PR before merging and **one approving review**. Enable dismissal
-   of stale approvals when new commits are pushed and require conversation
-   resolution where available.
+1. Enable **Require a pull request before merging**, but leave **Require
+   approvals** unchecked (or set required approvals to **0** in a ruleset).
+   Require conversation resolution where available. GitHub doesn't allow
+   authors to approve their own PRs, so this solo lab doesn't require an
+   approving review.
 1. Inspect the effective bypass settings. Apply the rule to administrators
    where supported and don't grant yourself a lab bypass.
-1. Keep **Copilot approvals disabled** for this exercise so the required
-   approval must come from your human reviewer. If an organization policy
-   prevents this, have the instructor provide a configuration that enforces
-   the separate human requirement; don't assume any approval is human.
-1. Don't require **Check page image** yet if it isn't selectable. You will
-   add that exact status check after the first PR run registers it.
 
 Custom instructions aren't branch protection. Copilot can read instructions
 from the PR's head branch, so an author could propose changing them too.
 Independently protected repository settings enforce the merge conditions.
 
-**Expected result:** A feature author can't legitimately merge their own work
-without independent approval. The setup commits aren't a model for bypassing
-rules during normal feature development.
+**Expected result:** Changes must go through a PR, but no second reviewer is
+needed. This lab doesn't configure automated status checks.
+This training configuration doesn't demonstrate independent team approval;
+follow your team's approval policies outside this personal lab repository.
 
 ## Task 4: Create the issue and feature branch
 
-1. Create an issue titled **Improve the collaboration page** with these
+1. In your browser, create an issue in your lab repository titled
+   **Improve the collaboration page** with these
    acceptance criteria:
 
    ```text
@@ -243,35 +187,44 @@ rules during normal feature development.
    - Give that informative image meaningful alternative text.
    - Keep the image within a narrow viewport without changing its aspect ratio.
    - Limit feature changes to index.html and styles.css.
-   - Obtain current validation and an independent human approval before merge.
+   - Preview the page locally and evaluate Copilot feedback before merge.
    ```
 
 1. Note the actual issue number. Don't assume it is `#1`.
-1. From current `main`, create a branch named **feature-fix**.
-1. In your approved Copilot Chat client, supply the public issue criteria and
+1. Return to VS Code's integrated terminal. Update local `main` and create
+   the feature branch:
+
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git switch -c feature-fix
+   ```
+
+   Confirm the VS Code branch indicator now shows **feature-fix**.
+1. In your Copilot Chat client, select **Ask Mode** and supply the public issue criteria and
    relevant HTML/CSS, then use this bounded prompt:
 
    ```text
    Explain a minimal HTML/CSS change for these acceptance criteria.
-   Identify what I should inspect manually and what a small automated check
-   can verify. Draft a concise commit message and PR description.
+   Identify what I should inspect in the source and verify in a local browser.
+   Propose a concise commit message and PR description.
    Don't edit files, commit, push, approve, or merge.
    State assumptions and keep the scope to index.html and styles.css.
    ```
 
 1. Compare the response with the actual files. Record an assumption you
-   verified or corrected. The response is a draft, not proof of the diff.
+   verified or corrected. The response is a proposal, not proof of the diff.
 
 **Expected result:** You have a feature branch, a linked requirement, and a
 bounded AI-assisted change plan. No AI action has authorized a repository write.
 
 ## Task 5: Publish an intentionally incomplete first revision
 
-This first revision deliberately omits one acceptance criterion so you can
-observe the difference between AI feedback and a deterministic failed check.
-Don't merge it or deploy it.
+This first revision deliberately omits meaningful image alternative text so
+you can practice reviewing and updating the same PR. Copilot may identify the
+omission, but its feedback isn't guaranteed. Don't merge this revision.
 
-1. On **feature-fix**, edit `index.html`. Replace only the content between
+1. In VS Code on **feature-fix**, edit `index.html`. Replace only the content between
    `<body>` and `</body>`, retaining those tags and the existing document head:
 
    ```html
@@ -316,19 +269,57 @@ Don't merge it or deploy it.
    }
    ```
 
-1. Inspect each diff and commit to the **existing feature-fix branch**, not
-   `main` or a second automatically created branch. Adapt the proposed commit
-   message so it describes what was actually changed.
-1. Create a non-draft PR with **base repository: your fork**, **base: main**,
-   and **compare: feature-fix**.
-1. Use the inspected PR description draft. Include **`Fixes #<issue-number>`**,
-   the test plan, and a note that the first revision intentionally leaves
-   the alternative-text criterion incomplete.
+1. Save both files. In the integrated terminal, stage and inspect the
+   changes, then commit and push the **existing feature-fix branch**:
+
+   ```bash
+   git add index.html styles.css
+   git --no-pager diff --cached
+   git commit -m "Improve collaboration page layout"
+   git push --set-upstream origin feature-fix
+   ```
+
+   Only the two intended HTML/CSS files should be staged. You can adapt the
+   proposed commit message to describe what was actually changed.
+1. In your browser, open your lab repository and select **Compare & pull
+   request** for **feature-fix** (or **Pull requests > New pull request**).
+   Confirm
+   **base repository: your lab repository**, **base: main**, and **compare: feature-fix**.
+1. On the **Open a pull request** page, enter a title such as
+   **Improve the collaboration page**. In the description box below it, adapt
+   Copilot's earlier proposal or paste this template:
+
+   ```text
+   ## Summary
+   Update the collaboration heading, paragraph, and responsive image styling.
+
+   Fixes #ISSUE_NUMBER
+
+   ## Manual verification plan (not yet completed)
+   - Inspect the HTML/CSS against the issue's acceptance criteria.
+   - Open index.html locally in a browser and resize the window.
+   - Confirm the image fits without distortion.
+
+   ## Known incomplete requirement
+   This first revision intentionally omits image alternative text.
+   It will be corrected in this PR after the initial Copilot review.
+   Do not merge yet.
+   ```
+
+   Replace **`ISSUE_NUMBER`** with the number of the issue you created in
+   Task 4. For example, use `Fixes #3` if your issue is number 3. This links
+   the PR to that issue and closes it automatically when the PR merges into
+   the default branch; it doesn't close the issue when you open the PR.
+   Keep the verification items as a plan, not a claim that testing is complete.
+1. Select **Create pull request** to publish it ready for review. This opens
+   the PR; it doesn't merge the changes or request Copilot review yet.
+   You'll request Copilot review in Task 6.
 1. Inspect **Files changed**. Only `index.html` and `styles.css` should be
    feature changes. Record the current head commit.
 
-**Expected result:** One PR contains the two intended file changes. Opening
-it doesn't merge it, and its **Check page image** validation should fail.
+**Expected result:** One PR contains the two intended file changes and is ready
+for Copilot review. Opening it doesn't merge it. The alternative-text
+acceptance criterion is intentionally incomplete.
 
 ## Task 6: Request native Copilot code review
 
@@ -338,34 +329,29 @@ it doesn't merge it, and its **Check page image** validation should fail.
 1. Wait for the review and inspect its completed review entry, comments, and
    any suggested changes.
 1. Record the revision reviewed and evaluate the feedback against the issue,
-   the actual diff, and the deterministic check.
+   the actual diff, and the repository review guidance.
 1. Add a short human-authored PR comment recording:
 
    | Observation | Decision | Evidence |
    |---|---|---|
    | One actionable Copilot suggestion, if present | Accept, revise, or reject | Link to the comment and the relevant code or requirement |
-   | One remaining verification task | Human check or automated check | Explain why AI feedback alone isn't enough |
+   | One remaining manual verification task | Source inspection or browser preview | Explain why AI feedback alone isn't enough |
 
    Copilot may find the missing alternative text, report another issue, or
    produce no actionable findings. Don't invent a comment or weaken the
    exercise to obtain a particular model response. If it finds nothing,
-   explicitly record that and use the failing check as the evidence to fix.
+   explicitly record that. The supplied first revision has no `alt` attribute;
+   compare it with the issue criteria and include the correction in Task 7
+   whether or not Copilot mentions it.
 
-1. Open the failed **Check page image** log. Confirm that the failure concerns
-   missing alternative text, not workflow setup or authentication.
-1. As the repository owner, update the `main` protection/ruleset to require
-   the registered **Check page image** status check. Select GitHub Actions as
-   the expected source if offered.
-1. Confirm merging is blocked while required validation fails and human
-   approval is missing. Don't click a bypass option.
-
-**Expected result:** You have native Copilot feedback, a deterministic failure,
-and protected merge requirements. None of those is interchangeable with the
-others.
+**Expected result:** Copilot has reviewed the PR, and you have evaluated its
+feedback against the requested change. Review comments are advisory; they
+don't prove that the page meets every requirement or prevent an incorrect merge.
 
 ## Task 7: Apply a reviewed correction and request fresh review
 
-1. Edit `index.html` on **feature-fix** and update the image to:
+1. Return to VS Code, confirm you're still on **feature-fix**, and edit
+   `index.html` to update the image to:
 
    ```html
    <img src="forkit.gif" id="octocat"
@@ -375,80 +361,84 @@ others.
    If applying a Copilot suggestion, inspect it first and ensure it preserves
    the supplied image and identifier. Don't accept unrelated changes.
 
-1. Commit to the same branch. Confirm the **existing PR** gains the new
-   commit and a fresh validation run, rather than a second PR being created.
-1. Verify **Check page image** passes for the updated PR revision.
-1. Manually inspect the image and text at the revised commit. For a local
-   visual check without deployment, download the feature branch as a ZIP
-   from **Code > Download ZIP**, extract it, and open `index.html` in a browser.
-   Resize the window and confirm the image fits without distortion.
-   Confirm the downloaded branch still matches the recorded PR head.
+1. Save the file, then commit and push to the same branch from the integrated
+   terminal:
+
+   ```bash
+   git add index.html
+   git --no-pager diff --cached
+   git commit -m "Add meaningful alternative text to collaboration image"
+   git push origin feature-fix
+   ```
+
+   In your browser, refresh the **existing PR**. It gains the new commit;
+   don't create a second PR.
+1. Open your local `index.html` in a browser to inspect the image and text
+   without deployment. Resize the window and confirm the image fits without
+   distortion. Run `git status --short` and `git rev-parse HEAD` in VS Code's
+   terminal to confirm there are no uncommitted changes and the local commit
+   matches the PR's latest commit.
 1. Check that the alternative text meaningfully describes the informative
    image. A non-empty string alone doesn't establish that.
 1. Use **Re-request review** beside Copilot in **Reviewers**. A new push doesn't
    guarantee automatic Copilot re-review unless that behavior is configured.
 1. Evaluate new feedback and resolve substantive conversations with evidence.
    Replying to a Copilot comment isn't a request for another model response.
-1. Ask your teammate/instructor to review the updated diff, check results, and
-   issue criteria, then approve using their own account.
-1. Confirm the human approval is current. If you make another commit, repeat
-   the relevant checks and obtain fresh approval under the configured policy.
+1. Confirm the updated diff meets the issue criteria and that you are ready
+   to merge. No approving review is required. If you make another commit,
+   repeat the relevant manual verification before merging.
 
-**Expected result:** The revised PR has current deterministic validation,
-evaluated AI feedback, manual verification, and independent human approval.
+**Expected result:** The same PR contains the correction, evaluated AI
+feedback, and your manual verification. You can proceed to merge
+without another person's approval.
 
 ## Task 8: Merge and preserve the contribution record
 
 1. Before merging, record the issue link, PR link, latest source commit,
-   validation run, Copilot review, and human approval.
+   and Copilot review.
 1. Select an allowed merge method and complete the merge without bypassing
    the rules. A squash merge can create a different commit on `main`; record
    that integrated commit too.
-1. Verify the updated HTML/CSS is on your fork's `main`. Confirm the linked
+1. Verify the updated HTML/CSS is on your lab repository's `main`. Confirm the linked
    issue closed; if not, check the closing keyword, repository, and issue
    number before closing it manually with the PR link.
-1. Delete **feature-fix** in your fork after confirming it contains no
+1. Delete **feature-fix** in your lab repository after confirming it contains no
    unmerged work.
-1. Confirm no new **PR validation** run was triggered solely by the merge.
-   This lab configures PR validation, not a post-merge `push` build.
 
 Summarize the transition in the PR:
 
 | Traditional task | Copilot assistance | Responsibility retained |
 |---|---|---|
 | Interpret a requirement and plan an edit | Explain context and propose a narrow change | Confirm acceptance criteria and scope |
-| Describe commits and a PR | Draft summaries | Verify summaries against actual changes |
+| Describe commits and a PR | Prepare summaries | Verify summaries against actual changes |
 | Perform a first-pass code review | Native PR findings and suggested changes | Validate feedback and decide which changes to accept |
-| Check and authorize integration | Help explain evidence | Deterministic checks and independent human approval |
+| Verify and authorize integration | Help identify review targets | Manual source inspection, browser preview, and the learner's merge decision |
 
 ## Troubleshooting
 
 | Symptom | Next action |
 |---|---|
-| Copilot isn't available as a reviewer | Confirm native code-review entitlement, policy, Actions availability, and repository settings with the instructor. A generated summary isn't an equivalent substitute. |
-| Copilot returns no actionable comments | Record that result. Fix the demonstrated deterministic failure and continue the human review; don't assume the code is correct. |
-| Required status check isn't selectable | Let the first PR run complete, then select its actual registered check name and source. Don't enter an invented name. |
-| Validation doesn't start | Check that the target is this fork's `main`, Actions is enabled, and the workflow exists. A push without a PR isn't a configured trigger. |
-| You can't approve your own PR | Expected. Use the invited independent reviewer, not a bypass or a second identity controlled to simulate independence. |
-| A new commit invalidates approval | Expected with stale-approval dismissal. Revalidate and request fresh review. |
+| Copilot isn't available as a reviewer | Confirm native code-review entitlement, policy, and repository settings with the instructor. A generated summary isn't an equivalent substitute. |
+| Copilot returns no actionable comments | Record that result. Compare the code with the issue criteria and correct the missing alternative text; don't assume the code is correct. |
+| Merging is blocked by a required approval | This solo lab requires no approvals. Check that the personal lab rule has approvals unchecked or set to 0. If an inherited policy requires approval, use an approved training repository rather than bypassing that policy. |
+| Copilot feedback refers to an earlier commit | Request another Copilot review of the updated PR and inspect the latest diff. |
 
 ## Clean up
 
-1. Save required issue, PR, review, and check links for assessment.
+1. Save required issue, PR, and review links for assessment.
 1. Close any remaining lab PRs/issues and delete completed feature branches
    only after checking that no work needs preserving.
-1. Remove a temporary collaborator if their access was granted only for this
-   exercise and your instructor approves.
-1. Optionally delete the exact **YOUR-OWNER/copilot-review-spoon-knife** fork
+1. Optionally delete the exact **YOUR-OWNER/copilot-review-spoon-knife** repository
    if it was created solely for the lab. Keep upstream and shared repositories
    intact. No Azure resource or PAT was created by this exercise.
-1. Delete a downloaded sample ZIP and extracted copy if no longer needed.
+1. Remove your local lab clone only if it is no longer needed and contains
+   no unpushed work.
 
 ## Review
 
 You extended the original Spoon-Knife GitHub flow rather than replacing it.
 Copilot helped interpret and review changes, while branches, inspected
-commits, current checks, and human approval retained control of integration.
+commits, manual verification, and your merge decision retained control of integration.
 
 Further reading:
 
