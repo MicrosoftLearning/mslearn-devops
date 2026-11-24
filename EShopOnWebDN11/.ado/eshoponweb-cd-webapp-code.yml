@@ -1,0 +1,76 @@
+#NAME THE PIPELINE SAME AS FILE (WITHOUT ".yml")
+
+trigger: none
+pr: none
+
+# Trigger CD when CI executed succesfully
+resources:
+  pipelines:
+    - pipeline: eshoponweb-ci
+      source: eshoponweb-ci # given pipeline name
+      trigger: true
+
+
+variables:
+  resource-group: 'AZ400-EWebShop-NAME'
+  location: 'centralus'
+  templateFile: 'webapp.bicep'
+  subscriptionid: 'YOUR-SUBSCRIPTION-ID'
+  azureserviceconnection: 'azure subs'
+  webappname: 'az400-webapp-NAME'
+  # webappname: 'webapp-windows-eshop'
+  
+
+stages:
+- stage: Deploy
+  displayName: Deploy to WebApp
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    #download artifacts
+    - download: eshoponweb-ci
+
+    - task: AzureCLI@2
+      displayName: Verify Linux App Service supports .NET 11
+      inputs:
+        azureSubscription: '$(azureserviceconnection)'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -euo pipefail
+          runtimes=$(az webapp list-runtimes --os linux -o tsv)
+          if ! grep -Fxq 'DOTNETCORE:11.0' <<< "$runtimes"; then
+            echo 'The .NET 11 built-in Linux App Service runtime is unavailable.' >&2
+            exit 1
+          fi
+  
+    # Deploy App Service Plan + App Service using Bicep
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: Deploy App Service Plan Bicep
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: '$(azureserviceconnection)'
+        subscriptionId: '$(subscriptionid)'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resource-group)'
+        location: '$(location)'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(Pipeline.Workspace)/eshoponweb-ci/Bicep/$(templateFile)'
+        overrideParameters: '-webAppName $(webappname) -location $(location)'
+        deploymentMode: 'Incremental'
+        deploymentOutputs: 'asp-json'
+    
+    #Publish Website to Azure WebApp
+    - task: AzureWebApp@1
+      displayName: Publish Website to WebApp
+      inputs:
+        azureSubscription: '$(azureserviceconnection)'
+        appType: 'webAppLinux'
+        appName: '$(webappname)'
+        runtimeStack: 'DOTNETCORE|11.0'
+        package: '$(Pipeline.Workspace)/eshoponweb-ci/Website/Web.zip'
+      
+
+    

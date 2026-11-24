@@ -1,0 +1,66 @@
+trigger: none
+
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+
+stages:
+- stage: Build
+  displayName: Build .Net Core Solution
+  jobs:
+  - job: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UseDotNet@2
+      displayName: Install .NET 11 SDK
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: 'restore'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        workingDirectory: '$(sampleRoot)'
+        feedsToUse: 'select'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: 'build'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        arguments: '--configuration Release --no-restore'
+        workingDirectory: '$(sampleRoot)'
+    
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: 'test'
+        projects: 'EShopOnWebDN11/tests/UnitTests/*.csproj'
+        arguments: '--configuration Release --no-build'
+        workingDirectory: '$(sampleRoot)'
+    
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'EShopOnWebDN11/src/Web/Web.csproj'
+        arguments: '--configuration Release --no-build -o $(Build.ArtifactStagingDirectory)/Website'
+        workingDirectory: '$(sampleRoot)'
+    
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Artifacts ADO - Website
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/Website'
+        artifact: 'Website'
+        publishLocation: 'pipeline'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Artifacts ADO - Bicep
+      inputs:
+        targetPath: '$(sampleRoot)/infra/webapp.bicep'
+        artifact: 'Bicep'
+        publishLocation: 'pipeline'

@@ -1,0 +1,43 @@
+name: EShopOnWebDN11 Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'EShopOnWebDN11/**'
+      - '.github/workflows/dotnetcore.yml'
+  pull_request:
+    paths:
+      - 'EShopOnWebDN11/**'
+      - '.github/workflows/dotnetcore.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: EShopOnWebDN11
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: EShopOnWebDN11/global.json
+
+      - name: Restore
+        run: dotnet restore eShopOnWeb.sln
+
+      - name: Build with dotnet
+        run: dotnet build eShopOnWeb.sln --configuration Release --no-restore
+
+      - name: Test with dotnet
+        run: dotnet test eShopOnWeb.sln --configuration Release --no-build
+
+      - name: Publish storefront
+        run: dotnet publish src/Web/Web.csproj --configuration Release --no-build -o artifacts/Website
