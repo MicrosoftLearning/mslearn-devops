@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+@inject Microsoft.Extensions.Options.IOptions<Microsoft.eShopWeb.Web.Services.ShopChatOptions> ShopChat
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -32,6 +33,10 @@
                         <a asp-area="" asp-page="/Index">
                             <img src="~/images/brand.png" alt="eShop On Web" />
                         </a>
+                        @if (ShopChat.Value.Enabled)
+                        {
+                            <p><a asp-page="/Chat">Ask the catalog assistant</a></p>
+                        }
                     </section>
                     <partial name="_LoginPartial" />
                 </article>

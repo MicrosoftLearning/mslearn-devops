@@ -1,0 +1,39 @@
+@page
+@model ChatModel
+@{
+    ViewData["Title"] = "Catalog assistant";
+}
+<link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+<main class="esh-chat container" id="catalog-chat" data-endpoint="@Url.Content("~/api/chat")"
+      data-max-messages="@Model.MaxMessages" data-max-history="@Model.MaxHistoryLength">
+    <div class="esh-chat-heading">
+        <div>
+            <h1>Ask the catalog assistant</h1>
+            <p>Explore and compare products in this sample store.</p>
+        </div>
+        <a asp-page="/Index">Back to catalog</a>
+    </div>
+    <p class="esh-chat-notice">AI answers can be inaccurate. Product cards show catalog prices.
+        Stock, shipping and returns information is not available in this sample.</p>
+    <div class="esh-chat-examples" aria-label="Example questions">
+        <button type="button" data-question="Which mugs are in the catalog?">Find a mug</button>
+        <button type="button" data-question="Which products cost less than 10?">Products under 10</button>
+        <button type="button" data-question="Compare the .NET Black &amp; White Mug and Cup&lt;T&gt; White Mug.">Compare mugs</button>
+    </div>
+    <div id="chat-messages" class="esh-chat-messages" role="log" aria-label="Conversation"></div>
+    <form id="chat-form" method="post">
+        @Html.AntiForgeryToken()
+        <label for="chat-question">Your catalog question</label>
+        <textarea id="chat-question" rows="3" maxlength="@Model.MaxQuestionLength" required
+                  placeholder="Ask about product names, descriptions, brands or prices..."></textarea>
+        <div class="esh-chat-actions">
+            <button type="submit" id="chat-send">Send</button>
+            <button type="button" id="chat-stop" hidden>Stop response</button>
+            <button type="button" id="chat-reset">New chat</button>
+            <span id="chat-status" role="status" aria-live="polite"></span>
+        </div>
+    </form>
+</main>
+@section scripts {
+    <script src="~/js/catalog-chat.js" asp-append-version="true" defer></script>
+}

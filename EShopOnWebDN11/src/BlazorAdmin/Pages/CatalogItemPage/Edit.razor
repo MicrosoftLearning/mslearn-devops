@@ -135,7 +135,7 @@
     {
         Logger.LogInformation("Now loading... /Catalog/Edit/{Id}", id);
 
-        await new Css(JSRuntime).HideBodyOverflow();
+        await new Css(JSRuntime, Logger).HideBodyOverflow();
 
         _item = await CatalogItemService.GetById(id);
 
@@ -148,7 +148,7 @@
 
     private async Task Close()
     {
-        await new Css(JSRuntime).ShowBodyOverflow();
+        await new Css(JSRuntime, Logger).ShowBodyOverflow();
 
         _modalDisplay = "none";
         _modalClass = "";

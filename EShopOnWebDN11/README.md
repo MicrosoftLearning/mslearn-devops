@@ -46,6 +46,108 @@ stores. This mode is for isolated training only. For SQL Server, override
 connection strings outside source control, and apply the EF migrations below.
 Production configuration retains the upstream Azure SQL/Key Vault route.
 
+## Catalog chat: local application layer
+
+The optional catalog assistant is integrated into the storefront at `/Chat`.
+It uses the storefront's current in-memory catalog, not the separate admin API
+database. No additional database, search index, embeddings, or conversation
+store is required. It supports read-only product questions and comparisons;
+stock, delivery, returns, orders, and payments are outside its scope.
+
+Application structure:
+
+- [Web](src/Web): Razor chat UI, same-origin antiforgery-protected endpoint,
+  fresh catalog context, streaming proxy, and authoritative product cards.
+- [ChatApi](src/ChatApi): separate .NET 11 backend that calls an existing
+  Foundry GPT deployment using the OpenAI-compatible v1 HTTP API and
+  `Azure.Identity`. The .NET SSE parser handles streamed responses. This avoids
+  the retired Azure AI Inference SDK and preview authentication-warning
+  suppressions.
+- [ChatShared](src/ChatShared): typed HTTP contracts, request limits, streaming
+  protocol, and product-reference validation.
+
+The model receives only names, descriptions, brands, types, IDs, and prices.
+Product-card images, links, and prices are built by Web from catalog data.
+Unknown product references, interrupted responses, and backend errors fail
+explicitly; the app does not substitute simulated AI answers. Product text and
+conversation history are treated as untrusted input. AI text can still be
+inaccurate; the UI displays this limitation.
+
+### Configure and run
+
+Use an **existing** Foundry GPT deployment. Local configuration stays outside
+source control, in .NET user secrets or environment variables. Do not put API
+keys, tokens, or passwords in application settings. From the sample folder:
+
+```powershell
+azd auth login
+dotnet user-secrets set "Foundry:Endpoint" "https://YOUR-RESOURCE.openai.azure.com/openai/v1/" --project .\src\ChatApi\ChatApi.csproj
+dotnet user-secrets set "Foundry:DeploymentName" "YOUR-DEPLOYMENT-NAME" --project .\src\ChatApi\ChatApi.csproj
+dotnet user-secrets set "ShopChat:Enabled" "true" --project .\src\Web\Web.csproj
+```
+
+`Foundry:Endpoint` also accepts the project endpoint in the form
+`https://YOUR-RESOURCE.services.ai.azure.com/api/projects/YOUR-PROJECT`.
+The client uses the same resource host with `/openai/v1/chat/completions`.
+The deployment name must match the Azure deployment, not just its model family.
+Your signed-in identity needs permission to invoke that deployed model.
+
+If your sign-in's default tenant differs from the resource's tenant, set the
+target explicitly and sign in to that tenant:
+
+```powershell
+azd auth login --tenant-id "TARGET-TENANT-GUID"
+dotnet user-secrets set "Foundry:TenantId" "TARGET-TENANT-GUID" --project .\src\ChatApi\ChatApi.csproj
+```
+
+Alternatively, select `Foundry:Credential` = `AzureCli` and use `az login` for
+the target tenant. `AzureDeveloperCli` is the default; credential failures do
+not silently switch providers. Environment-variable equivalents include
+`Foundry__Endpoint`, `Foundry__DeploymentName`, `Foundry__TenantId`, and
+`ShopChat__Enabled`.
+Restart the relevant application after changing its settings.
+
+After building the solution, run these in two terminals:
+
+```powershell
+dotnet run --project .\src\ChatApi\ChatApi.csproj --configuration Release --no-build --launch-profile ChatApi
+```
+
+```powershell
+dotnet run --project .\src\Web\Web.csproj --configuration Release --no-build --launch-profile Web
+```
+
+Browse to `https://localhost:5001/Chat`, or follow **Ask the catalog assistant**
+from the storefront. ChatApi listens at `http://localhost:5100/`; its `/health`
+endpoint checks application readiness, not live model access. PublicApi is
+needed only if you also want to use the existing Blazor admin.
+
+Try **Find a mug**, **Products under 10**, **Compare mugs**, and follow-up
+questions. Conversations are held only in the page and reset on reload or
+**New chat**. The request contains at most 11 alternating messages and 24,000
+history characters; questions are limited to 1,000 characters. Each application
+allows 12 chat requests per minute, with a 90-second request timeout and a
+2,048-token model completion budget. The catalog context is limited to 50
+products and 32,000 characters; exceeding these bounds fails explicitly.
+
+Chat is disabled by default, so existing storefront deployments still work
+without Foundry. To disable it locally, set `ShopChat:Enabled` to `false`.
+This application-layer prototype intentionally allows only loopback ChatApi
+connections and Development hosting. **Do not expose ChatApi publicly.**
+Authenticated Azure hosting, Bicep, pipelines, and lab rewrites remain separate
+work and have not been implemented for chat.
+
+### Chat validation
+
+The solution tests include isolated Web-to-ChatApi integration tests with a
+mocked Foundry HTTP transport, plus product-reference tests. These tests make
+no Azure calls. Frontend stream/history tests use Node's built-in test runner;
+no npm packages are needed:
+
+```powershell
+node --test .\tests\JavaScript\catalog-chat.test.cjs
+```
+
 ## Course build and deployment definitions
 
 These definitions expect the **mslearn-devops repository root** to contain
@@ -109,21 +211,34 @@ Container images and azd runtime settings in this copy target .NET 11.
   GHSA-rvv3-g6hj-g44x, GHSA-gpwp-5797-mjff, and GHSA-6vhm-j9h7-f9gh without
   introducing a new mapping-library license. The catalog endpoints now use
   explicit DTO construction, preserving all fields and picture-URI composition.
+- Blazor interop helpers log and propagate JavaScript failures and use void
+  calls where JavaScript returns no value. Login redirects use framework
+  navigation; the layout relies on the existing cascading authentication
+  views rather than polling authentication state. Catalog reload callbacks
+  rely on Blazor's automatic event rendering.
 
 ## Validation
 
 Validated locally with SDK `11.0.100` on Windows ARM64:
 
-- Release solution build and all 78 tests (44 unit, 3 repository, 13 functional,
+- Release solution build and all 100 .NET tests (54 unit, 3 repository, 25 functional,
   and 18 API integration tests).
-- Storefront/API publish, plus framework-dependent Linux x64 storefront publish.
+- All 4 frontend tests: multi-chunk streaming, interrupted responses, cancellation,
+  and conversation/reset behavior.
+- Live local Web/ChatApi against an existing Foundry `gpt-5.4-mini` deployment:
+  catalog listing, all four products priced below 10, mug comparison, follow-up
+  context, missing stock/shipping information, and unrelated-question redirection.
+  Browser checks also covered product images, Stop/New chat, and mobile layout.
+- Storefront/PublicApi/ChatApi publish, plus framework-dependent Linux x64 storefront publish.
+- Published Web and ChatApi processes completed a live Foundry request and returned
+  the correct mug and authoritative price below 10.
 - Published HTTPS storefront and API, login, authorized catalog create/delete,
   static assets, and healthy application health checks.
 - Browser login and Blazor admin catalog loading.
 - YAML syntax/parent-repository build paths and compilation of the updated
   App Service and azd Bicep templates.
 - A fresh Release restore and direct/transitive NuGet vulnerability audit of
-  all 10 managed projects reported zero known vulnerable packages after
+  all 12 managed projects reported zero known vulnerable packages after
   AutoMapper removal. Vulnerability warnings were not suppressed.
 
 ### Repeat dependency security validation

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace BlazorAdmin.JavaScript;
@@ -6,19 +7,37 @@ namespace BlazorAdmin.JavaScript;
 public class Css
 {
     private readonly IJSRuntime _jsRuntime;
+    private readonly ILogger _logger;
 
-    public Css(IJSRuntime jsRuntime)
+    public Css(IJSRuntime jsRuntime, ILogger logger)
     {
         _jsRuntime = jsRuntime;
+        _logger = logger;
     }
 
     public async Task ShowBodyOverflow()
     {
-        await _jsRuntime.InvokeAsync<string>(JSInteropConstants.ShowBodyOverflow);
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(JSInteropConstants.ShowBodyOverflow);
+        }
+        catch (JSException exception)
+        {
+            _logger.LogError(exception, "Unable to restore body scrolling.");
+            throw;
+        }
     }
 
-    public async Task<string> HideBodyOverflow()
+    public async Task HideBodyOverflow()
     {
-        return await _jsRuntime.InvokeAsync<string>(JSInteropConstants.HideBodyOverflow);
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(JSInteropConstants.HideBodyOverflow);
+        }
+        catch (JSException exception)
+        {
+            _logger.LogError(exception, "Unable to disable body scrolling.");
+            throw;
+        }
     }
 }

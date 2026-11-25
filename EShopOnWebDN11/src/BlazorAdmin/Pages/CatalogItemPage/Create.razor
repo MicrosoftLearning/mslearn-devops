@@ -137,7 +137,7 @@
     
         Logger.LogInformation("Now loading... /Catalog/Create");
 
-        await new Css(JSRuntime).HideBodyOverflow();
+        await new Css(JSRuntime, Logger).HideBodyOverflow();
 
         _item = new CreateCatalogItemRequest
         {
@@ -154,7 +154,7 @@
 
     private async Task Close()
     {
-        await new Css(JSRuntime).ShowBodyOverflow();
+        await new Css(JSRuntime, Logger).ShowBodyOverflow();
         _modalDisplay = "none";
         _modalClass = "";
         _showCreateModal = false;
