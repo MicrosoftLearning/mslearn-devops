@@ -6,6 +6,7 @@ public sealed class FoundryOptions
     public string DeploymentName { get; set; } = "";
     public string Credential { get; set; } = "AzureDeveloperCli";
     public string? TenantId { get; set; }
+    public string? ManagedIdentityClientId { get; set; }
 
     public bool HasValidEndpoint()
     {

@@ -7,6 +7,9 @@ resources:
     - repository: self
       trigger: none
 
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+
 stages:
 - stage: Build
   displayName: Build .Net Core Solution
@@ -18,35 +21,42 @@ stages:
     
     - checkout: self
       fetchDepth: 0
+    - task: UseDotNet@2
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
     - task: DotNetCoreCLI@2
       displayName: Restore
       inputs:
         command: 'restore'
-        projects: '**/*.sln'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
         feedsToUse: 'select'
 
-    - task: SonarCloudPrepare@1
+    - task: SonarCloudPrepare@4
       inputs:
         SonarCloud: 'SonarSC'
         organization: 'Your Sonarcloud org'
-        scannerMode: 'MSBuild'
+        scannerMode: 'dotnet'
         projectKey: 'your sonarcloud project key'
         projectName: 'your sonarcloud project name'
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
         command: 'build'
-        projects: '**/*.sln'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        arguments: '--configuration Release --no-restore'
     
     - task: DotNetCoreCLI@2
       displayName: Test
       inputs:
         command: 'test'
-        projects: 'tests/UnitTests/*.csproj'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        arguments: '--configuration Release --no-build'
     
-    - task: SonarCloudAnalyze@1
+    - task: SonarCloudAnalyze@4
     
-    - task: SonarCloudPublish@1
+    - task: SonarCloudPublish@4
       inputs:
         pollingTimeoutSec: '300'
     
@@ -54,8 +64,11 @@ stages:
       displayName: Publish
       inputs:
         command: 'publish'
-        publishWebProjects: true
-        arguments: '-o $(Build.ArtifactStagingDirectory)'
+        publishWebProjects: false
+        projects: |
+          EShopOnWebDN11/src/Web/Web.csproj
+          EShopOnWebDN11/src/ChatApi/ChatApi.csproj
+        arguments: '--configuration Release --no-build -o $(Build.ArtifactStagingDirectory)'
     
     - task: PublishBuildArtifacts@1
       displayName: Publish Artifacts ADO - Website

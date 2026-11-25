@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.eShopWeb.ChatShared;
@@ -99,7 +100,8 @@ public sealed class ShopChatController : ControllerBase
             _logger.LogWarning(ex, "The catalog assistant timed out.");
             return await ReportFailureAsync("The catalog assistant timed out. Please try again.");
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Text.Json.JsonException)
+        catch (Exception ex) when (ex is HttpRequestException or IOException or System.Text.Json.JsonException
+            or AuthenticationFailedException or CredentialUnavailableException)
         {
             _logger.LogError(ex, "The catalog assistant could not complete a response.");
             return await ReportFailureAsync("The catalog assistant is unavailable. Please try again.");

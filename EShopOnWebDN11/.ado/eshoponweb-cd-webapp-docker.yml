@@ -1,11 +1,17 @@
 #NAME THE PIPELINE SAME AS FILE (WITHOUT ".yml")
 
 resources:
+  pipelines:
+    - pipeline: webImage
+      source: eshoponweb-ci-docker
+      trigger: true
   repositories:
     - repository: self
       trigger: none
 
 variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+  imageTag: '$(resources.pipeline.webImage.runID)'
   azureServiceConnection: 'azure subs'
   resourceGroup: 'rg-az400-container-NAME'
   location: 'centralus'
@@ -28,7 +34,8 @@ stages:
         resourceGroupName: '$(resourceGroup)'
         location: '$(location)'
         templateLocation: 'Linked artifact'
-        csmFile: 'infra/webapp-docker.bicep'
+        csmFile: '$(sampleRoot)/infra/webapp-docker.bicep'
+        overrideParameters: '-imageTag "$(imageTag)"'
         deploymentMode: 'Incremental'
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: Add Role Assignment using Bicep
@@ -40,5 +47,5 @@ stages:
         resourceGroupName: '$(resourceGroup)'
         location: '$(location)'
         templateLocation: 'Linked artifact'
-        csmFile: 'infra/webapp-to-acr-roleassignment.bicep'
+        csmFile: '$(sampleRoot)/infra/webapp-to-acr-roleassignment.bicep'
         deploymentMode: 'Incremental'

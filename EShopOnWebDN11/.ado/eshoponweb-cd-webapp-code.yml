@@ -40,8 +40,8 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           set -euo pipefail
-          runtimes=$(az webapp list-runtimes --os linux -o tsv)
-          if ! grep -Fxq 'DOTNETCORE:11.0' <<< "$runtimes"; then
+          runtimes=$(az webapp list-runtimes --os linux -o json | jq -r '.[] | if type == "string" then . else .config end')
+          if ! grep -Eixq '(DOTNETCORE:11\.0|dotnet:11)' <<< "$runtimes"; then
             echo 'The .NET 11 built-in Linux App Service runtime is unavailable.' >&2
             exit 1
           fi
@@ -69,7 +69,6 @@ stages:
         azureSubscription: '$(azureserviceconnection)'
         appType: 'webAppLinux'
         appName: '$(webappname)'
-        runtimeStack: 'DOTNETCORE|11.0'
         package: '$(Pipeline.Workspace)/eshoponweb-ci/Website/Web.zip'
       
 

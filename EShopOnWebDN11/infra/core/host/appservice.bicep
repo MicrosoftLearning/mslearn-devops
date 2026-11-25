@@ -13,7 +13,7 @@ param managedIdentity bool = !empty(keyVaultName)
   'dotnet', 'dotnetcore', 'dotnet-isolated', 'node', 'python', 'java', 'powershell', 'custom'
 ])
 param runtimeName string
-param runtimeNameAndVersion string = '${runtimeName}|${runtimeVersion}'
+param runtimeNameAndVersion string = '${toUpper(runtimeName)}|${runtimeVersion}'
 param runtimeVersion string
 
 // Microsoft.Web/sites Properties
@@ -70,8 +70,8 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         SCM_DO_BUILD_DURING_DEPLOYMENT: string(scmDoBuildDuringDeployment)
         ENABLE_ORYX_BUILD: string(enableOryxBuild)
       },
-      !empty(applicationInsightsName) ? { APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString } : {},
-      !empty(keyVaultName) ? { AZURE_KEY_VAULT_ENDPOINT: keyVault.properties.vaultUri } : {})
+      !empty(applicationInsightsName) ? { APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights!.properties.ConnectionString } : {},
+      !empty(keyVaultName) ? { AZURE_KEY_VAULT_ENDPOINT: keyVault!.properties.vaultUri } : {})
   }
 
   resource configLogs 'config' = {
@@ -96,6 +96,6 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
   name: applicationInsightsName
 }
 
-output identityPrincipalId string = managedIdentity ? appService.identity.principalId : ''
+output identityPrincipalId string = managedIdentity ? appService.identity!.principalId : ''
 output name string = appService.name
 output uri string = 'https://${appService.properties.defaultHostName}'

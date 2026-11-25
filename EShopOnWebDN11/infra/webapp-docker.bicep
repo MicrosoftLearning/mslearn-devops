@@ -1,8 +1,11 @@
 @description('Generate a Suffix based on the Resource Group ID')
+@minLength(3)
+@maxLength(48)
 param suffix string = uniqueString(resourceGroup().id)
 
 @description('Use the Resource Group Location')
 param location string = resourceGroup().location
+param imageTag string = 'latest'
 
 resource acr 'Microsoft.ContainerRegistry/registries@2021-09-01' existing = {
   name: 'cr${suffix}'
@@ -38,10 +41,14 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'ASPNETCORE_HTTP_PORTS'
-          value: '80'
+          value: '8080'
+        }
+        {
+          name: 'WEBSITES_PORT'
+          value: '8080'
         }
       ]
-      linuxFxVersion: 'DOCKER|${acr.properties.loginServer}/eshoponweb/web:latest'
+      linuxFxVersion: 'DOCKER|${acr.properties.loginServer}/eshoponweb/web:${imageTag}'
     }
     serverFarmId: appServicePlan.id
   }

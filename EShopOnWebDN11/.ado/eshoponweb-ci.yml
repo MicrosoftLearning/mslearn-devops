@@ -38,10 +38,17 @@ stages:
       displayName: Test
       inputs:
         command: 'test'
-        projects: 'EShopOnWebDN11/tests/UnitTests/*.csproj'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
         arguments: '--configuration Release --no-build'
         workingDirectory: '$(sampleRoot)'
-    
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+    - script: node --test tests/JavaScript/catalog-chat.test.cjs
+      workingDirectory: '$(sampleRoot)'
+      displayName: Test chat frontend
+
     - task: DotNetCoreCLI@2
       displayName: Publish
       inputs:
@@ -61,6 +68,19 @@ stages:
     - task: PublishPipelineArtifact@1
       displayName: Publish Artifacts ADO - Bicep
       inputs:
-        targetPath: '$(sampleRoot)/infra/webapp.bicep'
+        targetPath: '$(sampleRoot)/infra'
         artifact: 'Bicep'
         publishLocation: 'pipeline'
+
+    - task: DotNetCoreCLI@2
+      displayName: Publish ChatApi
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: 'EShopOnWebDN11/src/ChatApi/ChatApi.csproj'
+        arguments: '--configuration Release --no-build -o $(Build.ArtifactStagingDirectory)/ChatApi'
+        workingDirectory: '$(sampleRoot)'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/ChatApi'
+        artifact: ChatApi

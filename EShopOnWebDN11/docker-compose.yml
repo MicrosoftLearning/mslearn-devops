@@ -1,16 +1,20 @@
 services:
   eshopwebmvc:
-    image: ${DOCKER_REGISTRY-}eshopwebmvc
+    image: ${DOCKER_REGISTRY-}eshopwebmvc:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: src/Web/Dockerfile
+      args:
+        NUGET_SOURCE: ${NUGET_SOURCE:-https://api.nuget.org/v3/index.json}
     depends_on:
       - "sqlserver"
   eshoppublicapi:
-    image: ${DOCKER_REGISTRY-}eshoppublicapi
+    image: ${DOCKER_REGISTRY-}eshoppublicapi:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: src/PublicApi/Dockerfile
+      args:
+        NUGET_SOURCE: ${NUGET_SOURCE:-https://api.nuget.org/v3/index.json}
     depends_on:
       - "sqlserver"
   sqlserver:

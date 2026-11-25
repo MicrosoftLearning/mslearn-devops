@@ -2,22 +2,23 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:11.0 AS build
+ARG NUGET_SOURCE=https://api.nuget.org/v3/index.json
 WORKDIR /app
 COPY . .
 #COPY ["src/PublicApi/PublicApi.csproj", "./PublicApi/"]
 #RUN dotnet restore "./PublicApi/PublicApi.csproj"
 #COPY . .
 WORKDIR "/app/src/PublicApi"
-RUN dotnet restore
+RUN dotnet restore --source "$NUGET_SOURCE" -p:Configuration=Release
 
-RUN dotnet build "./PublicApi.csproj" -c Release -o /app/build
+RUN dotnet build "./PublicApi.csproj" -c Release --no-restore -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "./PublicApi.csproj" -c Release -o /app/publish
+RUN dotnet publish "./PublicApi.csproj" -c Release --no-restore -p:UseAppHost=false -o /app/publish
 
 FROM base AS final
 WORKDIR /app

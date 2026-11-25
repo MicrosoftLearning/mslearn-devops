@@ -3,7 +3,11 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Azure.Core;
+using Azure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -20,6 +24,9 @@ using Microsoft.eShopWeb.Web.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace Microsoft.eShopWeb.FunctionalTests.Web.Chat;
@@ -27,6 +34,67 @@ namespace Microsoft.eShopWeb.FunctionalTests.Web.Chat;
 [Collection("Sequential")]
 public class CatalogChatTests
 {
+    private const string Tenant = "11111111-1111-1111-1111-111111111111";
+    private const string ApiClient = "22222222-2222-2222-2222-222222222222";
+    private const string WebClient = "33333333-3333-3333-3333-333333333333";
+    private static readonly SymmetricSecurityKey TestSigningKey = new(Encoding.UTF8.GetBytes(
+        "Only-for-isolated-tests-not-an-Entra-or-production-signing-key-12345"));
+
+    [Theory]
+    [InlineData(null, ApiClient, false, false, HttpStatusCode.Unauthorized)]
+    [InlineData(WebClient, ApiClient, false, false, HttpStatusCode.OK)]
+    [InlineData(ApiClient, ApiClient, false, false, HttpStatusCode.Forbidden)]
+    [InlineData(WebClient, WebClient, false, false, HttpStatusCode.Unauthorized)]
+    [InlineData(WebClient, ApiClient, true, false, HttpStatusCode.Forbidden)]
+    [InlineData(WebClient, ApiClient, false, true, HttpStatusCode.Unauthorized)]
+    public async Task HostedChatRequiresTheStorefrontAppOnlyToken(
+        string? caller, string audience, bool delegated, bool wrongTenant, HttpStatusCode expected)
+    {
+        using var foundry = new FoundryHandler();
+        using var api = CreateApi(foundry, authenticated: true);
+        using var client = api.CreateClient();
+        using var health = await client.GetAsync("/health");
+        health.EnsureSuccessStatusCode();
+        if (caller is not null)
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer", CreateToken(caller, audience, delegated, wrongTenant));
+        }
+        using var response = await client.PostAsJsonAsync("/chat", new GroundedChatRequest(
+            [new("user", "Show mugs.")],
+            [new(2, "Mug", "A mug", 8.5m, ".NET", "Mug", 2, 1, "/images/products/2.png")]));
+        Assert.Equal(expected, response.StatusCode);
+        Assert.Equal(expected == HttpStatusCode.OK ? 1 : 0, foundry.CallCount);
+    }
+
+    [Theory]
+    [InlineData(false, HttpStatusCode.OK)]
+    [InlineData(true, HttpStatusCode.ServiceUnavailable)]
+    public async Task HostedStorefrontUsesItsIdentityAndReportsCredentialFailures(bool credentialFails, HttpStatusCode expected)
+    {
+        using var foundry = new FoundryHandler();
+        using var api = CreateApi(foundry, authenticated: true);
+        using var web = CreateWeb(api, authenticated: true, credentialFails: credentialFails);
+        using var client = CreateClient(web);
+        using var response = await AskAsync(client, """{"messages":[{"role":"user","content":"Show mugs."}]}""");
+        Assert.Equal(expected, response.StatusCode);
+        Assert.Equal(expected == HttpStatusCode.OK ? 1 : 0, foundry.CallCount);
+        if (credentialFails)
+            Assert.Contains("unavailable", await response.Content.ReadAsStringAsync());
+        else
+            Assert.Contains(await ReadEventsAsync(response), e => e.Type == "completed");
+    }
+
+    [Theory]
+    [InlineData("https://chat.example.com/", "", false)]
+    [InlineData("http://chat.example.com/", "api://22222222-2222-2222-2222-222222222222/.default", false)]
+    [InlineData("https://chat.example.com/", "api://22222222-2222-2222-2222-222222222222/.default", true)]
+    [InlineData("http://localhost:5100/", "", true)]
+    public void RemoteChatRequiresHttpsAndItsDedicatedApiScope(string url, string scope, bool valid)
+    {
+        Assert.Equal(valid, new ShopChatOptions { BaseUrl = url, AuthenticationScope = scope }.HasValidBaseUrl());
+    }
+
     [Fact]
     public async Task StreamsCurrentStorefrontCatalogAndAuthoritativeProductCards()
     {
@@ -164,35 +232,60 @@ public class CatalogChatTests
         Assert.Equal(HttpStatusCode.NotFound, chat.StatusCode);
     }
 
-    private static WebApplicationFactory<CatalogChatController> CreateApi(FoundryHandler handler)
+    private static WebApplicationFactory<CatalogChatController> CreateApi(FoundryHandler handler, bool authenticated = false)
     {
         return new WebApplicationFactory<CatalogChatController>().WithWebHostBuilder(builder =>
         {
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment(authenticated ? "Production" : "Development");
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
                     ["Foundry:Endpoint"] = "https://test.services.ai.azure.com/api/projects/test",
-                    ["Foundry:DeploymentName"] = "test-deployment"
+                    ["Foundry:DeploymentName"] = "test-deployment",
+                    ["Foundry:Credential"] = authenticated ? "ManagedIdentity" : "AzureDeveloperCli",
+                    ["Authentication:Enabled"] = authenticated.ToString(),
+                    ["Authentication:TenantId"] = Tenant,
+                    ["Authentication:ClientId"] = ApiClient,
+                    ["Authentication:AllowedClientId"] = WebClient,
+                    ["AllowedHosts"] = authenticated ? "*" : "localhost"
                 }));
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<TokenCredential>();
                 services.AddSingleton<TokenCredential>(new TestCredential());
                 services.AddHttpClient<FoundryChatClient>().ConfigurePrimaryHttpMessageHandler(() => handler);
+                if (authenticated)
+                {
+                    services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+                    {
+                        var configuration = new OpenIdConnectConfiguration
+                        {
+                            Issuer = $"https://login.microsoftonline.com/{Tenant}/v2.0"
+                        };
+                        configuration.SigningKeys.Add(TestSigningKey);
+                        options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
+                    });
+                }
             });
         });
     }
 
     private static WebApplicationFactory<IBasketViewModelService> CreateWeb(
-        WebApplicationFactory<CatalogChatController>? api = null)
+        WebApplicationFactory<CatalogChatController>? api = null, bool authenticated = false, bool credentialFails = false)
     {
         var database = Guid.NewGuid().ToString();
         return new WebApplicationFactory<IBasketViewModelService>().WithWebHostBuilder(builder =>
         {
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment(authenticated ? "Production" : "Development");
+            builder.UseSetting("UseOnlyInMemoryDatabase", "true");
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-                new Dictionary<string, string?> { ["ShopChat:Enabled"] = (api is not null).ToString() }));
+                new Dictionary<string, string?>
+                {
+                    ["ShopChat:Enabled"] = (api is not null).ToString(),
+                    ["ShopChat:BaseUrl"] = authenticated ? "https://chat.example.com/" : "http://localhost:5100/",
+                    ["ShopChat:AuthenticationScope"] = authenticated ? $"api://{ApiClient}/.default" : "",
+                    ["UseOnlyInMemoryDatabase"] = "true"
+                }));
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<DbContextOptions<CatalogContext>>();
@@ -202,9 +295,34 @@ public class CatalogChatTests
                 if (api is not null)
                 {
                     services.AddHttpClient<ShopChatService>().ConfigurePrimaryHttpMessageHandler(api.Server.CreateHandler);
+                    if (authenticated)
+                        services.AddKeyedSingleton<TokenCredential>("catalog-chat", new StorefrontCredential(credentialFails));
                 }
             });
         });
+    }
+
+    private static string CreateToken(string caller, string audience, bool delegated = false, bool wrongTenant = false)
+    {
+        var claims = new List<Claim> { new("azp", caller) };
+        if (delegated) claims.Add(new Claim("scp", "chat"));
+        var token = new JwtSecurityToken(
+            $"https://login.microsoftonline.com/{(wrongTenant ? ApiClient : Tenant)}/v2.0", audience, claims,
+            expires: DateTime.UtcNow.AddMinutes(5),
+            signingCredentials: new SigningCredentials(TestSigningKey, SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private sealed class StorefrontCredential(bool fails) : TokenCredential
+    {
+        public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            Assert.Equal([$"api://{ApiClient}/.default"], requestContext.Scopes);
+            if (fails) throw new AuthenticationFailedException("Simulated managed identity failure.");
+            return new AccessToken(CreateToken(WebClient, ApiClient), DateTimeOffset.UtcNow.AddMinutes(5));
+        }
+        public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken) =>
+            ValueTask.FromResult(GetToken(requestContext, cancellationToken));
     }
 
     private static HttpClient CreateClient(WebApplicationFactory<IBasketViewModelService> web)

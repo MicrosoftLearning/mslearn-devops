@@ -28,7 +28,8 @@ builder.Logging.AddConsole();
 
 builder.Configuration.AddEnvironmentVariables();
 
-if (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Docker")
+if (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Docker" ||
+    builder.Configuration.GetValue<bool>("UseOnlyInMemoryDatabase"))
 {
     // Configure SQL Server (local)
     Microsoft.eShopWeb.Infrastructure.Dependencies.ConfigureServices(builder.Configuration, builder.Services);
@@ -170,6 +171,7 @@ builder.Services.AddBlazorServices();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
+app.MapGet("/health/live", () => Results.Ok(new { status = "Healthy" }));
 
 if (useAppConfig)
 {

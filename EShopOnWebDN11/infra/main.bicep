@@ -53,8 +53,9 @@ module web './core/host/appservice.bicep' = {
     location: location
     appServicePlanId: appServicePlan.outputs.id
     keyVaultName: keyVault.outputs.name
-    runtimeName: 'dotnetcore'
-    runtimeVersion: '11.0'
+    runtimeName: 'dotnet'
+    runtimeVersion: '11'
+    appCommandLine: 'dotnet Web.dll'
     tags: union(tags, { 'azd-service-name': 'web' })
     appSettings: {
       AZURE_SQL_CATALOG_CONNECTION_STRING_KEY: 'AZURE-SQL-CATALOG-CONNECTION-STRING'

@@ -7,6 +7,9 @@ resources:
     - repository: self
       trigger: none
   
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+
 stages:
 - stage: Build
   displayName: Build .Net Core Solution
@@ -15,35 +18,45 @@ stages:
     pool:
       vmImage: ubuntu-latest
     steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
     - task: DotNetCoreCLI@2
       displayName: Restore
       inputs:
         command: 'restore'
-        projects: '**/*.sln'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
         feedsToUse: 'select'
 
     - task: DotNetCoreCLI@2
       displayName: Build
       inputs:
         command: 'build'
-        projects: '**/*.sln'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        arguments: '--configuration Release --no-restore'
     
     - task: DotNetCoreCLI@2
       displayName: Test
       inputs:
         command: 'test'
-        projects: 'tests/UnitTests/*.csproj'
+        projects: 'EShopOnWebDN11/eShopOnWeb.sln'
+        arguments: '--configuration Release --no-build'
     
     - task: WhiteSource@21
       inputs:
-        cwd: '$(System.DefaultWorkingDirectory)'
-        projectName: 'eShopOnWeb'
+        cwd: '$(sampleRoot)'
+        projectName: 'eShopOnWebDN11'
     - task: DotNetCoreCLI@2
       displayName: Publish
       inputs:
         command: 'publish'
-        publishWebProjects: true
-        arguments: '-o $(Build.ArtifactStagingDirectory)'
+        publishWebProjects: false
+        projects: |
+          EShopOnWebDN11/src/Web/Web.csproj
+          EShopOnWebDN11/src/ChatApi/ChatApi.csproj
+        arguments: '--configuration Release --no-build -o $(Build.ArtifactStagingDirectory)'
     
     - task: PublishBuildArtifacts@1
       displayName: Publish Artifacts ADO - Website

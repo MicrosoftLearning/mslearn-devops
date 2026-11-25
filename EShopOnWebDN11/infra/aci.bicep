@@ -8,7 +8,7 @@ param location string = resourceGroup().location
 param image string = 'mcr.microsoft.com/azuredocs/aci-helloworld'
 
 @description('Port to open on the container and the public IP address.')
-param port int = 5106
+param port int = 8080
 
 @description('The number of CPU cores to allocate to the container.')
 param cpuCores int = 1
@@ -46,10 +46,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
               protocol: 'TCP'
 
             }
-            {
-              port: 80
-              protocol: 'TCP'
-            }
           ]
           resources: {
             requests: {
@@ -68,7 +64,7 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
             }
             {
               name: 'ASPNETCORE_HTTP_PORTS'
-              value: '80'
+              value: string(port)
             }
           ]
         }
@@ -81,10 +77,6 @@ resource containerGroup 'Microsoft.ContainerInstance/containerGroups@2021-09-01'
       ports: [
         {
           port: port
-          protocol: 'TCP'
-        }
-        {
-          port: 80
           protocol: 'TCP'
         }
       ]

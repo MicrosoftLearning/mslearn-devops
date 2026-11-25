@@ -6,10 +6,12 @@ resources:
       trigger: none
 
 variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
   azureServiceConnection: 'azure subs'
   subscriptionId: 'YOUR-SUBSCRIPTION-ID'
   resourceGroup: 'rg-az400-container-NAME'
   location: 'centralus'
+  nugetSource: 'https://api.nuget.org/v3/index.json'
 
 stages:
 - stage: Build
@@ -18,6 +20,14 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
+    - script: dotnet test eShopOnWeb.sln -c Release -warnaserror
+      workingDirectory: '$(sampleRoot)'
+      displayName: Test .NET 11 applications before building image
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: Deploy ACR using Bicep
       inputs:
@@ -28,7 +38,7 @@ stages:
         resourceGroupName: '$(resourceGroup)'
         location: '$(location)'
         templateLocation: 'Linked artifact'
-        csmFile: 'infra/acr.bicep'
+        csmFile: '$(sampleRoot)/infra/acr.bicep'
         deploymentMode: 'Incremental'
         deploymentOutputs: 'outputJson'
     - task: PowerShell@2
@@ -39,22 +49,21 @@ stages:
           $var=ConvertFrom-Json '$(outputJson)'
           $value=$var.acrLoginServer.value
           Write-Host "##vso[task.setvariable variable=acrLoginServer;]$value"
-    - task: Docker@0
-      displayName: 'Build the docker image'
+    - task: AzureCLI@2
+      displayName: Build and push versioned .NET 11 storefront image
       inputs:
         azureSubscription: $(azureServiceConnection)
-        azureContainerRegistry: $(acrLoginServer)
-        dockerFile: 'src/Web/Dockerfile'
-        defaultContext: false
-        context: $(Build.SourcesDirectory)
-        includeLatestTag: true
-        imageName: eshoponweb/web:$(Build.BuildId)
-    - task: Docker@0
-      displayName: 'Push the docker images'
-      inputs:
-        azureSubscription: $(azureServiceConnection)
-        azureContainerRegistry: $(acrLoginServer)
-        action: 'Push an image'
-        imageName: eshoponweb/web:$(Build.BuildId)
-        includeLatestTag: true
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -euo pipefail
+          az acr login --name "${ACR_LOGIN_SERVER%%.*}"
+          image="$ACR_LOGIN_SERVER/eshoponweb/web:$IMAGE_TAG"
+          docker build --pull --platform linux/amd64 --build-arg "NUGET_SOURCE=$NUGET_SOURCE" -f "$SAMPLE_ROOT/src/Web/Dockerfile" -t "$image" "$SAMPLE_ROOT"
+          docker push "$image"
+      env:
+        ACR_LOGIN_SERVER: $(acrLoginServer)
+        IMAGE_TAG: $(Build.BuildId)
+        SAMPLE_ROOT: $(sampleRoot)
+        NUGET_SOURCE: $(nugetSource)
     

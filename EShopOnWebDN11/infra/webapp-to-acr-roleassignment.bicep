@@ -1,4 +1,6 @@
 @description('Generate a Suffix based on the Resource Group ID')
+@minLength(3)
+@maxLength(48)
 param suffix string = uniqueString(resourceGroup().id)
 
 @description('Set the ACR Pull Role Definition ID')
@@ -22,5 +24,6 @@ resource webAppToAcrRoleAssignment 'Microsoft.Authorization/roleAssignments@2022
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', acrPullRoleDefinitionID)
     principalId: webApp.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }

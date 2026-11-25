@@ -1,4 +1,6 @@
 @description('Generate a Suffix based on the Resource Group ID')
+@minLength(3)
+@maxLength(48)
 param suffix string = uniqueString(resourceGroup().id)
 
 @description('Use the Resource Group Location')

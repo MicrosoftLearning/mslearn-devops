@@ -1,6 +1,23 @@
-name: eShopOnWeb
+name: eshoponweb-dn11-chat
+infra:
+  provider: bicep
+  path: infra/azd
+hooks:
+  preup:
+    shell: pwsh
+    run: ./scripts/Azd-Chat.ps1 -Phase Initialize
+    continueOnError: false
+  postprovision:
+    shell: pwsh
+    run: ./scripts/Azd-Chat.ps1 -Phase Configure
+    continueOnError: false
+  postdeploy:
+    shell: pwsh
+    run: ./scripts/Azd-Chat.ps1 -Phase Verify
+    continueOnError: false
 services:
   web:
     project: ./src/Web
     language: csharp
     host: appservice
+    resourceName: ${AZURE_WEBAPP_NAME}

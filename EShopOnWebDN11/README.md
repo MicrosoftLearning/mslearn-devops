@@ -132,10 +132,11 @@ products and 32,000 characters; exceeding these bounds fails explicitly.
 
 Chat is disabled by default, so existing storefront deployments still work
 without Foundry. To disable it locally, set `ShopChat:Enabled` to `false`.
-This application-layer prototype intentionally allows only loopback ChatApi
-connections and Development hosting. **Do not expose ChatApi publicly.**
-Authenticated Azure hosting, Bicep, pipelines, and lab rewrites remain separate
-work and have not been implemented for chat.
+Anonymous ChatApi is restricted to loopback Development hosting. Hosted ChatApi
+requires Entra authentication and a managed identity for Foundry. Remote Web-to-
+ChatApi connections require HTTPS and the dedicated API's token scope.
+Use the full-workload templates below; do not expose anonymous chat publicly.
+Lab instruction rewrites remain separate.
 
 ### Chat validation
 
@@ -158,9 +159,10 @@ rather than building unrelated course projects.
   [EShopOnWebDN11/.ado/eshoponweb-ci-pr.yml](.ado/eshoponweb-ci-pr.yml) or
   [EShopOnWebDN11/.ado/eshoponweb-ci.yml](.ado/eshoponweb-ci.yml) when creating
   a pipeline. Both install the SDK from this sample's `global.json`, build in
-  Release, execute unit tests, and publish only the storefront. CI initially
+  Release, execute all .NET and chat frontend tests, and publish Web and ChatApi. CI initially
   has `trigger: none`; Azure Repos PR validation must use a branch build policy.
-  The CI pipeline publishes `Website/Web.zip` and `Bicep/webapp.bicep`.
+  The CI pipeline publishes `Website/Web.zip`, a separate `ChatApi` artifact,
+  and the full `Bicep` folder (including `webapp.bicep`).
 - Azure release: [eshoponweb-cd-webapp-code.yml](.ado/eshoponweb-cd-webapp-code.yml)
   consumes those artifacts. Name the build pipeline `eshoponweb-ci`, configure
   the deployment variables and an approved Azure service connection, and
@@ -189,10 +191,178 @@ requires an API App Service and matching server/client base URLs; it is not
 included in these storefront templates. Do not use the demo identity,
 Development environment, or in-memory database as a production configuration.
 
-The remaining upstream container, scanner, indexing, VM, and azd recipes are
-retained for reference. They are not course-ready parent-repository pipelines;
-their paths and external service prerequisites require a separate lab update.
-Container images and azd runtime settings in this copy target .NET 11.
+Other recipes now select this sample's paths and .NET 11 SDK/images:
+Docker CI uses current Azure CLI/Docker commands; Compose CI uses Compose v2,
+builds only application images, and versions them with the CI run ID. Their CD
+recipes consume that run ID rather than a mutable `latest` image. App Service
+containers and ACI consistently listen on port 8080.
+
+Sonar uses the current version-4 Cloud extension; install/configure that extension
+and its service connection. The retained Mend task and RichCodeNavIndexer require
+their external services and have not been executed here. The Windows CM recipe
+provisions a VM only, not the .NET application. The legacy SQL/Key Vault blueprint
+remains in `infra/main.bicep`, but is not selected by `azure.yaml`.
+
+The historical App Service Compose CD file was already nonworking and referenced
+a missing Bicep template. It now fails explicitly before provisioning and directs
+you to the supported single-container or full chat recipe. No lab instructions
+were changed.
+
+### Full Web + ChatApi + Foundry deployment
+
+Use [eshoponweb-chat-cicd.yml for Azure DevOps](.ado/eshoponweb-chat-cicd.yml)
+or [eshoponweb-chat-cicd.yml for GitHub](.github/workflows/eshoponweb-chat-cicd.yml).
+Copy the GitHub template to the learner repository-root `.github/workflows`;
+the sample's nested workflow folder is not automatically discovered.
+Both are manual, build-only by default. Enabling `deploy` incurs Azure charges.
+
+```text
+Browser -> HTTPS App Service (Web, seeded in-memory catalog)
+                 |
+                 | Entra token from Web's user-assigned managed identity
+                 v
+           HTTPS Container Apps (ChatApi, linux/amd64, non-root)
+                 |
+                 | ChatApi's managed identity: model inference permission
+                 v
+           Foundry account / project / gpt-5.4-mini deployment
+```
+
+There is no additional catalog database, search service, or embedding pipeline.
+ACR stores the ChatApi image; Log Analytics receives Container Apps logs.
+The default creates learner-owned Foundry resources. App Service uses the
+Linux .NET 11 built-in runtime, with an explicit availability check; there is no
+silent runtime downgrade. Production ASP.NET settings disable developer error
+pages, but this is still a **training application**, with demo identity and
+restart-reset catalog data, not a production commerce system.
+
+Pipeline flow:
+
+1. **CI:** restore with vulnerability warnings treated as errors, build, all
+   .NET/frontend tests, explicit direct/transitive package audit, compile every
+   Bicep file, publish both applications, package `Website/Web.zip`, and build/save
+   the Linux ChatApi image from the already-published/tested output. CI also
+   starts it non-root and verifies health plus anonymous-inference rejection
+   without requesting a model token.
+2. **Infrastructure:** [chat-foundation.bicep](infra/chat-foundation.bicep)
+   provisions hosting, private ACR, two identities, scoped roles, and either
+   [new Foundry](infra/chat-foundry.bicep) or inference access to an existing account.
+   The registry is created before attempting to publish/deploy its image.
+3. **CD:** load the tested image artifact (verify its image ID), push it to ACR,
+   deploy [ChatApi](infra/chat-container.bicep) by registry digest, configure
+   [Web's authenticated backend](infra/chat-web-config.bicep), verify the ZIP
+   hash, and deploy it without rebuilding.
+4. **Verification:** require anonymous ChatApi inference to return 401, then
+   submit a real storefront catalog prompt with its antiforgery token. Require
+   a completed Foundry answer with valid catalog products priced below 10.
+   Authentication/model failures fail the deployment; health alone is not success.
+
+Shared [PowerShell scripts](scripts) require PowerShell 7.4+, .NET 11, Node 22,
+Azure CLI/Bicep and a Linux Docker engine. Hosted Ubuntu runners provide the
+base tools; the SDK is installed using this sample's `global.json`.
+Build/deployment agents are Ubuntu Linux x64 and Azure images target
+`linux/amd64`; using the ARM SDK locally does not change that deployment target.
+Source Dockerfiles use the build host's native SDK and publish portable managed
+assemblies without an apphost, avoiding SDK emulation on ARM development machines.
+Source-container builds accept a `NUGET_SOURCE` build argument (and Compose
+environment variable) for an organization-approved package proxy. The default
+remains public NuGet for learners/hosted agents. Containers do not inherit a
+developer's Windows NuGet configuration. Supply only a non-secret source URL;
+do not put feed credentials in build arguments.
+CI artifacts contain no user-secrets or API keys. Approval checks should be
+configured on the `Training` environment. Both infrastructure and application
+deployment jobs use that environment, so approvals may be requested at both
+boundaries. Serialize Azure DevOps deployments with an environment exclusive-lock
+check; GitHub has a non-cancelling concurrency group.
+
+#### One-time Entra API registration
+
+An instructor/learner with app-registration permission must create a dedicated
+single-tenant API registration **in the Azure subscription's tenant**. This is
+separate from the federated identity used by the pipeline. No client secret is
+required or created:
+
+```powershell
+az login --tenant "YOUR-SUBSCRIPTION-TENANT-GUID"
+.\scripts\New-ChatApiRegistration.ps1 -DisplayName "eshop-chat-api-UNIQUE" -TenantId "YOUR-SUBSCRIPTION-TENANT-GUID"
+```
+
+Run this once. It creates the registration/service principal, sets
+`api://<application-client-id>` and v2 access tokens, and leaves assignment
+requirements disabled. Keep the printed `CHAT_API_CLIENT_ID`.
+If tenant policy prohibits learner registrations, use an instructor-created
+registration with these settings instead. **The helper has only been prepared;
+it is not automatically run by CI/CD.**
+
+ChatApi validates signed tokens, tenant issuer, expiry and API audience, then
+allowlists only Web's managed-identity client ID (`azp`). Delegated user tokens
+are rejected. This [application ACL pattern](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow#access-control-lists)
+supports role-less app-only tokens, avoiding Graph app-role grants in every lab
+pipeline. Tenant membership or possession of an arbitrary Azure token does not
+authorize a caller. Keep **Assignment required = No** for this dedicated API
+unless you separately implement/manage application-role assignments.
+
+#### Deployment configuration
+
+Use an **isolated training resource group**, never the current course's live
+resources. The templates own their generated resources and Web app settings.
+The deployment principal needs Contributor and role-assignment permissions
+(for example Role Based Access Control Administrator) at the training group.
+Precreate the group/grants if the principal lacks subscription-level group-
+creation rights. Register the Microsoft.Web, Microsoft.App, Microsoft.ManagedIdentity,
+Microsoft.ContainerRegistry, Microsoft.OperationalInsights and
+Microsoft.CognitiveServices providers in the subscription.
+
+GitHub: configure OIDC for the learner repository's `Training` environment and
+set these environment variables (repository/environment **variables**, not
+client-secret credentials):
+
+| Variable | Meaning |
+| --- | --- |
+| `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | Federated deployment identity/subscription |
+| `AZURE_RESOURCE_GROUP`, `AZURE_LOCATION` | Isolated target group and supported hosting region |
+| `CHAT_API_CLIENT_ID` | Dedicated chat API registration application/client ID |
+| `DEPLOYMENT_PRINCIPAL_ID` | Pipeline enterprise service principal **object ID**, not client ID |
+| `FOUNDRY_LOCATION` | Optional model-capable region; defaults to hosting region |
+| `FOUNDRY_DEPLOYMENT_NAME` | Optional new deployment name; defaults to `gpt-5.4-mini` |
+
+Azure DevOps: configure a workload-identity-federated Azure service connection
+and replace the corresponding placeholder variables in the full-workload YAML.
+Authorize the pipeline and configure the `Training` environment checks.
+No Graph application permissions are needed by the deployment identity.
+
+New Foundry defaults: model `gpt-5.4-mini`, version `2026-03-17`,
+`GlobalStandard`, capacity 30. Availability, quota, region and deployment policy
+must support those values; adjust the Foundry Bicep parameters for the lab as
+needed. A quota/model failure is surfaced, not replaced with another model.
+The project/account API matches the tested Foundry starter; no starter Python,
+React, storage or search resources are copied.
+
+To reuse Foundry, select `useExistingFoundry=true` and additionally configure:
+
+- `EXISTING_FOUNDRY_RESOURCE_GROUP`
+- `EXISTING_FOUNDRY_ACCOUNT_NAME`
+- `EXISTING_FOUNDRY_ENDPOINT` (HTTPS resource, `/openai/v1`, or project endpoint)
+- `FOUNDRY_DEPLOYMENT_NAME` (the existing deployment name)
+
+The deployment verifies that model's provisioning state and grants ChatApi
+Cognitive Services OpenAI User at the existing account. The pipeline therefore
+needs account read and role-assignment permissions at that scope, in the same
+subscription/tenant. It does not recreate or modify the existing model/project.
+Do not point this configuration at an account you are not authorized to use.
+
+App settings generated by Bicep select `Foundry:Credential=ManagedIdentity`
+and explicitly identify ChatApi's user-assigned identity. Web uses its own
+identity and `ShopChat:AuthenticationScope=api://<chat-api-client-id>/.default`.
+Local CLI authentication and anonymous loopback development remain available.
+Azure hosting outside Development cannot disable ChatApi authentication or use
+CLI credentials. Only health probes are anonymous.
+
+Foundry inference, App Service, ACR, Container Apps and logs can incur costs.
+Remove the isolated training resources when finished; retain a reused Foundry
+account. The Entra registration is separate from resource-group deletion.
+Hosted rate limits apply per application instance, so scaling changes the
+aggregate allowance.
 
 ## Migration notes
 
@@ -221,7 +391,7 @@ Container images and azd runtime settings in this copy target .NET 11.
 
 Validated locally with SDK `11.0.100` on Windows ARM64:
 
-- Release solution build and all 100 .NET tests (54 unit, 3 repository, 25 functional,
+- Release solution build and all 112 .NET tests (54 unit, 3 repository, 37 functional,
   and 18 API integration tests).
 - All 4 frontend tests: multi-chunk streaming, interrupted responses, cancellation,
   and conversation/reset behavior.
@@ -261,10 +431,18 @@ check. A scan of the entire course repository may also report dependencies
 from unchanged legacy samples; those are outside this sample's remediation.
 This dependency audit does not certify application or deployment security.
 
-Hosted Azure Pipelines/GitHub Actions runs, Linux container execution, and an
-actual Azure deployment have not been performed. The Docker daemon was not
-running during local validation. The retained azd Bicep modules also emit
-existing nullable-resource warnings.
+Hosted Azure Pipelines/GitHub Actions runs and an actual deployment of the new
+chat infrastructure have not been performed. The registration helper and all
+cloud-writing scripts were prepared only, not executed. Local deployment-
+contract validation includes all Bicep entrypoints, PowerShell/YAML parsing,
+GitHub workflow linting, published training-mode Web startup, and non-root
+Linux/amd64 ChatApi container health plus rejection of anonymous inference.
+Container validation uses the Linux Docker engine.
+Source Web/PublicApi images built successfully for Linux x64 using an approved
+package proxy. Native Linux ARM execution verified the storefront's seeded mug
+and all 12 API catalog products. Local x64 emulation on this ARM workstation
+encountered QEMU/EF runtime failures; it is not a substitute for a native x64
+hosted deployment run. No emulation-specific runtime workarounds were added.
 
 The historical reference-application documentation follows.
 
@@ -344,16 +522,58 @@ Then, from this sample folder, execute `azd init` to initialize the existing pro
 azd init
 ```
 
-Run `azd up` to provision all the resources to Azure and deploy the code to those resources.
-```
-azd up 
+The azd default deploys the database-free chat workload: .NET 11 Web on Linux
+App Service, ChatApi on Container Apps, private ACR, managed identities, and a
+new Foundry project/model. The catalog is in memory and resets on restart.
+Neither SQL nor Key Vault is deployed.
+
+Prerequisites: .NET 11 SDK, PowerShell 7.4+, Node.js, Azure CLI, azd, and a running
+Linux Docker engine. Sign both Azure CLI and azd into the subscription tenant.
+The provisioning identity needs resource deployment and role-assignment
+permissions. Interactive deployment also requires permission to create an Entra
+application; alternatively configure an instructor-provided API registration:
+`azd env set CHAT_API_CLIENT_ID "<API-CLIENT-ID>"`.
+
+```powershell
+az login --tenant "<TENANT-ID>"
+azd auth login --tenant-id "<TENANT-ID>"
+azd env new "<ENVIRONMENT-NAME>" --subscription "<SUBSCRIPTION-ID>" --location "<REGION>"
+azd up
 ```
 
-According to the prompt, enter an `env name`, and select `subscription` and `location`, these are the necessary parameters when you create resources. Wait a moment for the resource deployment to complete, click the web endpoint and you will see the home page.
+The hooks validate/build/test the application, provision `rg-{env name}`, push
+the tested ChatApi image, configure managed-identity authentication, and deploy
+Web through azd. A post-deployment smoke test checks anonymous ChatApi rejection
+and an actual catalog-grounded Foundry response. Errors stop deployment.
+Re-running `azd up` produces fresh local build artifacts. Use `azd up` for the
+initial deployment so the build and registration hook runs before provisioning.
+App Service deployments default to the lower-cost Basic B1 plan, including the
+Web-only, Docker, Azure DevOps, GitHub, and azd recipes. Existing templates that
+already used B1 are unchanged. Regional subscription quota must permit a new B1
+instance. B1 does not support deployment slots or automatic scaling; none of
+these recipes requires either feature. Set `WEB_APP_SKU` before azd provisioning
+only when a different App Service tier is intentionally required.
+Native App Service templates explicitly start `dotnet Web.dll`. The .NET 11
+publish output also contains BlazorAdmin runtime configuration, so automatic
+startup discovery would otherwise select the default Azure welcome page.
 
-**Notes:**
-1. Considering security, we store its related data (id, password) in the **Azure Key Vault** when we create the database, and obtain it from the Key Vault when we use it. This is different from directly deploying applications locally.
-2. The resource group name created in azure portal will be **rg-{env name}**.
+The default creates a dedicated Entra registration once and saves its client ID
+in ignored `.azure` state. If registration setup fails after creation, finish
+configuring the reported registration and set `CHAT_API_CLIENT_ID`; do not
+create duplicates. Azd supplies the provisioning principal ID. For noninteractive
+service-principal provisioning, also set `DEPLOYMENT_PRINCIPAL_TYPE=ServicePrincipal`
+and authenticate both Azure CLI and azd as that principal.
+
+To reuse Foundry, set `USE_EXISTING_FOUNDRY=true`,
+`EXISTING_FOUNDRY_RESOURCE_GROUP`, `EXISTING_FOUNDRY_ACCOUNT_NAME`,
+`EXISTING_FOUNDRY_ENDPOINT`, and `FOUNDRY_DEPLOYMENT_NAME` before provisioning.
+New-model region/quota availability must match `FOUNDRY_LOCATION` (defaults to
+the selected region).
+
+`azd down` removes the Azure resource group and its chargeable workloads.
+It does **not** remove the separate Entra registration; delete that registration
+separately when it is no longer needed. Retain the local environment state until
+cleanup is complete.
 
 You can also run the sample directly locally (See below).
 

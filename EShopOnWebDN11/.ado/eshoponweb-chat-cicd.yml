@@ -1,0 +1,120 @@
+trigger: none
+
+parameters:
+- name: deploy
+  type: boolean
+  default: false
+- name: useExistingFoundry
+  type: boolean
+  default: false
+
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+  azureServiceConnection: 'YOUR-FEDERATED-AZURE-SERVICE-CONNECTION'
+  resourceGroup: 'YOUR-ISOLATED-TRAINING-RESOURCE-GROUP'
+  location: 'eastus'
+  chatApiClientId: 'YOUR-CHAT-API-REGISTRATION-CLIENT-ID'
+  deploymentPrincipalId: 'YOUR-DEPLOYMENT-SERVICE-PRINCIPAL-OBJECT-ID'
+  foundryLocation: 'eastus'
+  foundryDeploymentName: 'gpt-5.4-mini'
+  existingFoundryResourceGroup: ''
+  existingFoundryAccountName: ''
+  existingFoundryEndpoint: ''
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: CI
+  jobs:
+  - job: BuildAndTest
+    steps:
+    - checkout: self
+    - task: UseDotNet@2
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '22.x'
+    - pwsh: |
+        & "$(sampleRoot)/scripts/Build-Course.ps1" -ArtifactRoot "$(Build.ArtifactStagingDirectory)/Course" -SourceVersion "$(Build.SourceVersion)" -BuildChatImage
+      displayName: Test, audit, validate Bicep and package both apps and tested image
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/Course'
+        artifact: Course
+
+- stage: Infrastructure
+  dependsOn: CI
+  condition: and(succeeded(), ${{ eq(parameters.deploy, true) }}, ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - deployment: Foundation
+    environment: Training
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: Course
+              targetPath: '$(Pipeline.Workspace)/Course'
+          - task: AzureCLI@2
+            displayName: Provision identities, registry, hosting and new or existing Foundry
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: pscore
+              scriptLocation: scriptPath
+              scriptPath: '$(Pipeline.Workspace)/Course/Scripts/Deploy-Course.ps1'
+              arguments: '-Phase Foundation -ArtifactRoot "$(Pipeline.Workspace)/Course" -MetadataRoot "$(Pipeline.Workspace)/Metadata"'
+            env:
+              AZURE_RESOURCE_GROUP: $(resourceGroup)
+              AZURE_LOCATION: $(location)
+              CHAT_API_CLIENT_ID: $(chatApiClientId)
+              DEPLOYMENT_PRINCIPAL_ID: $(deploymentPrincipalId)
+              USE_EXISTING_FOUNDRY: ${{ lower(parameters.useExistingFoundry) }}
+              FOUNDRY_LOCATION: $(foundryLocation)
+              FOUNDRY_DEPLOYMENT_NAME: $(foundryDeploymentName)
+              EXISTING_FOUNDRY_RESOURCE_GROUP: $(existingFoundryResourceGroup)
+              EXISTING_FOUNDRY_ACCOUNT_NAME: $(existingFoundryAccountName)
+              EXISTING_FOUNDRY_ENDPOINT: $(existingFoundryEndpoint)
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/Metadata'
+              artifact: DeploymentMetadata
+
+- stage: CD
+  dependsOn: Infrastructure
+  jobs:
+  - deployment: Applications
+    environment: Training
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: Course
+              targetPath: '$(Pipeline.Workspace)/Course'
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: DeploymentMetadata
+              targetPath: '$(Pipeline.Workspace)/Metadata'
+          - task: AzureCLI@2
+            displayName: Promote tested image by digest, deploy ChatApi and Web, verify live catalog chat
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+                foreach ($phase in 'PublishImage', 'DeployChat', 'DeployWeb', 'Verify') {
+                  & "$(Pipeline.Workspace)/Course/Scripts/Deploy-Course.ps1" -Phase $phase -ArtifactRoot "$(Pipeline.Workspace)/Course" -MetadataRoot "$(Pipeline.Workspace)/Metadata"
+                }
+            env:
+              AZURE_RESOURCE_GROUP: $(resourceGroup)
+              AZURE_LOCATION: $(location)
+              CHAT_API_CLIENT_ID: $(chatApiClientId)

@@ -29,6 +29,18 @@ jobs:
         run: dotnet build eShopOnWeb.sln --configuration Release --no-restore
       - name: Test
         run: dotnet test eShopOnWeb.sln --configuration Release --no-build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test chat frontend
+        run: node --test tests/JavaScript/catalog-chat.test.cjs
+      - name: Publish ChatApi
+        run: dotnet publish src/ChatApi/ChatApi.csproj -c Release --no-build -o artifacts/ChatApi
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ChatApi
+          path: EShopOnWebDN11/artifacts/ChatApi
+          if-no-files-found: error
       - name: Publish and package storefront
         run: |
           dotnet publish src/Web/Web.csproj -c Release --no-build -o artifacts/Website
@@ -44,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: Bicep
-          path: EShopOnWebDN11/infra/webapp.bicep
+          path: EShopOnWebDN11/infra
           if-no-files-found: error
 
   deploy:
@@ -80,8 +92,8 @@ jobs:
           : "${RESOURCE_GROUP:?Configure AZURE_RESOURCE_GROUP}"
           : "${LOCATION:?Configure AZURE_LOCATION}"
           : "${WEBAPP_NAME:?Configure AZURE_WEBAPP_NAME}"
-          runtimes=$(az webapp list-runtimes --os linux -o tsv)
-          if ! grep -Fxq 'DOTNETCORE:11.0' <<< "$runtimes"; then
+          runtimes=$(az webapp list-runtimes --os linux -o json | jq -r '.[] | if type == "string" then . else .config end')
+          if ! grep -Eixq '(DOTNETCORE:11\.0|dotnet:11)' <<< "$runtimes"; then
             echo 'The .NET 11 built-in Linux App Service runtime is unavailable.' >&2
             exit 1
           fi
