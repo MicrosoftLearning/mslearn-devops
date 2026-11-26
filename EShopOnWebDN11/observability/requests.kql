@@ -1,0 +1,12 @@
+let Environment = "YOUR-ENVIRONMENT";
+let SourceVersion = "YOUR-SOURCE-VERSION";
+AppRequests
+| where TimeGenerated > ago(30m)
+| where AppRoleName in ("eshop-web", "eshop-chat")
+| where tostring(Properties["deployment.environment"]) == Environment
+    and tostring(Properties["source.commit"]) == SourceVersion
+| where Url !endswith "/health" and Url !endswith "/health/live"
+| summarize Requests = count(), ServerErrors = countif(toint(ResultCode) >= 500),
+    P95Ms = percentile(DurationMs, 95), Latest = max(TimeGenerated) by AppRoleName
+| extend HttpServerErrorPercent = 100.0 * ServerErrors / Requests
+| project AppRoleName, Requests, ServerErrors, HttpServerErrorPercent, P95Ms, Latest

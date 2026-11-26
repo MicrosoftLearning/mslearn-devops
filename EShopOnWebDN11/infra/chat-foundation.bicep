@@ -16,6 +16,9 @@ param modelVersion string = '2026-03-17'
 @minValue(1)
 param modelCapacity int = 30
 param webSku string = 'B1'
+param enableObservability bool = false
+param environmentName string = 'training'
+param sourceVersion string = ''
 
 var suffix = uniqueString(resourceGroup().id)
 var foundryName = 'aoai-${suffix}'
@@ -60,6 +63,16 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   tags: tags
   properties: { sku: { name: 'PerGB2018' }, retentionInDays: 30 }
 }
+module observability 'chat-observability.bicep' = if (enableObservability) {
+  name: 'chat-observability'
+  params: {
+    location: location
+    workspaceResourceId: logs.id
+    webPrincipalId: webIdentity.properties.principalId
+    chatPrincipalId: chatIdentity.properties.principalId
+    tags: tags
+  }
+}
 resource environment 'Microsoft.App/managedEnvironments@2025-07-01' = {
   name: 'cae-eshop-${suffix}'
   location: location
@@ -98,13 +111,19 @@ resource web 'Microsoft.Web/sites@2022-09-01' = {
       ftpsState: 'Disabled'
       alwaysOn: true
       healthCheckPath: '/health/live'
-      appSettings: [
+      appSettings: concat([
         { name: 'ASPNETCORE_ENVIRONMENT', value: 'Production' }
         { name: 'UseOnlyInMemoryDatabase', value: 'true' }
         { name: 'ShopChat__Enabled', value: 'false' }
         { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'false' }
         { name: 'WEBSITE_RUN_FROM_PACKAGE', value: '1' }
-      ]
+      ], enableObservability ? [
+        { name: 'Observability__Enabled', value: 'true' }
+        { name: 'Observability__ConnectionString', value: observability!.outputs.connectionString }
+        { name: 'Observability__ManagedIdentityClientId', value: webIdentity.properties.clientId }
+        { name: 'Observability__EnvironmentName', value: environmentName }
+        { name: 'Observability__SourceVersion', value: sourceVersion }
+      ] : [])
     }
   }
 }
@@ -139,3 +158,10 @@ output chatAppName string = 'chat-eshop-${suffix}'
 output foundryEndpoint string = useExistingFoundry ? existingFoundryEndpoint : foundry!.outputs.endpoint
 output foundryDeploymentName string = deploymentName
 output tenantId string = tenant().tenantId
+output observabilityEnabled bool = enableObservability
+output observabilityConnectionString string = enableObservability ? observability!.outputs.connectionString : ''
+output observabilityEnvironmentName string = environmentName
+output observabilitySourceVersion string = sourceVersion
+output applicationInsightsName string = enableObservability ? observability!.outputs.name : ''
+output workspaceName string = logs.name
+output workspaceResourceId string = logs.id

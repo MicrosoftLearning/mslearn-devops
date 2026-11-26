@@ -1,0 +1,31 @@
+let Environment = "YOUR-ENVIRONMENT";
+let SourceVersion = "YOUR-SOURCE-VERSION";
+let Roles = datatable(AppRoleName:string) ["eshop-web", "eshop-chat"];
+let Evidence = AppDependencies
+| where TimeGenerated > ago(30m)
+| where AppRoleName in ("eshop-web", "eshop-chat") and Name == "eshop.chat"
+| extend Outcome = tostring(Properties["chat.outcome"])
+| summarize
+    Operations = count(),
+    Completed = countif(Outcome == "completed"),
+    Failed = countif(Outcome == "failed"),
+    Cancelled = countif(Outcome == "cancelled"),
+    InvalidEvidence = countif(
+        Outcome !in ("completed", "failed", "cancelled")
+        or tostring(Properties["deployment.environment"]) != Environment
+        or tostring(Properties["source.commit"]) != SourceVersion
+        or tostring(Properties["release.id"]) != SourceVersion
+        or coalesce(ItemCount, 0) != 1),
+    Latest = max(TimeGenerated)
+    by AppRoleName;
+Roles
+| join kind=leftouter Evidence on AppRoleName
+| extend Operations = coalesce(Operations, 0),
+    Completed = coalesce(Completed, 0), Failed = coalesce(Failed, 0),
+    Cancelled = coalesce(Cancelled, 0), InvalidEvidence = coalesce(InvalidEvidence, 0)
+| extend EvidenceState = case(
+    Operations < 1 or isnull(Latest) or Latest < ago(5m) or InvalidEvidence > 0, "unknown",
+    Failed > 0, "failures observed",
+    Completed < 1, "unknown",
+    "successful answers observed")
+| project AppRoleName, Operations, Completed, Failed, Cancelled, InvalidEvidence, Latest, EvidenceState

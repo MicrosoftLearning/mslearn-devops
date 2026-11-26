@@ -11,6 +11,10 @@ param foundryDeploymentName string
 param tenantId string
 param chatApiClientId string
 param webIdentityClientId string
+param enableObservability bool = false
+param observabilityConnectionString string = ''
+param observabilityEnvironmentName string = ''
+param observabilitySourceVersion string = ''
 
 resource chat 'Microsoft.App/containerApps@2025-07-01' = {
   name: chatAppName
@@ -28,7 +32,7 @@ resource chat 'Microsoft.App/containerApps@2025-07-01' = {
         name: 'chat'
         image: image
         resources: { cpu: json('0.5'), memory: '1Gi' }
-        env: [
+        env: concat([
           { name: 'ASPNETCORE_ENVIRONMENT', value: 'Production' }
           { name: 'ASPNETCORE_HTTP_PORTS', value: '8080' }
           { name: 'AllowedHosts', value: '*' }
@@ -40,7 +44,13 @@ resource chat 'Microsoft.App/containerApps@2025-07-01' = {
           { name: 'Authentication__TenantId', value: tenantId }
           { name: 'Authentication__ClientId', value: chatApiClientId }
           { name: 'Authentication__AllowedClientId', value: webIdentityClientId }
-        ]
+        ], enableObservability ? [
+          { name: 'Observability__Enabled', value: 'true' }
+          { name: 'Observability__ConnectionString', value: observabilityConnectionString }
+          { name: 'Observability__ManagedIdentityClientId', value: chatIdentityClientId }
+          { name: 'Observability__EnvironmentName', value: observabilityEnvironmentName }
+          { name: 'Observability__SourceVersion', value: observabilitySourceVersion }
+        ] : [])
         probes: [
           { type: 'Startup', httpGet: { path: '/health', port: 8080 }, periodSeconds: 10, failureThreshold: 30 }
           { type: 'Readiness', httpGet: { path: '/health', port: 8080 }, periodSeconds: 10 }

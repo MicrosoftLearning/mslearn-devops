@@ -10,6 +10,15 @@ foreach ($key in 'AZURE_ENV_NAME', 'AZURE_SUBSCRIPTION_ID', 'AZURE_LOCATION') {
 }
 az account set --subscription $settings.AZURE_SUBSCRIPTION_ID
 if ($Phase -eq 'Initialize') {
+    $sourceVersion = (git -C $root rev-parse HEAD).Trim()
+    if ($settings.ContainsKey('ENABLE_OBSERVABILITY') -and $settings.ENABLE_OBSERVABILITY -notin 'true', 'false') {
+        throw 'ENABLE_OBSERVABILITY must be true or false.'
+    }
+    if ($settings.ContainsKey('ENABLE_OBSERVABILITY') -and $settings.ENABLE_OBSERVABILITY -eq 'true') {
+        $changes = git -C $root status --porcelain -- src infra scripts Directory.Packages.props Directory.Build.props global.json azure.yaml
+        if ($changes) { throw 'Commit application and deployment changes before the observability build so source.commit identifies the deployed source.' }
+    }
+    azd env set SOURCE_VERSION $sourceVersion
     $runtime = & (Join-Path $PSScriptRoot 'Get-AppServiceRuntime.ps1')
     azd env set AZURE_DOTNET_RUNTIME_STACK $runtime
     $account = (az account show -o json | Out-String) | ConvertFrom-Json
@@ -23,7 +32,7 @@ if ($Phase -eq 'Initialize') {
     }
     $artifacts = Join-Path $root "artifacts/azd/$($settings.AZURE_ENV_NAME)/$([guid]::NewGuid().ToString('N'))"
     & (Join-Path $PSScriptRoot 'Build-Course.ps1') -ArtifactRoot $artifacts `
-        -SourceVersion (git -C $root rev-parse HEAD) -BuildChatImage
+        -SourceVersion $sourceVersion -BuildChatImage
     azd env set AZD_CHAT_ARTIFACT_ROOT $artifacts
     azd env set AZD_CHAT_METADATA_ROOT (Join-Path $artifacts 'Metadata')
     return

@@ -64,7 +64,7 @@ Application structure:
   the retired Azure AI Inference SDK and preview authentication-warning
   suppressions.
 - [ChatShared](src/ChatShared): typed HTTP contracts, request limits, streaming
-  protocol, and product-reference validation.
+  protocol, product-reference validation, and optional shared observability setup.
 
 The model receives only names, descriptions, brands, types, IDs, and prices.
 Product-card images, links, and prices are built by Web from catalog data.
@@ -574,6 +574,42 @@ the selected region).
 It does **not** remove the separate Entra registration; delete that registration
 separately when it is no longer needed. Retain the local environment state until
 cleanup is complete.
+
+### Optional observability lab
+
+Observability is off by default. Before the first `azd up`, enable it with:
+
+```powershell
+azd env set ENABLE_OBSERVABILITY true
+```
+
+This adds a workspace-based Application Insights resource to the existing
+Log Analytics workspace. Web and ChatApi use Azure Monitor OpenTelemetry,
+distinct service roles, and managed-identity-authenticated ingestion.
+Local/key-based ingestion is disabled; each workload identity receives
+**Monitoring Metrics Publisher** on that Application Insights resource only.
+No connection-string credential or client secret is required.
+
+Request/dependency traces carry `deployment.environment`, `source.commit` and
+`release.id`. For this azd build, the release ID is the source commit, not a
+pipeline run ID. The observability-enabled azd hook rejects uncommitted
+application/deployment changes to keep that attribution meaningful.
+Each `eshop.chat` dependency span records `chat.outcome` and
+`chat.failure_reason`, including failures after HTTP streaming has started.
+Prompt, answer, product and token payloads are not added to those spans.
+The lab records all traces for its small traffic sample and disables Live
+Metrics; review sampling, retention, privacy and cost before production use.
+
+[Monitoring assets](observability) include workspace-schema KQL, a workbook
+generator and a runbook template. The
+[alert template](infra/chat-observability-alert.bicep) creates a separate,
+learner-deployed three-failures-in-five-minutes alert. It is not enabled merely
+by switching on instrumentation. No data is unknown, and an alert resolving
+does not prove that chat is healthy.
+
+Follow [Observe Web and Chat with Copilot](../Instructions/agentic/observe-web-chat-with-copilot.md)
+for the standalone exercise. Existing build and deployment labs do not need
+to enable observability.
 
 You can also run the sample directly locally (See below).
 

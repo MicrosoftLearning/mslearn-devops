@@ -44,6 +44,7 @@ public sealed class ShopChatController : ControllerBase
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
         timeout.CancelAfter(TimeSpan.FromSeconds(ChatLimits.TimeoutSeconds));
+        using var operation = new ChatOperation();
         try
         {
             var products = await _service.GetCatalogAsync(timeout.Token);
@@ -82,6 +83,7 @@ public sealed class ShopChatController : ControllerBase
                         }).ToArray();
                         await ChatStream.WriteAsync(Response.Body,
                             new ChatEvent("completed", Text: completed.Text, Products: cards), timeout.Token);
+                        operation.Complete();
                         return new EmptyResult();
                     case "error":
                         throw new InvalidDataException("ChatApi reported a failure.");
@@ -93,16 +95,19 @@ public sealed class ShopChatController : ControllerBase
         }
         catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
         {
+            operation.Cancel();
             _logger.LogDebug("The shopper cancelled the chat request.");
         }
         catch (OperationCanceledException ex)
         {
+            operation.Fail("timeout");
             _logger.LogWarning(ex, "The catalog assistant timed out.");
             return await ReportFailureAsync("The catalog assistant timed out. Please try again.");
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or System.Text.Json.JsonException
             or AuthenticationFailedException or CredentialUnavailableException)
         {
+            operation.Fail("upstream_error");
             _logger.LogError(ex, "The catalog assistant could not complete a response.");
             return await ReportFailureAsync("The catalog assistant is unavailable. Please try again.");
         }

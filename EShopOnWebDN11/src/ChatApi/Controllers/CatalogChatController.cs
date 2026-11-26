@@ -34,6 +34,7 @@ public sealed class CatalogChatController : ControllerBase
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
         timeout.CancelAfter(TimeSpan.FromSeconds(ChatLimits.TimeoutSeconds));
+        using var operation = new ChatOperation();
         Response.ContentType = "text/event-stream";
         Response.Headers.CacheControl = "no-store";
         Response.Headers["X-Accel-Buffering"] = "no";
@@ -52,19 +53,23 @@ public sealed class CatalogChatController : ControllerBase
             var completed = ChatReferences.Complete(answer.ToString(), request.Products);
             await ChatStream.WriteAsync(Response.Body,
                 new ChatEvent("completed", Text: completed.Text, ProductIds: completed.ProductIds), timeout.Token);
+            operation.Complete();
         }
         catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
         {
+            operation.Cancel();
             _logger.LogDebug("Catalog chat request was cancelled by the client.");
         }
         catch (OperationCanceledException ex)
         {
+            operation.Fail("timeout");
             _logger.LogWarning(ex, "Catalog chat request timed out.");
             return await ReportFailureAsync("The catalog assistant timed out. Please try again.");
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or System.Text.Json.JsonException
             or AuthenticationFailedException or CredentialUnavailableException)
         {
+            operation.Fail("upstream_error");
             _logger.LogError(ex, "Catalog chat could not complete a Foundry response.");
             return await ReportFailureAsync("The catalog assistant is unavailable. Please try again.");
         }

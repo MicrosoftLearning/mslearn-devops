@@ -27,7 +27,7 @@ public static class ConfigureWebServices
         {
             var options = provider.GetRequiredService<IOptions<ShopChatOptions>>().Value;
             return options.ManagedIdentityClientId is null
-                ? new ManagedIdentityCredential()
+                ? new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned)
                 : new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(options.ManagedIdentityClientId));
         });
         services.AddTransient<ShopChatAuthenticationHandler>();

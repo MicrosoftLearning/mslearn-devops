@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.eShopWeb.ChatApi;
+using Microsoft.eShopWeb.ChatShared;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddShopObservability("eshop-chat");
 
 builder.Services.AddOptions<ChatAuthenticationOptions>()
     .BindConfiguration("Authentication")
@@ -57,7 +59,7 @@ builder.Services.AddSingleton<TokenCredential>(services =>
             new AzureDeveloperCliCredentialOptions { TenantId = options.TenantId }),
         "AzureCli" => new AzureCliCredential(new AzureCliCredentialOptions { TenantId = options.TenantId }),
         "ManagedIdentity" => options.ManagedIdentityClientId is null
-            ? new ManagedIdentityCredential()
+            ? new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned)
             : new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(options.ManagedIdentityClientId)),
         _ => throw new InvalidOperationException("Unsupported Foundry credential.")
     };

@@ -1,4 +1,6 @@
 using System.Net;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -39,6 +41,38 @@ public class CatalogChatTests
     private const string WebClient = "33333333-3333-3333-3333-333333333333";
     private static readonly SymmetricSecurityKey TestSigningKey = new(Encoding.UTF8.GetBytes(
         "Only-for-isolated-tests-not-an-Entra-or-production-signing-key-12345"));
+
+    [Theory]
+    [InlineData("stop", "completed", ActivityStatusCode.Unset)]
+    [InlineData("length", "failed", ActivityStatusCode.Error)]
+    public async Task TracesCompletedAndFailedAnswersEvenWhenHttpReturns200(
+        string finishReason, string outcome, ActivityStatusCode status)
+    {
+        var sourceName = ShopObservability.Activities.Name;
+        var activities = new ConcurrentBag<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+            ActivityStopped = activities.Add
+        };
+        ActivitySource.AddActivityListener(listener);
+        using var foundry = new FoundryHandler("The Mug [[product:2]].", finishReason);
+        using var api = CreateApi(foundry);
+        using var web = CreateWeb(api);
+        using var client = CreateClient(web);
+        using var response = await AskAsync(client, """{"messages":[{"role":"user","content":"Show mugs."}]}""");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var events = await ReadEventsAsync(response);
+        Assert.Equal(outcome == "completed" ? "completed" : "error", events[^1].Type);
+        Assert.Equal(2, activities.Count);
+        Assert.All(activities, activity =>
+        {
+            Assert.Equal(outcome, activity.GetTagItem("chat.outcome"));
+            Assert.Equal(status, activity.Status);
+            Assert.DoesNotContain(activity.TagObjects, tag => tag.Value?.ToString()?.Contains("Show mugs.") == true);
+        });
+    }
 
     [Theory]
     [InlineData(null, ApiClient, false, false, HttpStatusCode.Unauthorized)]

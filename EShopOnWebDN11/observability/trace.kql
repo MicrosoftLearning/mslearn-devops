@@ -1,0 +1,10 @@
+let TraceId = "YOUR-OPERATION-ID";
+union
+    (AppRequests | extend RecordType = "request"),
+    (AppDependencies | extend RecordType = "dependency"),
+    (AppTraces | extend RecordType = "log")
+| where TimeGenerated > ago(30m) and OperationId == TraceId
+| where AppRoleName in ("eshop-web", "eshop-chat")
+| project TimeGenerated, AppRoleName, RecordType, Name, Message, Id, ParentId,
+    OperationId, Success, ResultCode, DurationMs, Properties
+| order by TimeGenerated asc

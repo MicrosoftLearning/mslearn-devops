@@ -42,6 +42,15 @@ function Invoke-RegistryCommand([string] $Command, [string[]] $Arguments) {
         if ($text -notmatch '(?i)unauthorized|denied|authorizationfailed|\b401\b|\b403\b' -or $attempt -eq 12) {
             throw "$Command failed ($code). Review the registry permissions/error above."
         }
+        function Get-ObservabilityParameters {
+            if (-not $foundation.ContainsKey('observabilityEnabled')) { return @{} }
+            $values = @{ enableObservability = $foundation.observabilityEnabled.value }
+            foreach ($key in 'observabilityConnectionString', 'observabilityEnvironmentName', 'observabilitySourceVersion') {
+                if (-not $foundation.ContainsKey($key)) { throw "Missing foundation output $key; reprovision using the matching artifact." }
+                $values[$key] = $foundation[$key].value
+            }
+            return $values
+        }
         Write-Host "Waiting for new ACR RBAC grants to propagate (attempt $attempt/12)."
         Start-Sleep -Seconds 10
     }
@@ -72,6 +81,14 @@ if ($Phase -eq 'Foundation') {
         deploymentPrincipalId = $principal
         useExistingFoundry = $reuse
         runtimeStack = $runtime
+    }
+    if ($env:ENABLE_OBSERVABILITY -and $env:ENABLE_OBSERVABILITY -notin 'true', 'false') {
+        throw 'ENABLE_OBSERVABILITY must be true or false.'
+    }
+    if ($env:ENABLE_OBSERVABILITY -eq 'true') {
+        $parameters.enableObservability = $true
+        $parameters.environmentName = $resourceGroup
+        $parameters.sourceVersion = $manifest.sourceVersion
     }
     if (-not [string]::IsNullOrWhiteSpace($env:FOUNDRY_LOCATION)) { $parameters.foundryLocation = $env:FOUNDRY_LOCATION }
     if (-not [string]::IsNullOrWhiteSpace($env:FOUNDRY_DEPLOYMENT_NAME)) { $parameters.deploymentName = $env:FOUNDRY_DEPLOYMENT_NAME }
@@ -122,6 +139,7 @@ if ($Phase -eq 'PublishImage') {
         'registryLoginServer', 'foundryEndpoint', 'foundryDeploymentName', 'tenantId', 'webIdentityClientId') {
         $parameters[$key] = $foundation[$key].value
     }
+    $parameters += Get-ObservabilityParameters
     Deploy-Template 'container' $parameters | Out-Null
 } elseif ($Phase -in 'ConfigureWeb', 'DeployWeb') {
     $zip = Join-Path $ArtifactRoot 'Website/Web.zip'
@@ -129,12 +147,14 @@ if ($Phase -eq 'PublishImage') {
         throw 'The website ZIP does not match the tested CI artifact.'
     }
     $chat = Get-Content (Join-Path $MetadataRoot 'container.json') -Raw | ConvertFrom-Json -AsHashtable
-    Deploy-Template 'web-config' @{
+    $parameters = @{
         webAppName = $foundation.webAppName.value
         chatUrl = $chat.chatUrl.value
         chatApiClientId = $apiClientId
         webIdentityClientId = $foundation.webIdentityClientId.value
-    } | Out-Null
+    }
+    $parameters += Get-ObservabilityParameters
+    Deploy-Template 'web-config' $parameters | Out-Null
     if ($Phase -eq 'DeployWeb') {
         az webapp deploy --resource-group $resourceGroup --name $foundation.webAppName.value `
             --src-path $zip --type zip --clean true --restart true

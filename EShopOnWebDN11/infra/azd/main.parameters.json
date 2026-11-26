@@ -8,6 +8,8 @@
     "principalType": { "value": "${DEPLOYMENT_PRINCIPAL_TYPE=User}" },
     "runtimeStack": { "value": "${AZURE_DOTNET_RUNTIME_STACK=dotnet|11}" },
     "webSku": { "value": "${WEB_APP_SKU=B1}" },
+    "enableObservability": { "value": "${ENABLE_OBSERVABILITY=false}" },
+    "sourceVersion": { "value": "${SOURCE_VERSION=}" },
     "useExistingFoundry": { "value": "${USE_EXISTING_FOUNDRY=false}" },
     "existingFoundryResourceGroup": { "value": "${EXISTING_FOUNDRY_RESOURCE_GROUP=}" },
     "existingFoundryAccountName": { "value": "${EXISTING_FOUNDRY_ACCOUNT_NAME=}" },

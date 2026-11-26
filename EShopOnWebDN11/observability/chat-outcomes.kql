@@ -1,0 +1,11 @@
+let Environment = "YOUR-ENVIRONMENT";
+AppDependencies
+| where TimeGenerated > ago(30m)
+| where AppRoleName in ("eshop-web", "eshop-chat") and Name == "eshop.chat"
+| where tostring(Properties["deployment.environment"]) == Environment
+| project TimeGenerated, AppRoleName, OperationId, Id, ParentId, DurationMs,
+    Outcome = tostring(Properties["chat.outcome"]),
+    FailureReason = tostring(Properties["chat.failure_reason"]),
+    SourceVersion = tostring(Properties["source.commit"]),
+    ReleaseId = tostring(Properties["release.id"]), Success, ItemCount
+| order by TimeGenerated desc
