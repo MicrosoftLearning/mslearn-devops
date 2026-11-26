@@ -1,6 +1,6 @@
 # GitHub Agentic Workflows security review sample
 
-Follow the [practical lab](../Instructions/agentic/DRAFT/08-integrate-agentic-workflows-github-security-analysis.md)
+Follow the [practical lab](../Instructions/agentic/integrate-agentic-workflows-github-security-analysis.md)
 to create an isolated GitHub fork, configure Copilot authentication, and run an
 advisory security review with GitHub Agentic Workflows.
 

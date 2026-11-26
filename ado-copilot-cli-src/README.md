@@ -1,6 +1,6 @@
 # Azure DevOps Copilot CLI security review sample
 
-Follow the [practical lab](https://github.com/MicrosoftLearning/mslearn-devops/blob/main/Instructions/agentic/07-integrate-copilot-cli-ado-security-analysis.md)
+Follow the [practical lab](https://github.com/MicrosoftLearning/mslearn-devops/blob/main/Instructions/agentic/integrate-copilot-cli-ado-security-analysis.md)
 to create an Azure DevOps project, import the public lab repository into Azure Repos,
 configure authentication and permissions, and run the pipeline.
 
