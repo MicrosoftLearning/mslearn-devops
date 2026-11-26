@@ -1,0 +1,12 @@
+# Historical placeholder: the original recipe referenced a missing template.
+# Use eshoponweb-chat-cicd.yml for App Service + Container Apps, or
+# eshoponweb-cd-webapp-docker.yml for a single storefront container.
+trigger: none
+pool:
+  vmImage: ubuntu-latest
+steps:
+- script: |
+    echo "This historical App Service Compose recipe is disabled. No Azure resources will be created."
+    echo "Use EShopOnWebDN11/.ado/eshoponweb-chat-cicd.yml for the supported Web + ChatApi workload."
+    exit 1
+  displayName: Explain supported deployment replacement

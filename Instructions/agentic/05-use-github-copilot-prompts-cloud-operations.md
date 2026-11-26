@@ -17,13 +17,12 @@ lab:
 
 ## Lab scenario
 
-You will work through several tasks that progressively build on each other. You will use GitHub Copilot to perform real infrastructure work. From writing CLI scripts to generating Bicep templates, building CI/CD pipeline syntax, documenting cloud infrastructure, and analyzing Azure cloud operations logs.
+You will work through several tasks that progressively build on each other. You will use GitHub Copilot to perform real infrastructure work. From writing CLI scripts to generating Bicep templates, documenting cloud infrastructure, and analyzing Azure cloud operations logs.
 
 By the end of this lab, you will be able to:
 
 - generate Azure CLI and PowerShell Script 
 - compose Bicep Template (with and without MCP)
-- generate CI/CD Pipeline syntax for Azure DevOps + GitHub Actions
 - use GitHub Copilot to assist in writing cloud infrastructure documentation 
 - analyze Azure Activity log and Azure Firewall logs using GitHub Copilot 
 
@@ -88,26 +87,19 @@ cd .\mslearn-devops
 ```powershell
 tar -xvf agentic-iac-lab-files.zip
 ```
-After extracting the archive, the lab-files working directory will contain:
+After extracting the archive, use the following files and output folders. Other sample folders in the archive aren't needed for this exercise:
 
 ```
 lab-files/
-├── app/                    # Node.js Express API — used in Task 3
-│   ├── server.js
-│   ├── package.json
-│   └── routes/
-│       ├── health.js
-│       └── resources.js
 ├── templates/
-│   └── main-v1.bicep       # Older Bicep template — used in Task 2 and Task 5
+│   └── main-v1.bicep          # Older Bicep template — used in Tasks 2 and 3
 ├── logs/
-│   ├── firewall-logs.json  # Sample Azure Firewall logs — used in Task 6
-│   ├── failed-deployment.log  # Deployment error log — used in Task 6
-│   └── activity-log.json   # Azure Activity Logs — used in Task 6
-├── k8s/                    # Save your Kubernetes manifests here (Task 3)
-├── scripts/                # Save your CLI/PowerShell scripts here (Task 1)
-└── kql/                    # Save your KQL queries here (Task 6)
-docs/                       # Save your generated documentation here (Task 5)
+│   ├── firewall-logs.json     # Sample Azure Firewall logs — used in Task 4
+│   ├── failed-deployment.log  # Deployment error log — used in Task 4
+│   └── activity-log.json      # Azure Activity Logs — used in Task 4
+├── scripts/                  # Save your CLI/PowerShell scripts here (Task 1)
+└── kql/                      # Save your KQL queries here (Task 4)
+docs/                         # Save your generated documentation here (Task 3)
 ```
 
 With all the above steps completed, you are ready to continue with the exercise.
@@ -311,78 +303,13 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-## Task 3: CI/CD Pipeline Generation for Azure DevOps and/or GitHub Actions
-
-> **Note**: No access to an Azure DevOps Organization or GitHub Actions is required to complete this task. You generate the pipeline syntax, but won't run the actual pipeline.
-
-**Objective:** Use GitHub Copilot to generate multi-stage deployment pipelines for both Azure DevOps and GitHub Actions, including environment approvals and an Infrastructure as Code validation stage.
-
----
-
-### Step 4.1 — Generate an Azure DevOps Pipeline
-
-1. In Copilot Chat, prompt:
-
-    ```
-    Generate an Azure DevOps multi-stage YAML pipeline for deploying the Bicep template
-    from this lab across two environments: staging and production.
-    Requirements:
-    - Trigger on changes to the main branch under the infra/ folder
-    - Stage 1 (Validate): Run az bicep build and az deployment group what-if
-      against the staging resource group
-    - Stage 2 (Deploy Staging): Deploy the Bicep template to rg-iaclab-staging
-      using an Azure service connection called "sc-iaclab-staging"
-    - Stage 3 (Deploy Production): Deploy to rg-iaclab-production using
-      "sc-iaclab-production" with a manual approval gate before execution
-    - Use variable groups: "vg-iaclab-staging" and "vg-iaclab-production"
-    - All stages run on ubuntu-latest hosted agents
-    ```
-
-2. From the Chat response view, inside the YAML snippet, select **apply in editor** from the chat response view. 
-3. Then, select **New untitled editor** and **saving** the new file as `azure-pipelines.yml`
-
-4. Ask Copilot to add a rollback stage:
-
-    ```
-    Add a Stage 4 (Rollback) that only triggers if Stage 3 (Deploy Production) fails.
-    It should re-deploy the last successful Bicep artifact from the staging drop.
-    ```
-
----
-
-### Step 4.2 — Generate a GitHub Actions Equivalent
-
-1. With `azure-pipelines.yml` open in the editor, prompt:
-
-    ```
-    Translate this Azure DevOps pipeline into an equivalent GitHub Actions workflow.
-    Use:
-    - OIDC-based Azure authentication (azure/login action with federated credentials)
-    - GitHub Environments named "staging" and "production"
-      (production requires a reviewer approval)
-    - Reusable workflow jobs where possible
-    - Secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID from GitHub Secrets
-    ```
-
-2. Save as `.github/workflows/deploy-infra.yml`.
-
-3. Ask Copilot to add a compliance check:
-
-    ```
-    Add a job before the staging deployment that runs az policy state list
-    and fails the workflow if any non-compliant resources are found
-    in the staging resource group.
-    ```
-
----
-
-## Task 5: Infrastructure Documentation Generation
+## Task 3: Infrastructure Documentation Generation
 
 **Objective:** Use GitHub Copilot to automatically generate human-readable documentation from the Bicep template you built in Task 2. Without writing a single word manually.
 
 ---
 
-### Step 5.1 — Generate a Plain-Language Architecture Description
+### Step 3.1 — Generate a Plain-Language Architecture Description
 
 1. Open `main-mcp.bicep` in VS Code and select all content (`Ctrl+A`).
 
@@ -398,7 +325,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 5.2 — Generate a Parameter Reference Table
+### Step 3.2 — Generate a Parameter Reference Table
 
 1. Prompt:
 
@@ -412,7 +339,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 5.3 — Generate a Mermaid Architecture Diagram
+### Step 3.3 — Generate a Mermaid Architecture Diagram
 
 > **Note**: Mermaid is a popular diagram representation tool, supported in Markdown documents
 
@@ -430,7 +357,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 5.4 — Generate a Change Summary
+### Step 3.4 — Generate a Change Summary
 
 1. Open `lab-files/templates/main-v1.bicep` alongside `main-mcp.bicep` — this is the older version of the template.
 
@@ -451,15 +378,15 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-## Task 6: Cloud Operations Log Analysis
+## Task 4: Cloud Operations Log Analysis
 
 **Objective:** Use GitHub Copilot to analyze sample Azure operational logs, identify security and operational issues, and generate KQL queries for Azure Monitor.
 
-**Relevant Unit:** Unit 8 — Log and Configuration Analysis
+**Relevant Unit:** Unit 6 — Log and Configuration Analysis
 
 ---
 
-### Step 6.1 — Analyze Azure Firewall Logs
+### Step 4.1 — Analyze Azure Firewall Logs
 
 1. Open `lab-files/logs/firewall-logs.json` in VS Code.
    This file contains 80 Azure Firewall network rule log entries.
@@ -485,7 +412,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 6.2 — Troubleshoot a Failed Deployment
+### Step 4.2 — Troubleshoot a Failed Deployment
 
 1. Open `lab-files/logs/failed-deployment.log`. Validate it gets attached to the Copilot chat context.
 
@@ -505,7 +432,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 6.3 — Generate KQL Queries for Azure Monitor
+### Step 4.3 — Generate KQL Queries for Azure Monitor
 
 1. In Copilot Chat, prompt:
 
@@ -529,7 +456,7 @@ With all the above steps completed, you are ready to continue with the exercise.
 
 ---
 
-### Step 6.4 — Generate a Compliance Audit Summary
+### Step 4.4 — Generate a Compliance Audit Summary
 
 1. Open `lab-files/logs/activity-log.json`.
    This file contains 30 days of Azure Activity Log entries.

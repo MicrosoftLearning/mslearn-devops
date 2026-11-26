@@ -1,0 +1,108 @@
+name: EShopOnWebDN11 Build and Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to the approved Linux App Service training environment
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  buildandtest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: EShopOnWebDN11
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: EShopOnWebDN11/global.json
+      - name: Restore
+        run: dotnet restore eShopOnWeb.sln
+      - name: Build
+        run: dotnet build eShopOnWeb.sln --configuration Release --no-restore
+      - name: Test
+        run: dotnet test eShopOnWeb.sln --configuration Release --no-build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test chat frontend
+        run: node --test tests/JavaScript/catalog-chat.test.cjs
+      - name: Publish ChatApi
+        run: dotnet publish src/ChatApi/ChatApi.csproj -c Release --no-build -o artifacts/ChatApi
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ChatApi
+          path: EShopOnWebDN11/artifacts/ChatApi
+          if-no-files-found: error
+      - name: Publish and package storefront
+        run: |
+          dotnet publish src/Web/Web.csproj -c Release --no-build -o artifacts/Website
+          cd artifacts/Website
+          zip -r ../Web.zip .
+      - name: Upload website
+        uses: actions/upload-artifact@v5
+        with:
+          name: Website
+          path: EShopOnWebDN11/artifacts/Web.zip
+          if-no-files-found: error
+      - name: Upload infrastructure
+        uses: actions/upload-artifact@v5
+        with:
+          name: Bicep
+          path: EShopOnWebDN11/infra
+          if-no-files-found: error
+
+  deploy:
+    if: ${{ inputs.deploy }}
+    runs-on: ubuntu-latest
+    needs: buildandtest
+    environment: Development
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      LOCATION: ${{ vars.AZURE_LOCATION }}
+      WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: Website
+          path: Website
+      - uses: actions/download-artifact@v6
+        with:
+          name: Bicep
+          path: Bicep
+      - name: Azure login with federated identity
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Verify runtime and deploy infrastructure
+        run: |
+          set -euo pipefail
+          : "${RESOURCE_GROUP:?Configure AZURE_RESOURCE_GROUP}"
+          : "${LOCATION:?Configure AZURE_LOCATION}"
+          : "${WEBAPP_NAME:?Configure AZURE_WEBAPP_NAME}"
+          runtimes=$(az webapp list-runtimes --os linux -o json | jq -r '.[] | if type == "string" then . else .config end')
+          if ! grep -Eixq '(DOTNETCORE:11\.0|dotnet:11)' <<< "$runtimes"; then
+            echo 'The .NET 11 built-in Linux App Service runtime is unavailable.' >&2
+            exit 1
+          fi
+          az group create --name "$RESOURCE_GROUP" --location "$LOCATION"
+          az deployment group create --resource-group "$RESOURCE_GROUP" \
+            --template-file Bicep/webapp.bicep \
+            --parameters webAppName="$WEBAPP_NAME" location="$LOCATION"
+      - name: Publish storefront to Linux App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          package: Website/Web.zip

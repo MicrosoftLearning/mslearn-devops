@@ -1,0 +1,80 @@
+#NAME THE PIPELINE SAME AS FILE (WITHOUT ".yml")
+
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+# trigger:
+# - main
+
+resources:
+  repositories:
+    - repository: self
+      trigger: none
+
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+  tag: '$(Build.BuildId)'
+  resource-group: 'AZ400-EWebShop-NAME'
+  location: 'centralus'
+  templateFile: 'EShopOnWebDN11/infra/acr.bicep'
+  azureserviceconnection: 'azure subs'
+  subscriptionId: 'YOUR-SUBSCRIPTION-ID'
+  nugetSource: 'https://api.nuget.org/v3/index.json'
+
+stages:
+- stage: Build
+  displayName: Create ACR for images
+  jobs:
+  - job: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: sdk
+        useGlobalJson: true
+        workingDirectory: '$(sampleRoot)'
+    - script: dotnet test eShopOnWeb.sln -c Release -warnaserror
+      workingDirectory: '$(sampleRoot)'
+    #Create ACR to keep docker images
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: Deploy ACR Bicep
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: $(azureserviceconnection)
+        subscriptionId: $(subscriptionId)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resource-group)'
+        location: '$(location)'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(templateFile)'
+        deploymentMode: 'Incremental'
+        deploymentOutputs: 'acr-json'
+    
+    #Parse ACR login server variable
+    - task: PowerShell@2
+      displayName: Parse Bicep Output
+      inputs:
+        targetType: 'inline'
+        script: |
+          $var=ConvertFrom-Json '$(acr-json)'
+          $value=$var.acrloginServer.value
+          Write-Host "##vso[task.setvariable variable=acrloginserver;]$value"
+    - task: AzureCLI@2
+      displayName: Build and push only application images using Compose v2
+      inputs:
+        azureSubscription: '$(azureserviceconnection)'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -euo pipefail
+          az acr login --name "${ACR_LOGIN_SERVER%%.*}"
+          docker compose -p eshop -f "$SAMPLE_ROOT/docker-compose.yml" build eshopwebmvc eshoppublicapi
+          docker compose -p eshop -f "$SAMPLE_ROOT/docker-compose.yml" push eshopwebmvc eshoppublicapi
+      env:
+        SAMPLE_ROOT: $(sampleRoot)
+        ACR_LOGIN_SERVER: $(acrloginserver)
+        DOCKER_REGISTRY: '$(acrloginserver)/'
+        IMAGE_TAG: $(Build.BuildId)
+        NUGET_SOURCE: $(nugetSource)

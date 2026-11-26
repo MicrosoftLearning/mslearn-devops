@@ -1,0 +1,51 @@
+#NAME THE PIPELINE SAME AS FILE (WITHOUT ".yml")
+
+resources:
+  pipelines:
+    - pipeline: webImage
+      source: eshoponweb-ci-docker
+      trigger: true
+  repositories:
+    - repository: self
+      trigger: none
+
+variables:
+  sampleRoot: '$(Build.SourcesDirectory)/EShopOnWebDN11'
+  imageTag: '$(resources.pipeline.webImage.runID)'
+  azureServiceConnection: 'azure subs'
+  resourceGroup: 'rg-az400-container-NAME'
+  location: 'centralus'
+  subscriptionId: 'YOUR-SUBSCRIPTION-ID'
+
+stages:
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: Deploy App Service using Bicep
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: $(azureServiceConnection)
+        subscriptionId: $(subscriptionId)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: '$(location)'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(sampleRoot)/infra/webapp-docker.bicep'
+        overrideParameters: '-imageTag "$(imageTag)"'
+        deploymentMode: 'Incremental'
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: Add Role Assignment using Bicep
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: $(azureServiceConnection)
+        subscriptionId: $(subscriptionId)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroup)'
+        location: '$(location)'
+        templateLocation: 'Linked artifact'
+        csmFile: '$(sampleRoot)/infra/webapp-to-acr-roleassignment.bicep'
+        deploymentMode: 'Incremental'

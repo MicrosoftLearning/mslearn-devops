@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": { "value": "${AZURE_ENV_NAME}" },
+    "location": { "value": "${AZURE_LOCATION}" },
+    "principalId": { "value": "${AZURE_PRINCIPAL_ID}" },
+    "principalType": { "value": "${DEPLOYMENT_PRINCIPAL_TYPE=User}" },
+    "runtimeStack": { "value": "${AZURE_DOTNET_RUNTIME_STACK=dotnet|11}" },
+    "webSku": { "value": "${WEB_APP_SKU=B1}" },
+    "useExistingFoundry": { "value": "${USE_EXISTING_FOUNDRY=false}" },
+    "existingFoundryResourceGroup": { "value": "${EXISTING_FOUNDRY_RESOURCE_GROUP=}" },
+    "existingFoundryAccountName": { "value": "${EXISTING_FOUNDRY_ACCOUNT_NAME=}" },
+    "existingFoundryEndpoint": { "value": "${EXISTING_FOUNDRY_ENDPOINT=}" },
+    "deploymentName": { "value": "${FOUNDRY_DEPLOYMENT_NAME=gpt-5.4-mini}" },
+    "foundryLocation": { "value": "${FOUNDRY_LOCATION}" }
+  }
+}

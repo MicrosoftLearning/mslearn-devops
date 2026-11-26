@@ -1,0 +1,109 @@
+name: eShop .NET 11 Web and Foundry Chat
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to an approved chargeable training environment
+        type: boolean
+        default: false
+      useExistingFoundry:
+        description: Reuse a configured existing model instead of creating learner-owned Foundry
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: eshop-chat-training
+  cancel-in-progress: false
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: EShopOnWebDN11/global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test, audit, validate Bicep and package both apps and tested image
+        shell: pwsh
+        run: |
+          & ./EShopOnWebDN11/scripts/Build-Course.ps1 -ArtifactRoot "$env:RUNNER_TEMP/Course" -SourceVersion "${{ github.sha }}" -BuildChatImage
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Course
+          path: ${{ runner.temp }}/Course
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+  infrastructure:
+    if: ${{ inputs.deploy }}
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: Training
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      CHAT_API_CLIENT_ID: ${{ vars.CHAT_API_CLIENT_ID }}
+      DEPLOYMENT_PRINCIPAL_ID: ${{ vars.DEPLOYMENT_PRINCIPAL_ID }}
+      USE_EXISTING_FOUNDRY: ${{ inputs.useExistingFoundry }}
+      FOUNDRY_LOCATION: ${{ vars.FOUNDRY_LOCATION }}
+      FOUNDRY_DEPLOYMENT_NAME: ${{ vars.FOUNDRY_DEPLOYMENT_NAME }}
+      EXISTING_FOUNDRY_RESOURCE_GROUP: ${{ vars.EXISTING_FOUNDRY_RESOURCE_GROUP }}
+      EXISTING_FOUNDRY_ACCOUNT_NAME: ${{ vars.EXISTING_FOUNDRY_ACCOUNT_NAME }}
+      EXISTING_FOUNDRY_ENDPOINT: ${{ vars.EXISTING_FOUNDRY_ENDPOINT }}
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: Course
+          path: Course
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Provision foundation
+        shell: pwsh
+        run: |
+          & ./Course/Scripts/Deploy-Course.ps1 -Phase Foundation -ArtifactRoot "$PWD/Course" -MetadataRoot "$PWD/Metadata"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: DeploymentMetadata
+          path: Metadata
+          if-no-files-found: error
+  cd:
+    needs: infrastructure
+    runs-on: ubuntu-latest
+    environment: Training
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      CHAT_API_CLIENT_ID: ${{ vars.CHAT_API_CLIENT_ID }}
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: Course
+          path: Course
+      - uses: actions/download-artifact@v6
+        with:
+          name: DeploymentMetadata
+          path: Metadata
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Promote tested image, deploy ChatApi then Web, verify live model
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($phase in 'PublishImage', 'DeployChat', 'DeployWeb', 'Verify') {
+            & ./Course/Scripts/Deploy-Course.ps1 -Phase $phase -ArtifactRoot "$PWD/Course" -MetadataRoot "$PWD/Metadata"
+          }
