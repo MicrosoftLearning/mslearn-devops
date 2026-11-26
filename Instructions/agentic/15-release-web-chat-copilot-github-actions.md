@@ -401,5 +401,5 @@ In this lab, you:
 
 - [GitHub deployment environments](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
 - [Authenticate GitHub Actions to Azure with OIDC](https://learn.microsoft.com/azure/developer/github/connect-from-azure-openid-connect)
-- [Chat API registration helper](../../../EShopOnWebDN11/scripts/New-ChatApiRegistration.ps1)
-- [Supplied release workflow](../../../EShopOnWebDN11/.github/workflows/eshoponweb-chat-cicd.yml)
+- [Chat API registration helper](../../EShopOnWebDN11/scripts/New-ChatApiRegistration.ps1)
+- [Supplied release workflow](../../EShopOnWebDN11/.github/workflows/eshoponweb-chat-cicd.yml)
